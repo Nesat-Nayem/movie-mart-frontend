@@ -4,7 +4,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const subscriptionApi = createApi({
   reducerPath: "subscriptionApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://ifmdb.vercel.app/v1/api",
+    baseUrl: "http://localhost:8080/v1/api",
   }),
   tagTypes: ["subscription"],
   endpoints: (builder) => ({

@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const becomeVendorApi = createApi({
   reducerPath: "becomeVendorApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://ifmdb.vercel.app/v1/api",
+    baseUrl: "http://localhost:8080/v1/api",
   }),
   tagTypes: ["becomeVendorApi"],
   endpoints: (builder) => ({

@@ -18,7 +18,7 @@ export const btnData = [
 export const homeBannerApi = createApi({
   reducerPath: "homeBannerApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://ifmdb.vercel.app/v1/api",
+    baseUrl: "http://localhost:8080/v1/api",
   }),
   tagTypes: ["homeBanner"],
   endpoints: (builder) => ({
