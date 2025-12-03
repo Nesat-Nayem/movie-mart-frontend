@@ -6,6 +6,8 @@ import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import Script from "next/script";
 import { Providers } from "../../providers/ReduxProvider";
+import { AuthProvider } from "@/context/AuthContext";
+import { Toaster } from "react-hot-toast";
 
 const jura = Jura({
   subsets: ["latin"],
@@ -27,10 +29,13 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${jura.variable} font-sans antialiased`}>
         <Providers>
-          <Navbar />
-          <Header />
-          {children}
-          <Footer />
+          <AuthProvider>
+            <Toaster position="top-center" />
+            <Navbar />
+            <Header />
+            {children}
+            <Footer />
+          </AuthProvider>
         </Providers>
 
         {/* ✅ Correct way to load Razorpay */}

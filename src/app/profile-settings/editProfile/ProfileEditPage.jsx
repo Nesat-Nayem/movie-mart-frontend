@@ -1,30 +1,36 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { FaArrowLeft, FaCamera } from "react-icons/fa";
-import { useRouter, useSearchParams } from "next/navigation";
+import { FaArrowLeft, FaCamera, FaUser } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 import Button from "@/app/components/Button";
+import { useAuth } from "@/context/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Image from "next/image";
+import toast from "react-hot-toast";
 
 const ProfileEditPage = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { user, updateUser, token } = useAuth();
   const [photo, setPhoto] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: "rgn",
-    phone: "+91 9290909909",
-    email: "user@example.com",
-    gender: "",
-    birthday: "",
-    anniversary: "",
+    name: "",
+    phone: "",
+    email: "",
   });
 
+  // Load user data on mount
   useEffect(() => {
-    if (searchParams.get("modal") === "true") {
-      setIsModalOpen(true);
+    if (user) {
+      setFormData({
+        name: user.name || "",
+        phone: user.phone || "",
+        email: user.email || "",
+      });
+      if (user.img) setPhoto(user.img);
     }
-  }, [searchParams]);
+  }, [user]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -35,49 +41,72 @@ const ProfileEditPage = () => {
     if (file) setPhoto(URL.createObjectURL(file));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Updated Profile:", formData);
-    setIsModalOpen(false);
-    router.push("/profile");
+    setLoading(true);
+    
+    // For now, just update local state
+    // TODO: Add API call to update user profile
+    try {
+      const updatedUser = { ...user, ...formData };
+      updateUser(updatedUser);
+      toast.success("Profile updated successfully");
+      router.push("/profile-settings");
+    } catch (error) {
+      toast.error("Failed to update profile");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <>
-      {isModalOpen && (
-        <div className="flex items-center py-4 justify-center bg-[#13162f] bg-opacity-70">
-          <div className="w-full max-w-lg mx-4 rounded-2xl shadow-lg p-6 overflow-y-auto max-h-[90vh] no-scrollbar border border-dotted bg-[#13162f]">
+    <ProtectedRoute>
+      <section className="min-h-screen bg-gradient-to-b from-[#0B1730] to-[#1a2744] py-6">
+        <div className="max-w-lg mx-auto px-4">
+          <div className="bg-white/5 backdrop-blur-md border border-gray-700/50 rounded-3xl overflow-hidden">
             {/* Header */}
-            <div className="flex items-center space-x-4 mb-6 cursor-pointer">
+            <div className="flex items-center gap-4 p-5 border-b border-gray-700/50">
               <button
-                onClick={() => router.push("/profile")}
-                className="text-2xl hover:text-gray-300"
+                onClick={() => router.push("/profile-settings")}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
               >
-                <FaArrowLeft />
+                <FaArrowLeft className="text-white" />
               </button>
-              <h1 className="text-xl font-semibold">Edit Profile</h1>
+              <h1 className="text-xl font-bold text-white">Edit Profile</h1>
             </div>
 
             {/* Profile Image */}
-            <div className="flex flex-col items-center mb-6">
+            <div className="flex flex-col items-center py-8 border-b border-gray-700/50">
               <div className="relative">
-                <div className="w-28 h-28 bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
-                  {photo ? (
-                    <img
-                      src={photo}
-                      alt="Profile"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-5xl">👤</span>
-                  )}
+                <div className="w-28 h-28 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 p-1">
+                  <div className="w-full h-full rounded-full bg-[#0B1730] flex items-center justify-center overflow-hidden">
+                    {photo ? (
+                      photo.startsWith("http") ? (
+                        <Image
+                          src={photo}
+                          alt="Profile"
+                          width={112}
+                          height={112}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <img
+                          src={photo}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                        />
+                      )
+                    ) : (
+                      <FaUser className="text-4xl text-gray-400" />
+                    )}
+                  </div>
                 </div>
 
                 <label
                   htmlFor="photo-upload"
-                  className="absolute bottom-2 right-2 bg-gray-800 p-2 rounded-full hover:bg-gray-700 cursor-pointer"
+                  className="absolute bottom-0 right-0 w-10 h-10 bg-pink-500 hover:bg-pink-600 rounded-full flex items-center justify-center cursor-pointer transition-colors shadow-lg"
                 >
-                  <FaCamera size={14} />
+                  <FaCamera size={16} className="text-white" />
                 </label>
                 <input
                   id="photo-upload"
@@ -87,77 +116,92 @@ const ProfileEditPage = () => {
                   className="hidden"
                 />
               </div>
+              <p className="text-gray-400 text-sm mt-3">Tap to change photo</p>
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
               {/* Name */}
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Name</label>
+                <label className="block text-sm text-gray-400 mb-2">Full Name</label>
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white focus:outline-none"
+                  placeholder="Enter your name"
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-gray-700 text-white focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-colors"
                 />
               </div>
 
               {/* Phone */}
               <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  Phone number
+                <label className="block text-sm text-gray-400 mb-2">
+                  Phone Number
+                  {user?.authProvider === "phone" && (
+                    <span className="text-xs text-green-400 ml-2">(Primary)</span>
+                  )}
                 </label>
                 <input
                   type="text"
                   name="phone"
-                  value={formData.phone}
+                  value={formData.phone ? `+91 ${formData.phone}` : "Not provided"}
                   disabled
-                  className="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-gray-400 cursor-not-allowed"
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-gray-700 text-gray-400 cursor-not-allowed"
                 />
+                <p className="text-xs text-gray-500 mt-1">Phone number cannot be changed</p>
               </div>
 
               {/* Email */}
               <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  Email
+                <label className="block text-sm text-gray-400 mb-2">
+                  Email Address
+                  {user?.authProvider === "google" && (
+                    <span className="text-xs text-red-400 ml-2">(Google)</span>
+                  )}
                 </label>
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white focus:outline-none"
+                  placeholder="Enter your email"
+                  disabled={user?.authProvider === "google"}
+                  className={`w-full px-4 py-3 rounded-xl bg-white/5 border border-gray-700 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-colors ${
+                    user?.authProvider === "google" ? "text-gray-400 cursor-not-allowed" : "text-white"
+                  }`}
                 />
+                {user?.authProvider === "google" && (
+                  <p className="text-xs text-gray-500 mt-1">Email is linked to your Google account</p>
+                )}
               </div>
 
-              {/* Gender */}
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">
-                  Gender
-                </label>
-                <select
-                  name="gender"
-                  value={formData.gender}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 rounded bg-gray-900 border border-gray-700 text-white focus:outline-none"
-                >
-                  <option value="">Select</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
+              {/* Auth Provider Info */}
+              <div className="bg-white/5 rounded-xl p-4 border border-gray-700/50">
+                <p className="text-sm text-gray-400">Account Type</p>
+                <p className="text-white font-medium capitalize flex items-center gap-2 mt-1">
+                  {user?.authProvider === "google" && "🔴 Google Account"}
+                  {user?.authProvider === "phone" && "📱 Phone Login"}
+                  {user?.authProvider === "local" && "📧 Email & Password"}
+                  {!user?.authProvider && "📧 Email & Password"}
+                </p>
               </div>
 
               {/* Submit */}
-              <div>
-                <Button type="submit">Update Profile</Button>
+              <div className="pt-4">
+                <Button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+                  disabled={loading}
+                >
+                  {loading ? "Updating..." : "Save Changes"}
+                </Button>
               </div>
             </form>
           </div>
         </div>
-      )}
-    </>
+      </section>
+    </ProtectedRoute>
   );
 };
 

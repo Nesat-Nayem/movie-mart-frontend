@@ -7,10 +7,13 @@ import { signInWithGoogle } from "@/lib/firebase";
 import { FcGoogle } from "react-icons/fc";
 import { FaPhone, FaEnvelope } from "react-icons/fa";
 import toast from "react-hot-toast";
+import { useAuth } from "@/context/AuthContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1/api";
 
 const Login = () => {
+  const { login, isAuthenticated } = useAuth();
+  
   // Auth method: 'select' | 'phone' | 'phone-otp' | 'email-login' | 'email-register'
   const [authMethod, setAuthMethod] = useState("select");
   
@@ -32,6 +35,13 @@ const Login = () => {
   const [googleLoading, setGoogleLoading] = useState(false);
   
   const logoUrl = "/assets/img/default-logo.png";
+  
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      window.location.href = "/profile-settings";
+    }
+  }, [isAuthenticated]);
 
   // ============ PHONE AUTH HANDLERS ============
   
@@ -120,11 +130,10 @@ const Login = () => {
       
       if (data.success) {
         toast.success("Login successful!");
-        // Store token and user data
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.data));
-        // Redirect to home or dashboard
-        window.location.href = "/";
+        // Use auth context to login
+        login(data.data, data.token);
+        // Redirect to profile
+        window.location.href = "/profile-settings";
       } else {
         toast.error(data.message || "Invalid OTP");
       }
@@ -172,9 +181,8 @@ const Login = () => {
       
       if (data.success) {
         toast.success("Login successful!");
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.data));
-        window.location.href = "/";
+        login(data.data, data.token);
+        window.location.href = "/profile-settings";
       } else {
         toast.error(data.message || "Login failed");
       }
@@ -255,9 +263,8 @@ const Login = () => {
       
       if (data.success) {
         toast.success("Login successful!");
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.data));
-        window.location.href = "/";
+        login(data.data, data.token);
+        window.location.href = "/profile-settings";
       } else {
         toast.error(data.message || "Google authentication failed");
       }
