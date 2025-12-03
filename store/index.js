@@ -12,6 +12,7 @@ import { eventsApi } from "./eventsApi";
 import { generalSettingsApi } from "./generalSettingsApi";
 import { advertisementApi } from "./advertisementApi";
 import { enquiryApi } from "./enquiryApi";
+import eventBookingReducer from "./eventBookingSlice";
 
 export const store = configureStore({
   reducer: {
@@ -28,6 +29,7 @@ export const store = configureStore({
     [generalSettingsApi.reducerPath]: generalSettingsApi.reducer,
     [advertisementApi.reducerPath]: advertisementApi.reducer,
     [enquiryApi.reducerPath]: enquiryApi.reducer,
+    eventBooking: eventBookingReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(

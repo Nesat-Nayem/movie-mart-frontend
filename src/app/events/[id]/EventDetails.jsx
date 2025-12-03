@@ -11,6 +11,12 @@ import {
   MapPin,
   Armchair,
   Ticket,
+  Calendar,
+  Clock,
+  Users,
+  Share2,
+  Heart,
+  AlertCircle,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -19,17 +25,18 @@ import Actions from "./Actions";
 import { useParams, useRouter } from "next/navigation";
 import EventHeader from "./EventHeader";
 import BookTicketDrawer from "@/app/events/BookTicketDrawer";
-import { useGetEventsQuery } from "../../../../store/eventsApi";
+import { useGetEventByIdQuery } from "../../../../store/eventsApi";
 import Logo from "@/app/components/Logo";
+
 const EventDetails = () => {
   const [showDrawer, setShowDrawer] = useState(false);
   const router = useRouter();
   const { id } = useParams();
 
-  const { data: eventsData = [], isLoading, isError } = useGetEventsQuery();
-
-  // Find current movie by ID
-  const event = eventsData?.find((item) => item._id === id);
+  // Use the single event query instead of fetching all events
+  const { data: event, isLoading, isError, error } = useGetEventByIdQuery(id, {
+    skip: !id,
+  });
 
   // Function to format date
   const formatDate = (dateString) => {
@@ -52,6 +59,50 @@ const EventDetails = () => {
     });
   };
 
+  // Loading State
+  if (isLoading) {
+    return (
+      <section className="min-h-screen bg-gradient-to-b from-[#0B1730] to-[#1a2744]">
+        <div className="max-w-6xl mx-auto">
+          <EventHeader />
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-400">Loading event details...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Error State
+  if (isError || !event) {
+    return (
+      <section className="min-h-screen bg-gradient-to-b from-[#0B1730] to-[#1a2744]">
+        <div className="max-w-6xl mx-auto">
+          <EventHeader />
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+              <h2 className="text-xl font-bold text-white mb-2">Event Not Found</h2>
+              <p className="text-gray-400 mb-6">The event you're looking for doesn't exist or has been removed.</p>
+              <Link href="/events">
+                <Button className="bg-gradient-to-r from-pink-500 to-purple-600">
+                  Browse Events
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Calculate ticket availability
+  const isEventAvailable = event.availableSeats > 0 && ['upcoming', 'ongoing'].includes(event.status);
+  const ticketPercentage = Math.round((event.totalTicketsSold / event.totalSeats) * 100);
+
   return (
     <section>
       <div className="max-w-6xl mx-auto">
@@ -59,8 +110,8 @@ const EventDetails = () => {
           {/* Header Section */}
           <EventHeader />
 
-          {/* events iformation */}
-          {!isLoading && event && (
+          {/* events information */}
+          {event && (
             <>
               <div>
                 {/* Movie Info */}
@@ -70,9 +121,28 @@ const EventDetails = () => {
                       {event.title}
                     </h1>
                     <p className="text-yellow-400 text-sm font-bold bg-yellow-200/10 px-2 py-1 rounded-full">
-                      Hindi
+                      {event.eventLanguage || "Hindi"}
                     </p>
                   </div>
+                  
+                  {/* Event Status Badge */}
+                  {event.status && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                        event.status === 'upcoming' ? 'bg-green-500/20 text-green-400' :
+                        event.status === 'ongoing' ? 'bg-blue-500/20 text-blue-400' :
+                        event.status === 'completed' ? 'bg-gray-500/20 text-gray-400' :
+                        'bg-red-500/20 text-red-400'
+                      }`}>
+                        {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                      </span>
+                      {ticketPercentage >= 80 && isEventAvailable && (
+                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-orange-500/20 text-orange-400">
+                          🔥 Filling Fast
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   {/* Format + Language */}
                   <div className="flex items-center gap-3 mt-4">
@@ -287,13 +357,33 @@ const EventDetails = () => {
                   </div>
                 </div>{" "}
                 {/* Bottom Fixed Button */}
-                <div className="fixed bottom-0 left-0 right-0 bg-[#0B1730] border-t border-gray-700 p-4 z-50">
-                  <Button
-                    onClick={() => setShowDrawer(true)}
-                    className="w-full bg-pink-600 hover:bg-pink-700 text-white  py-3 rounded-lg font-medium max-w-xl mx-auto flex items-center justify-center gap-2"
-                  >
-                    ₹ <span>{event.ticketPrice}</span> | Book Ticket
-                  </Button>
+                <div className="fixed bottom-0 left-0 right-0 bg-[#0B1730]/95 backdrop-blur-lg border-t border-gray-700 p-4 z-50">
+                  <div className="max-w-xl mx-auto">
+                    {isEventAvailable ? (
+                      <div className="flex items-center gap-4">
+                        <div className="flex-1">
+                          <p className="text-gray-400 text-xs">Starting from</p>
+                          <p className="text-white font-bold text-xl">₹{event.ticketPrice}</p>
+                        </div>
+                        <Button
+                          onClick={() => setShowDrawer(true)}
+                          className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 py-3 rounded-xl font-semibold"
+                        >
+                          <Ticket className="w-5 h-5 mr-2" />
+                          Book Tickets
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="text-center py-2">
+                        <p className="text-red-400 font-semibold">
+                          {event.status === 'completed' ? '🎬 Event Ended' : 
+                           event.status === 'cancelled' ? '❌ Event Cancelled' : 
+                           '😔 Sold Out'}
+                        </p>
+                        <p className="text-gray-500 text-sm">Check out other events</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </>
@@ -302,12 +392,9 @@ const EventDetails = () => {
       </div>
 
       {/* Drawer */}
-      {showDrawer && (
+      {showDrawer && event && (
         <BookTicketDrawer
-          event={{
-            id: 1,
-            title: "Coldplay: Music Of The Spheres World Tour",
-          }}
+          event={event}
           onClose={() => setShowDrawer(false)}
         />
       )}
