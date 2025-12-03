@@ -15,6 +15,8 @@ import {
   FaUser,
   FaHistory,
   FaCog,
+  FaLock,
+  FaShieldAlt,
 } from "react-icons/fa";
 import Link from "next/link";
 import Image from "next/image";
@@ -160,6 +162,25 @@ const ProfileSettings = () => {
                 </Link>
               </div>
             </div>
+
+            {/* Account & Security Section */}
+            {(user?.authProvider === "local" || !user?.authProvider) && (
+              <div className="p-5 border-b border-gray-700/50">
+                <h2 className="text-gray-400 text-xs uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <FaShieldAlt className="text-pink-400" />
+                  Account Security
+                </h2>
+                <div className="space-y-2">
+                  <Link href="/profile-settings/editProfile?tab=password">
+                    <MenuItem 
+                      icon={<FaLock className="text-orange-400" />} 
+                      title="Change Password" 
+                      subtitle="Update your account password" 
+                    />
+                  </Link>
+                </div>
+              </div>
+            )}
 
             {/* Support Section */}
             <div className="p-5 border-b border-gray-700/50">
