@@ -276,79 +276,6 @@ const ETicketModal = ({ booking, onClose, onDownload, ticketRef, formatDate, for
   const event = booking.eventId;
   const eTicket = booking.eTicket;
 
-  // Inline styles for html2canvas compatibility (avoids lab() color function issue)
-  const styles = {
-    ticketContainer: {
-      background: "linear-gradient(to bottom right, #1a1a2e, #16213e)",
-      borderRadius: "24px",
-      overflow: "hidden",
-      boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-    },
-    header: {
-      position: "relative",
-      height: "128px",
-      background: "linear-gradient(to right, #ec4899, #a855f7, #6366f1)",
-      padding: "16px",
-    },
-    headerOverlay: {
-      position: "absolute",
-      inset: 0,
-      backgroundColor: "rgba(0, 0, 0, 0.2)",
-    },
-    seatTypeBadge: {
-      backgroundColor: "rgba(255, 255, 255, 0.2)",
-      borderRadius: "8px",
-      padding: "4px 12px",
-    },
-    decorativeCircle: {
-      position: "absolute",
-      bottom: "-16px",
-      width: "32px",
-      height: "32px",
-      backgroundColor: "#1a1a2e",
-      borderRadius: "50%",
-    },
-    dashedLine: {
-      borderTop: "2px dashed #4b5563",
-    },
-    infoBox: {
-      backgroundColor: "rgba(255, 255, 255, 0.05)",
-      borderRadius: "12px",
-      padding: "12px",
-    },
-    pinkText: {
-      color: "#f472b6",
-    },
-    whiteText: {
-      color: "#ffffff",
-    },
-    grayText: {
-      color: "#9ca3af",
-    },
-    darkGrayText: {
-      color: "#6b7280",
-    },
-    greenText: {
-      color: "#4ade80",
-    },
-    refBox: {
-      background: "linear-gradient(to right, rgba(236, 72, 153, 0.2), rgba(168, 85, 247, 0.2))",
-      borderRadius: "12px",
-      padding: "12px",
-      border: "1px solid rgba(236, 72, 153, 0.3)",
-    },
-    qrContainer: {
-      backgroundColor: "#ffffff",
-      padding: "12px",
-      borderRadius: "16px",
-      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-    },
-    footer: {
-      backgroundColor: "rgba(0, 0, 0, 0.3)",
-      padding: "16px 24px",
-    },
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
       <div className="w-full max-w-md max-h-[90vh] overflow-y-auto">
@@ -362,118 +289,177 @@ const ETicketModal = ({ booking, onClose, onDownload, ticketRef, formatDate, for
           </button>
         </div>
 
-        {/* E-Ticket - Using inline styles for html2canvas compatibility */}
-        <div ref={ticketRef} style={styles.ticketContainer}>
+        {/* E-Ticket - Using inline styles with emoji for html2canvas compatibility */}
+        <div 
+          ref={ticketRef} 
+          style={{
+            background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
+            borderRadius: "24px",
+            overflow: "hidden",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          }}
+        >
           {/* Header with gradient */}
-          <div style={styles.header}>
-            <div style={styles.headerOverlay}></div>
+          <div style={{
+            position: "relative",
+            background: "linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #6366f1 100%)",
+            padding: "20px",
+            minHeight: "120px",
+          }}>
+            <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0, 0, 0, 0.15)" }}></div>
             <div style={{ position: "relative", zIndex: 10 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <div>
-                  <span style={{ color: "rgba(255,255,255,0.8)", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ 
+                    color: "rgba(255,255,255,0.9)", 
+                    fontSize: "11px", 
+                    textTransform: "uppercase", 
+                    letterSpacing: "2px",
+                    fontWeight: "600",
+                    display: "block",
+                    marginBottom: "8px"
+                  }}>
                     E-TICKET
                   </span>
-                  <h2 style={{ color: "#ffffff", fontWeight: "bold", fontSize: "20px", marginTop: "4px", maxWidth: "280px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <h2 style={{ 
+                    color: "#ffffff", 
+                    fontWeight: "bold", 
+                    fontSize: "18px", 
+                    lineHeight: "1.3",
+                    margin: 0,
+                    wordWrap: "break-word",
+                    overflowWrap: "break-word",
+                  }}>
                     {event?.title}
                   </h2>
                 </div>
-                <div style={styles.seatTypeBadge}>
-                  <span style={{ color: "#ffffff", fontSize: "12px", fontWeight: "600" }}>{booking.seatType}</span>
+                <div style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.25)",
+                  borderRadius: "8px",
+                  padding: "0 14px",
+                  flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: "32px",
+                }}>
+                  <span style={{ 
+                    color: "#ffffff", 
+                    fontSize: "12px", 
+                    fontWeight: "700", 
+                    lineHeight: "32px", 
+                    display: "inline-block",
+                    verticalAlign: "middle",
+                    marginTop: "-2px" // Slight optical correction for html2canvas
+                  }}>{booking.seatType}</span>
                 </div>
               </div>
             </div>
             
             {/* Decorative circles */}
-            <div style={{ ...styles.decorativeCircle, left: "24px" }}></div>
-            <div style={{ ...styles.decorativeCircle, right: "24px" }}></div>
+            <div style={{ position: "absolute", bottom: "-16px", left: "24px", width: "32px", height: "32px", backgroundColor: "#1a1a2e", borderRadius: "50%" }}></div>
+            <div style={{ position: "absolute", bottom: "-16px", right: "24px", width: "32px", height: "32px", backgroundColor: "#1a1a2e", borderRadius: "50%" }}></div>
           </div>
 
           {/* Dashed line */}
           <div style={{ padding: "0 40px", marginTop: "-8px", position: "relative" }}>
-            <div style={styles.dashedLine}></div>
+            <div style={{ borderTop: "2px dashed #4b5563" }}></div>
           </div>
 
           {/* Event Details */}
-          <div style={{ padding: "24px 24px 16px" }}>
+          <div style={{ padding: "20px" }}>
             {/* Date & Time Row */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
-              <div style={styles.infoBox}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                  <FaCalendarAlt style={{ width: "12px", height: "12px", color: "#f472b6" }} />
-                  <span style={{ fontSize: "12px", textTransform: "uppercase", color: "#f472b6" }}>Date</span>
+            <div style={{ display: "flex", gap: "12px", marginBottom: "12px" }}>
+              <div style={{ flex: 1, backgroundColor: "rgba(255, 255, 255, 0.05)", borderRadius: "12px", padding: "12px" }}>
+                <div style={{ marginBottom: "4px" }}>
+                  <span style={{ fontSize: "11px", textTransform: "uppercase", color: "#f472b6", fontWeight: "600", letterSpacing: "0.5px" }}>📅 DATE</span>
                 </div>
-                <p style={{ color: "#ffffff", fontWeight: "600", fontSize: "14px" }}>{formatDate(event?.startDate)}</p>
+                <p style={{ color: "#ffffff", fontWeight: "600", fontSize: "14px", margin: 0 }}>{formatDate(event?.startDate)}</p>
               </div>
-              <div style={styles.infoBox}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                  <FaClock style={{ width: "12px", height: "12px", color: "#f472b6" }} />
-                  <span style={{ fontSize: "12px", textTransform: "uppercase", color: "#f472b6" }}>Time</span>
+              <div style={{ flex: 1, backgroundColor: "rgba(255, 255, 255, 0.05)", borderRadius: "12px", padding: "12px" }}>
+                <div style={{ marginBottom: "4px" }}>
+                  <span style={{ fontSize: "11px", textTransform: "uppercase", color: "#f472b6", fontWeight: "600", letterSpacing: "0.5px" }}>🕐 TIME</span>
                 </div>
-                <p style={{ color: "#ffffff", fontWeight: "600", fontSize: "14px" }}>{formatTime(event?.startTime)}</p>
+                <p style={{ color: "#ffffff", fontWeight: "600", fontSize: "14px", margin: 0 }}>{formatTime(event?.startTime)}</p>
               </div>
             </div>
 
             {/* Venue */}
-            <div style={{ ...styles.infoBox, marginBottom: "16px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                <FaMapMarkerAlt style={{ width: "12px", height: "12px", color: "#f472b6" }} />
-                <span style={{ fontSize: "12px", textTransform: "uppercase", color: "#f472b6" }}>Venue</span>
+            <div style={{ backgroundColor: "rgba(255, 255, 255, 0.05)", borderRadius: "12px", padding: "12px", marginBottom: "12px" }}>
+              <div style={{ marginBottom: "4px" }}>
+                <span style={{ fontSize: "11px", textTransform: "uppercase", color: "#f472b6", fontWeight: "600", letterSpacing: "0.5px" }}>📍 VENUE</span>
               </div>
-              <p style={{ color: "#ffffff", fontWeight: "600", fontSize: "14px" }}>{event?.location?.venueName}</p>
-              <p style={{ color: "#9ca3af", fontSize: "12px" }}>{event?.location?.address}, {event?.location?.city}</p>
+              <p style={{ color: "#ffffff", fontWeight: "600", fontSize: "14px", margin: "0 0 4px 0" }}>{event?.location?.venueName}</p>
+              <p style={{ color: "#9ca3af", fontSize: "12px", margin: 0 }}>{event?.location?.address}, {event?.location?.city}</p>
             </div>
 
             {/* Ticket Details Row */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginBottom: "16px" }}>
-              <div style={{ textAlign: "center" }}>
-                <p style={{ color: "#6b7280", fontSize: "12px", textTransform: "uppercase" }}>Tickets</p>
-                <p style={{ color: "#ffffff", fontWeight: "bold", fontSize: "18px" }}>{booking.quantity}</p>
+            <div style={{ 
+              display: "flex", 
+              backgroundColor: "rgba(255, 255, 255, 0.05)", 
+              borderRadius: "12px", 
+              marginBottom: "12px",
+              overflow: "hidden"
+            }}>
+              <div style={{ flex: 1, padding: "12px", textAlign: "center" }}>
+                <p style={{ color: "#9ca3af", fontSize: "10px", textTransform: "uppercase", margin: "0 0 4px 0", fontWeight: "600" }}>TICKETS</p>
+                <p style={{ color: "#ffffff", fontWeight: "bold", fontSize: "20px", margin: 0 }}>{booking.quantity}</p>
               </div>
-              <div style={{ textAlign: "center", borderLeft: "1px solid #374151", borderRight: "1px solid #374151" }}>
-                <p style={{ color: "#6b7280", fontSize: "12px", textTransform: "uppercase" }}>Type</p>
-                <p style={{ color: "#ffffff", fontWeight: "bold", fontSize: "14px" }}>{booking.seatType}</p>
+              <div style={{ flex: 1, padding: "12px", textAlign: "center", borderLeft: "1px solid #374151", borderRight: "1px solid #374151" }}>
+                <p style={{ color: "#9ca3af", fontSize: "10px", textTransform: "uppercase", margin: "0 0 4px 0", fontWeight: "600" }}>TYPE</p>
+                <p style={{ color: "#ffffff", fontWeight: "bold", fontSize: "14px", margin: 0 }}>{booking.seatType}</p>
               </div>
-              <div style={{ textAlign: "center" }}>
-                <p style={{ color: "#6b7280", fontSize: "12px", textTransform: "uppercase" }}>Amount</p>
-                <p style={{ color: "#4ade80", fontWeight: "bold", fontSize: "18px" }}>₹{booking.finalAmount}</p>
+              <div style={{ flex: 1, padding: "12px", textAlign: "center" }}>
+                <p style={{ color: "#9ca3af", fontSize: "10px", textTransform: "uppercase", margin: "0 0 4px 0", fontWeight: "600" }}>AMOUNT</p>
+                <p style={{ color: "#4ade80", fontWeight: "bold", fontSize: "18px", margin: 0 }}>₹{booking.finalAmount}</p>
               </div>
             </div>
 
             {/* Attendee */}
-            <div style={{ ...styles.infoBox, marginBottom: "16px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                <FaUser style={{ width: "12px", height: "12px", color: "#f472b6" }} />
-                <span style={{ fontSize: "12px", textTransform: "uppercase", color: "#f472b6" }}>Attendee</span>
+            <div style={{ backgroundColor: "rgba(255, 255, 255, 0.05)", borderRadius: "12px", padding: "12px", marginBottom: "12px" }}>
+              <div style={{ marginBottom: "4px" }}>
+                <span style={{ fontSize: "11px", textTransform: "uppercase", color: "#f472b6", fontWeight: "600", letterSpacing: "0.5px" }}> ATTENDEE</span>
               </div>
-              <p style={{ color: "#ffffff", fontWeight: "600", fontSize: "14px" }}>{booking.customerDetails?.name}</p>
-              <p style={{ color: "#9ca3af", fontSize: "12px" }}>{booking.customerDetails?.email}</p>
+              <p style={{ color: "#ffffff", fontWeight: "600", fontSize: "14px", margin: "0 0 2px 0" }}>{booking.customerDetails?.name}</p>
+              <p style={{ color: "#9ca3af", fontSize: "12px", margin: 0 }}>{booking.customerDetails?.email}</p>
             </div>
 
             {/* Booking Reference */}
-            <div style={styles.refBox}>
-              <p style={{ color: "#9ca3af", fontSize: "12px", textTransform: "uppercase" }}>Booking Reference</p>
-              <p style={{ color: "#ffffff", fontFamily: "monospace", fontWeight: "bold", fontSize: "18px", letterSpacing: "0.1em" }}>
+            <div style={{
+              background: "linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%)",
+              borderRadius: "12px",
+              padding: "12px",
+              border: "1px solid rgba(236, 72, 153, 0.3)",
+            }}>
+              <p style={{ color: "#f472b6", fontSize: "10px", textTransform: "uppercase", margin: "0 0 4px 0", fontWeight: "600", letterSpacing: "1px" }}>BOOKING REFERENCE</p>
+              <p style={{ color: "#ffffff", fontFamily: "monospace", fontWeight: "bold", fontSize: "16px", letterSpacing: "1px", margin: 0 }}>
                 {booking.bookingReference}
               </p>
             </div>
           </div>
 
           {/* QR Code Section */}
-          <div style={{ padding: "0 24px 24px", position: "relative" }}>
+          <div style={{ padding: "0 20px 20px", position: "relative" }}>
             {/* Dashed separator */}
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
               <div style={{ flex: 1, borderTop: "1px dashed #4b5563" }}></div>
-              <FaQrcode style={{ color: "#6b7280" }} />
+              <span style={{ color: "#6b7280", fontSize: "16px" }}>⊞</span>
               <div style={{ flex: 1, borderTop: "1px dashed #4b5563" }}></div>
             </div>
 
             {/* QR Code */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-              <div style={styles.qrContainer}>
+              <div style={{
+                backgroundColor: "#ffffff",
+                padding: "12px",
+                borderRadius: "16px",
+                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.3)",
+              }}>
                 <img
                   src={eTicket?.qrCodeImageUrl || `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${booking.bookingReference}`}
                   alt="Ticket QR Code"
-                  style={{ width: "144px", height: "144px" }}
+                  style={{ width: "140px", height: "140px", display: "block" }}
                   crossOrigin="anonymous"
                 />
               </div>
@@ -481,7 +467,7 @@ const ETicketModal = ({ booking, onClose, onDownload, ticketRef, formatDate, for
                 Scan this QR code at the venue entrance
               </p>
               {eTicket?.ticketNumber && (
-                <p style={{ color: "#6b7280", fontSize: "12px", marginTop: "4px", fontFamily: "monospace" }}>
+                <p style={{ color: "#6b7280", fontSize: "11px", marginTop: "4px", fontFamily: "monospace" }}>
                   {eTicket.ticketNumber}
                 </p>
               )}
@@ -489,8 +475,8 @@ const ETicketModal = ({ booking, onClose, onDownload, ticketRef, formatDate, for
           </div>
 
           {/* Footer */}
-          <div style={styles.footer}>
-            <p style={{ color: "#6b7280", fontSize: "12px", textAlign: "center" }}>
+          <div style={{ backgroundColor: "rgba(0, 0, 0, 0.3)", padding: "14px 20px" }}>
+            <p style={{ color: "#6b7280", fontSize: "11px", textAlign: "center", margin: 0 }}>
               Keep this ticket safe. Present it at the venue for entry.
             </p>
           </div>
