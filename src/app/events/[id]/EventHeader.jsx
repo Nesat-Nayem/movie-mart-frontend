@@ -3,112 +3,132 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Play, X } from "lucide-react";
-import { useSearchParams } from "next/navigation";
-import { useGetEventsQuery } from "../../../../store/eventsApi";
+import { Play, X, ArrowLeft, Share2 } from "lucide-react";
+import { FaTicketAlt } from "react-icons/fa";
 
-const EventHeader = () => {
+const EventHeader = ({ event }) => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
 
-  const searchParams = useSearchParams();
-
-  // ❌ old: const { id } = useSearchParams()
-  // ✅ correct:
-  const id = searchParams.get("id");
-
-  const { data: eventsData = [], isLoading, isError } = useGetEventsQuery();
-
-  if (isLoading)
-    return <p className="text-center py-10 text-gray-400">Loading events...</p>;
-
-  if (isError)
-    return (
-      <p className="text-center py-10 text-red-500">
-        Failed to load events. Try again.
-      </p>
-    );
-
-  // Get selected event
-  const event = eventsData?.find((item) => item._id === id);
-
-  if (!event)
-    return <p className="text-center py-10 text-gray-400">Event not found.</p>;
+  // Get status badge color
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'upcoming': return 'bg-green-500';
+      case 'ongoing': return 'bg-blue-500';
+      case 'completed': return 'bg-gray-500';
+      case 'cancelled': return 'bg-red-500';
+      default: return 'bg-pink-500';
+    }
+  };
 
   return (
     <div className="relative w-full">
-      {/* Background Video Banner */}
-      <div className="relative w-full">
-        <video
-          src={"/assets/img/events/event-video.mp4"}
-          poster={"/assets/img/event-list/2.jpg"}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-[200px] sm:h-[320px] md:h-[200px] lg:h-[400px] object-cover rounded-b-2xl"
-        />
+      {/* Background Banner */}
+      <div className="relative w-full h-[220px] sm:h-[280px] md:h-[320px] lg:h-[380px] overflow-hidden rounded-b-3xl">
+        {/* Background Image */}
+        {event?.posterImage ? (
+          <Image
+            src={event.posterImage}
+            alt={event?.title || "Event"}
+            fill
+            className="object-cover"
+            priority
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-pink-500/30 to-purple-600/30 flex items-center justify-center">
+            <FaTicketAlt className="w-20 h-20 text-white/20" />
+          </div>
+        )}
 
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent rounded-b-2xl" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0B1730] via-[#0B1730]/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0B1730]/80 via-transparent to-transparent" />
 
-        {/* Play Button Overlay */}
-        <button
-          onClick={() => setIsVideoOpen(true)}
-          className="absolute inset-0 flex items-center justify-center cursor-pointer"
-        >
-          <div className="bg-white/20 backdrop-blur-md p-5 sm:p-6 md:p-7 rounded-full hover:scale-110 transition-transform">
-            <Play size={40} className="text-white fill-white" />
-          </div>
-        </button>
+        {/* Play Button (if video available) */}
+        {event?.trailerUrl && (
+          <button
+            onClick={() => setIsVideoOpen(true)}
+            className="absolute inset-0 flex items-center justify-center cursor-pointer"
+          >
+            <div className="bg-white/20 backdrop-blur-md p-4 sm:p-5 rounded-full hover:scale-110 transition-transform border border-white/30">
+              <Play size={32} className="text-white fill-white" />
+            </div>
+          </button>
+        )}
       </div>
 
       {/* Back Button */}
-      <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10">
+      <div className="absolute top-4 left-4 z-10">
         <Link
-          href="/film-mart"
-          className="bg-black/60 px-3 py-1 rounded-lg text-xs sm:text-sm text-white hover:bg-black/80 transition"
+          href="/events"
+          className="flex items-center gap-2 bg-black/40 backdrop-blur-sm px-3 py-2 rounded-full text-sm text-white hover:bg-black/60 transition-all"
         >
-          Back
+          <ArrowLeft size={18} />
+          <span className="hidden sm:inline">Back</span>
         </Link>
       </div>
 
-      {/* Movie Poster (Right Side) */}
-      <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 w-24 sm:w-28 md:w-36 lg:w-44 shadow-lg z-10">
-        <div className="relative">
-          <Image
-            src={event.posterImage || "/assets/img/event-list/2.jpg"}
-            alt={event.title || "Event Poster"}
-            width={200}
-            height={300}
-            className="w-full h-auto rounded-lg object-cover"
-          />
+      {/* Share Button */}
+      <div className="absolute top-4 right-4 z-10">
+        <button
+          onClick={() => {
+            if (navigator.share) {
+              navigator.share({
+                title: event?.title,
+                url: window.location.href,
+              });
+            } else {
+              navigator.clipboard.writeText(window.location.href);
+              alert("Link copied to clipboard!");
+            }
+          }}
+          className="bg-black/40 backdrop-blur-sm p-2 rounded-full text-white hover:bg-black/60 transition-all"
+        >
+          <Share2 size={18} />
+        </button>
+      </div>
 
-          <span className="absolute top-2 right-2 bg-pink-600 text-[10px] sm:text-xs font-medium px-2 py-1 rounded-full shadow-md">
-            Upcoming
-          </span>
+      {/* Event Poster Card */}
+      <div className="absolute -bottom-16 left-4 sm:left-6 w-28 sm:w-32 md:w-36 shadow-2xl z-10">
+        <div className="relative rounded-xl overflow-hidden border-4 border-[#0B1730]">
+          {event?.posterImage ? (
+            <Image
+              src={event.posterImage}
+              alt={event?.title || "Event Poster"}
+              width={200}
+              height={300}
+              className="w-full aspect-[2/3] object-cover"
+            />
+          ) : (
+            <div className="w-full aspect-[2/3] bg-gradient-to-br from-pink-500/50 to-purple-600/50 flex items-center justify-center">
+              <FaTicketAlt className="w-10 h-10 text-white/50" />
+            </div>
+          )}
+
+          {/* Status Badge */}
+          {event?.status && (
+            <span className={`absolute top-2 left-2 ${getStatusColor(event.status)} text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-full shadow-md capitalize`}>
+              {event.status}
+            </span>
+          )}
         </div>
       </div>
 
       {/* Video Modal */}
       {isVideoOpen && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className="bg-black rounded-2xl shadow-lg max-w-3xl w-full relative">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0B1730] rounded-2xl shadow-2xl max-w-4xl w-full relative overflow-hidden">
             <button
               onClick={() => setIsVideoOpen(false)}
-              className="absolute top-3 right-3 bg-white rounded-full p-2 shadow hover:bg-gray-200"
+              className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 rounded-full p-2 z-10 transition-colors"
             >
-              <X size={20} className="text-black cursor-pointer" />
+              <X size={24} className="text-white" />
             </button>
 
             <div className="aspect-video">
-              {/* Iframe requires YouTube/Vimeo only */}
               <iframe
                 width="100%"
                 height="100%"
-                src={
-                  event.trailerUrl ||
-                  "https://www.youtube.com/embed/dQw4w9WgXcQ"
-                }
+                src={event?.trailerUrl || "https://www.youtube.com/embed/dQw4w9WgXcQ"}
                 title="Event Trailer"
                 frameBorder="0"
                 allow="autoplay; encrypted-media"

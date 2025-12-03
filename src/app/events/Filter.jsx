@@ -1,16 +1,30 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "@/app/components/Button";
+import { FaTimes, FaFilter } from "react-icons/fa";
 
-const Filter = () => {
+const Filter = ({ onFilterChange, initialFilters = {} }) => {
   const [selected, setSelected] = useState({
-    date: [],
-    languages: [],
-    categories: [],
-    more: [],
-    price: [],
+    date: initialFilters.date || [],
+    languages: initialFilters.languages || [],
+    categories: initialFilters.categories || [],
+    price: initialFilters.price || [],
   });
+
+  const [expandedSections, setExpandedSections] = useState({
+    date: true,
+    languages: false,
+    categories: true,
+    price: true,
+  });
+
+  // Notify parent when filters change
+  useEffect(() => {
+    if (onFilterChange) {
+      onFilterChange(selected);
+    }
+  }, [selected, onFilterChange]);
 
   const toggleSelect = (category, value) => {
     setSelected((prev) => {
@@ -24,8 +38,26 @@ const Filter = () => {
     });
   };
 
-  // Fields (from your screenshot)
-  const dates = ["Today", "Tomorrow", "This Weekend", "Date Range"];
+  const toggleSection = (section) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
+
+  const clearAll = () => {
+    setSelected({
+      date: [],
+      languages: [],
+      categories: [],
+      price: [],
+    });
+  };
+
+  const totalFilters = Object.values(selected).flat().length;
+
+  // Filter options
+  const dates = ["Today", "Tomorrow", "This Weekend"];
   const languages = [
     "Hindi",
     "English",
@@ -35,151 +67,140 @@ const Filter = () => {
     "Tamil",
     "Malayalam",
     "Punjabi",
-    "Urdu",
     "Marathi",
     "Gujarati",
-    "Hinglish",
-    "Haryanavi",
-    "Korean",
-    "Odia",
-    "Bhojpuri",
-    "Japanese",
-    "Dogri",
-    "Sanskrit",
-    "Assamese",
-    "Sindhi",
-    "Unspecified",
   ];
   const categories = [
-    "Workshops",
-    "Comedy Shows",
-    "Performances",
-    "Music Shows",
-    "Kids",
-    "Marquee",
-    "Exhibitions",
-    "Screening",
-    "Conferences",
-    "Spirituality",
-    "Talks",
-  ];
-  const moreFilters = [
-    "Outdoor Events",
-    "Parties",
-    "Must Attend",
-    "LuvLocal Events",
-    "Kids Allowed",
-    "Kids Activities",
-    "Meetups",
-    "New Year Parties",
-    "Online Streaming",
+    "comedy",
+    "music",
+    "concert",
+    "theater",
+    "sports",
+    "conference",
+    "workshop",
   ];
   const price = ["Free", "0–500", "501–1000", "Above 1000"];
 
-  const renderButtons = (category, items) =>
-    items.map((item, idx) => {
-      const isSelected = selected[category].includes(item);
-      return (
-        <button
-          key={idx}
-          onClick={() => toggleSelect(category, item)}
-          className={`px-3 py-1 rounded text-sm border transition cursor-pointer ${
-            isSelected
-              ? "bg-red-500 text-white border-red-500"
-              : "border-red-300 text-red-500 hover:bg-red-100"
-          }`}
-        >
-          {item}
-        </button>
-      );
-    });
+  const renderButtons = (category, items, showCount = 10) => {
+    const displayItems = expandedSections[category] ? items : items.slice(0, showCount);
+    
+    return (
+      <>
+        <div className="flex flex-wrap gap-2">
+          {displayItems.map((item, idx) => {
+            const isSelected = selected[category].includes(item);
+            return (
+              <button
+                key={idx}
+                onClick={() => toggleSelect(category, item)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 cursor-pointer ${
+                  isSelected
+                    ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white border-transparent shadow-md"
+                    : "border-gray-600 text-gray-300 hover:border-pink-500 hover:text-pink-400"
+                }`}
+              >
+                {item.charAt(0).toUpperCase() + item.slice(1)}
+              </button>
+            );
+          })}
+        </div>
+        {items.length > showCount && (
+          <button
+            onClick={() => toggleSection(category)}
+            className="text-xs text-pink-400 hover:text-pink-300 mt-2 transition-colors"
+          >
+            {expandedSections[category] ? "Show less" : `+${items.length - showCount} more`}
+          </button>
+        )}
+      </>
+    );
+  };
+
+  const FilterSection = ({ title, category, items, showCount = 10 }) => (
+    <div className="mb-5 pb-5 border-b border-gray-700/50 last:border-0">
+      <div className="flex justify-between items-center mb-3">
+        <span className="font-medium text-white text-sm">{title}</span>
+        {selected[category].length > 0 && (
+          <button
+            onClick={() => setSelected((prev) => ({ ...prev, [category]: [] }))}
+            className="text-xs text-pink-400 hover:text-pink-300 transition-colors flex items-center gap-1"
+          >
+            <FaTimes className="w-2.5 h-2.5" />
+            Clear ({selected[category].length})
+          </button>
+        )}
+      </div>
+      {renderButtons(category, items, showCount)}
+    </div>
+  );
 
   return (
-    <div className="w-100 sm:w-100 md:w-100 lg:w-72 border border-gray-300 p-4 rounded-lg shadow-md bg-[#13162f]">
-      <h2 className="text-lg font-semibold mb-4">Filters</h2>
-
-      {/* Date */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center mb-2">
-          <span className="font-medium ">Date</span>
+    <div className="w-full lg:w-72 border border-gray-700/50 p-4 rounded-2xl shadow-lg bg-white/5 backdrop-blur-sm sticky top-4">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-700/50">
+        <div className="flex items-center gap-2">
+          <FaFilter className="text-pink-400" />
+          <h2 className="text-lg font-semibold text-white">Filters</h2>
+          {totalFilters > 0 && (
+            <span className="bg-pink-500 text-white text-xs px-2 py-0.5 rounded-full">
+              {totalFilters}
+            </span>
+          )}
+        </div>
+        {totalFilters > 0 && (
           <button
-            onClick={() => setSelected((prev) => ({ ...prev, date: [] }))}
-            className="text-sm text-red-500 hover:underline cursor-pointer"
+            onClick={clearAll}
+            className="text-xs text-pink-400 hover:text-pink-300 transition-colors"
           >
-            Clear
+            Clear All
           </button>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {renderButtons("date", dates)}
-        </div>
+        )}
       </div>
 
-      {/* Languages */}
-      <div className="mb-6">
-        <div className="flex items-center mb-2">
-          <span className="font-medium ">Languages</span>
-          <button
-            onClick={() => setSelected((prev) => ({ ...prev, languages: [] }))}
-            className="text-sm text-red-500 hover:underline cursor-pointer"
-          >
-            Clear
-          </button>
+      {/* Selected Filters Tags */}
+      {totalFilters > 0 && (
+        <div className="mb-4 pb-4 border-b border-gray-700/50">
+          <p className="text-xs text-gray-500 mb-2">Applied filters:</p>
+          <div className="flex flex-wrap gap-1.5">
+            {Object.entries(selected).map(([category, values]) =>
+              values.map((value, idx) => (
+                <span
+                  key={`${category}-${idx}`}
+                  className="inline-flex items-center gap-1 px-2 py-1 bg-pink-500/20 text-pink-300 rounded-full text-xs"
+                >
+                  {value}
+                  <button
+                    onClick={() => toggleSelect(category, value)}
+                    className="hover:text-white"
+                  >
+                    <FaTimes className="w-2.5 h-2.5" />
+                  </button>
+                </span>
+              ))
+            )}
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {renderButtons("languages", languages)}
-        </div>
-      </div>
+      )}
 
-      {/* Categories */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center mb-2">
-          <span className="font-medium ">Categories</span>
-          <button
-            onClick={() => setSelected((prev) => ({ ...prev, categories: [] }))}
-            className="text-sm text-red-500 hover:underline cursor-pointer"
-          >
-            Clear
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {renderButtons("categories", categories)}
-        </div>
-      </div>
+      {/* Filter Sections */}
+      <FilterSection title="Date" category="date" items={dates} showCount={4} />
+      <FilterSection title="Languages" category="languages" items={languages} showCount={6} />
+      <FilterSection title="Event Type" category="categories" items={categories} showCount={8} />
+      <FilterSection title="Price Range" category="price" items={price} showCount={4} />
 
-      {/* More Filters */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center mb-2">
-          <span className="font-medium ">More Filters</span>
-          <button
-            onClick={() => setSelected((prev) => ({ ...prev, more: [] }))}
-            className="text-sm text-red-500 hover:underline cursor-pointer"
-          >
-            Clear
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {renderButtons("more", moreFilters)}
-        </div>
-      </div>
-
-      {/* Price */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center mb-2">
-          <span className="font-medium ">Price</span>
-          <button
-            onClick={() => setSelected((prev) => ({ ...prev, price: [] }))}
-            className="text-sm text-red-500 hover:underline cursor-pointer"
-          >
-            Clear
-          </button>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {renderButtons("price", price)}
-        </div>
-      </div>
-
-      {/* Browse Button */}
-      <Button className="w-full mt-4">Browse by Venues</Button>
+      {/* Apply Button for Mobile */}
+      <Button 
+        className="w-full mt-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 lg:hidden"
+        onClick={() => {
+          // Close drawer on mobile
+          if (typeof window !== "undefined") {
+            const event = new CustomEvent("closeFilterDrawer");
+            window.dispatchEvent(event);
+          }
+        }}
+      >
+        Apply Filters {totalFilters > 0 && `(${totalFilters})`}
+      </Button>
     </div>
   );
 };

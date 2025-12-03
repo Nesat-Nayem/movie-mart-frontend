@@ -26,7 +26,6 @@ import { useParams, useRouter } from "next/navigation";
 import EventHeader from "./EventHeader";
 import BookTicketDrawer from "@/app/events/BookTicketDrawer";
 import { useGetEventByIdQuery } from "../../../../store/eventsApi";
-import Logo from "@/app/components/Logo";
 
 const EventDetails = () => {
   const [showDrawer, setShowDrawer] = useState(false);
@@ -64,7 +63,7 @@ const EventDetails = () => {
     return (
       <section className="min-h-screen bg-gradient-to-b from-[#0B1730] to-[#1a2744]">
         <div className="max-w-6xl mx-auto">
-          <EventHeader />
+          <EventHeader event={null} />
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
               <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -81,7 +80,7 @@ const EventDetails = () => {
     return (
       <section className="min-h-screen bg-gradient-to-b from-[#0B1730] to-[#1a2744]">
         <div className="max-w-6xl mx-auto">
-          <EventHeader />
+          <EventHeader event={null} />
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
               <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
@@ -101,51 +100,46 @@ const EventDetails = () => {
 
   // Calculate ticket availability
   const isEventAvailable = event.availableSeats > 0 && ['upcoming', 'ongoing'].includes(event.status);
-  const ticketPercentage = Math.round((event.totalTicketsSold / event.totalSeats) * 100);
+  const ticketPercentage = Math.round(((event.totalTicketsSold || 0) / (event.totalSeats || 1)) * 100);
 
   return (
-    <section>
+    <section className="min-h-screen bg-gradient-to-b from-[#0B1730] to-[#1a2744]">
       <div className="max-w-6xl mx-auto">
-        <div className="min-h-screen text-white">
-          {/* Header Section */}
-          <EventHeader />
+        <div className="text-white">
+          {/* Header Section with Poster */}
+          <EventHeader event={event} />
 
-          {/* events information */}
+          {/* Event Information - with margin for poster overlap */}
           {event && (
             <>
-              <div>
-                {/* Movie Info */}
-                <div className="px-4 mt-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <h1 className="text-2xl font-bold capitalize">
-                      {event.title}
-                    </h1>
-                    <p className="text-yellow-400 text-sm font-bold bg-yellow-200/10 px-2 py-1 rounded-full">
-                      {event.eventLanguage || "Hindi"}
-                    </p>
-                  </div>
-                  
-                  {/* Event Status Badge */}
-                  {event.status && (
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                        event.status === 'upcoming' ? 'bg-green-500/20 text-green-400' :
-                        event.status === 'ongoing' ? 'bg-blue-500/20 text-blue-400' :
-                        event.status === 'completed' ? 'bg-gray-500/20 text-gray-400' :
-                        'bg-red-500/20 text-red-400'
-                      }`}>
-                        {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
-                      </span>
-                      {ticketPercentage >= 80 && isEventAvailable && (
-                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-orange-500/20 text-orange-400">
-                          🔥 Filling Fast
+              <div className="pt-20 sm:pt-20">
+                {/* Event Title & Info */}
+                <div className="px-4 sm:pl-44 md:pl-48">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                    <div>
+                      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold capitalize">
+                        {event.title}
+                      </h1>
+                      
+                      {/* Tags */}
+                      <div className="flex flex-wrap items-center gap-2 mt-2">
+                        <span className="text-yellow-400 text-xs font-semibold bg-yellow-200/10 px-2 py-1 rounded-full">
+                          {event.eventLanguage || "Hindi"}
                         </span>
-                      )}
+                        <span className="text-pink-400 text-xs font-semibold bg-pink-200/10 px-2 py-1 rounded-full capitalize">
+                          {event.eventType}
+                        </span>
+                        {ticketPercentage >= 80 && isEventAvailable && (
+                          <span className="text-xs font-medium px-2 py-1 rounded-full bg-orange-500/20 text-orange-400">
+                            🔥 Filling Fast
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  )}
+                  </div>
 
-                  {/* Format + Language */}
-                  <div className="flex items-center gap-3 mt-4">
+                  {/* Date & Time */}
+                  <div className="flex flex-wrap items-center gap-3 mt-4">
                     <button className="flex items-center gap-1 px-4 py-2 rounded-full bg-white/10 text-sm font-medium transition hover:bg-white/20">
                       {formatDate(event.startDate)} |{" "}
                       {formatTime(event.startTime)}
@@ -290,72 +284,69 @@ const EventDetails = () => {
                     </button>
                   </div>
                 </div>
-                {/* Cast */}{" "}
-                <div className="px-4 mt-8">
-                  {" "}
-                  <h2 className="text-lg font-semibold mb-3">
-                    Performers
-                  </h2>{" "}
-                  <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide">
-                    {event.performers.map((person, idx) => (
-                      <div key={idx} className="w-24 flex-shrink-0 text-center">
-                        {person.img && person.img.trim() !== "" ? (
-                          <Image
-                            src={person.img}
-                            alt={person.name || "Performer"}
-                            width={100}
-                            height={100}
-                            className="w-20 h-20 rounded-full object-cover mx-auto"
-                          />
-                        ) : (
-                          <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mx-auto">
-                            <Logo className="w-10 h-10 opacity-80" />
-                          </div>
-                        )}
-
-                        <p className="mt-2 text-sm font-medium">
-                          {person.name}
-                        </p>
-                        <p className="text-xs text-gray-400">{person.role}</p>
-                      </div>
-                    ))}
+                
+                {/* Performers */}
+                {event.performers && event.performers.length > 0 && (
+                  <div className="px-4 mt-8">
+                    <h2 className="text-lg font-semibold mb-3">Performers</h2>
+                    <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide">
+                      {event.performers.map((person, idx) => (
+                        <div key={idx} className="w-24 flex-shrink-0 text-center">
+                          {person.image && person.image.trim() !== "" ? (
+                            <Image
+                              src={person.image}
+                              alt={person.name || "Performer"}
+                              width={100}
+                              height={100}
+                              className="w-20 h-20 rounded-full object-cover mx-auto"
+                            />
+                          ) : (
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-pink-500/30 to-purple-600/30 flex items-center justify-center mx-auto">
+                              <User className="w-8 h-8 text-white/50" />
+                            </div>
+                          )}
+                          <p className="mt-2 text-sm font-medium">{person.name}</p>
+                          <p className="text-xs text-gray-400 capitalize">{person.type || "Artist"}</p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>{" "}
-                {/* Crew */}{" "}
-                <div className="px-4 mt-8">
-                  {" "}
-                  <h2 className="text-lg font-semibold mb-3">
-                    Organizers
-                  </h2>{" "}
-                  <div className="flex gap-5 overflow-x-auto pb-3 scrollbar-hide">
-                    {event.organizers.map((person, idx) => (
-                      <div
-                        key={idx}
-                        className="min-w-[140px] bg-white/5 backdrop-blur-md p-4 rounded-xl shadow-sm flex-shrink-0 text-center border border-white/10"
-                      >
-                        {person.img && person.img.trim() !== "" ? (
-                          <Image
-                            src={person.img}
-                            alt={person.name || "Organizer"}
-                            width={100}
-                            height={100}
-                            className="w-24 h-24 rounded-full object-cover mx-auto"
-                          />
-                        ) : (
-                          <div className="w-24 h-24 rounded-full bg-white/10 flex items-center justify-center mx-auto">
-                            <Logo className="w-12 h-12 opacity-80" />
-                          </div>
-                        )}
-
-                        <p className="mt-3 text-sm font-semibold">
-                          {person.name}
-                        </p>
-                        <p className="text-xs text-gray-400">{person.email}</p>
-                        <p className="text-xs text-gray-400">{person.phone}</p>
-                      </div>
-                    ))}
+                )}
+                {/* Organizers */}
+                {event.organizers && event.organizers.length > 0 && (
+                  <div className="px-4 mt-8 mb-24">
+                    <h2 className="text-lg font-semibold mb-3">Organizers</h2>
+                    <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide">
+                      {event.organizers.map((person, idx) => (
+                        <div
+                          key={idx}
+                          className="min-w-[140px] bg-white/5 backdrop-blur-md p-4 rounded-xl shadow-sm flex-shrink-0 text-center border border-white/10 hover:border-pink-500/30 transition-colors"
+                        >
+                          {person.logo && person.logo.trim() !== "" ? (
+                            <Image
+                              src={person.logo}
+                              alt={person.name || "Organizer"}
+                              width={100}
+                              height={100}
+                              className="w-20 h-20 rounded-full object-cover mx-auto"
+                            />
+                          ) : (
+                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-pink-500/30 to-purple-600/30 flex items-center justify-center mx-auto">
+                              <Building2 className="w-8 h-8 text-white/50" />
+                            </div>
+                          )}
+                          <p className="mt-3 text-sm font-semibold">{person.name}</p>
+                          {person.email && (
+                            <p className="text-xs text-gray-400 truncate max-w-[120px]">{person.email}</p>
+                          )}
+                          {person.phone && (
+                            <p className="text-xs text-gray-400">{person.phone}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>{" "}
+                )}
                 {/* Bottom Fixed Button */}
                 <div className="fixed bottom-0 left-0 right-0 bg-[#0B1730]/95 backdrop-blur-lg border-t border-gray-700 p-4 z-50">
                   <div className="max-w-xl mx-auto">
