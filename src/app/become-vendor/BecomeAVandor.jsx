@@ -1,23 +1,47 @@
 "use client";  
 
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import toast from "react-hot-toast";
-import { useGetSubscriptionQuery } from "../../../store/subscriptionApi";
-import { useCreateAdvertiseMutation } from "../../../store/becomeVendorApi";
+import { load } from "@cashfreepayments/cashfree-js";
+import { 
+  useGetVendorPackagesQuery, 
+  useGetPlatformSettingsQuery, 
+  useCreateVendorApplicationMutation,
+  useCreatePaymentOrderMutation,
+  useLazyVerifyPaymentQuery,
+} from "../../../store/becomeVendorApi";
 
 const BecomeAVendor = () => {
   const [step, setStep] = useState(1);
+  const [cashfree, setCashfree] = useState(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
-  // ✅ Subscription API
-  const {
-    data: subscriptionData = [],
-    isLoading: subLoading,
-    isError: subError,
-  } = useGetSubscriptionQuery();
+  // ✅ Initialize Cashfree SDK
+  useEffect(() => {
+    const initCashfree = async () => {
+      const cf = await load({ mode: "sandbox" }); // Change to "production" for live
+      setCashfree(cf);
+    };
+    initCashfree();
+  }, []);
 
-  // ✅ Vendor creation mutation
-  const [createVendor, { isLoading: vendorLoading }] =
-    useCreateAdvertiseMutation();
+  // ✅ Fetch packages and settings
+  const { data: packages = [], isLoading: packagesLoading } = useGetVendorPackagesQuery();
+  const { data: platformSettings = [], isLoading: settingsLoading } = useGetPlatformSettingsQuery();
+  const [createVendor, { isLoading: vendorLoading }] = useCreateVendorApplicationMutation();
+  const [createPaymentOrder] = useCreatePaymentOrderMutation();
+  const [verifyPayment] = useLazyVerifyPaymentQuery();
+
+  // Get platform fees
+  const eventFee = useMemo(() => {
+    const setting = platformSettings.find(s => s.key === 'event_platform_fee');
+    return setting?.value || 20;
+  }, [platformSettings]);
+
+  const movieWatchFee = useMemo(() => {
+    const setting = platformSettings.find(s => s.key === 'movie_watch_platform_fee');
+    return setting?.value || 50;
+  }, [platformSettings]);
 
   // ✅ Form Data
   const [formData, setFormData] = useState({
@@ -31,8 +55,15 @@ const BecomeAVendor = () => {
     aadharFrontUrl: null,
     aadharBackUrl: null,
     panImageUrl: null,
-    plan: "Basic",
   });
+
+  // ✅ Selected Services
+  const [selectedServices, setSelectedServices] = useState({
+    film_trade: false,
+    events: false,
+    movie_watch: false,
+  });
+  const [selectedPackageId, setSelectedPackageId] = useState(null);
 
   // ✅ Previews
   const [previews, setPreviews] = useState({
@@ -41,7 +72,7 @@ const BecomeAVendor = () => {
     panImageUrl: null,
   });
 
-  const steps = ["Vendor Info", "KYC Upload", "Plan Purchase", "Review"];
+  const steps = ["Vendor Info", "KYC Upload", "Select Services", "Review"];
 
   // ✅ Handle input change
   const handleChange = (e) => {
@@ -65,18 +96,48 @@ const BecomeAVendor = () => {
   const nextStep = () => setStep((prev) => Math.min(prev + 1, steps.length));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
-  // ✅ Submit handler
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // Calculate total amount
+  const totalAmount = useMemo(() => {
+    if (!selectedServices.film_trade) return 0;
+    const pkg = packages.find(p => p._id === selectedPackageId);
+    return pkg?.price || 0;
+  }, [selectedServices.film_trade, selectedPackageId, packages]);
+
+  // Check if any service is selected
+  const hasSelectedService = selectedServices.film_trade || selectedServices.events || selectedServices.movie_watch;
+
+  // ✅ Submit form after payment (or directly if no payment needed)
+  const submitApplication = async (paymentInfo = null) => {
     try {
       const form = new FormData();
+      
+      // Add basic fields
       Object.entries(formData).forEach(([key, value]) => {
         if (value !== null && value !== "") form.append(key, value);
       });
 
+      // Build selected services array
+      const services = [];
+      if (selectedServices.film_trade && selectedPackageId) {
+        services.push({ serviceType: 'film_trade', packageId: selectedPackageId });
+      }
+      if (selectedServices.events) {
+        services.push({ serviceType: 'events' });
+      }
+      if (selectedServices.movie_watch) {
+        services.push({ serviceType: 'movie_watch' });
+      }
+      
+      form.append('selectedServices', JSON.stringify(services));
+
+      // Add payment info if provided
+      if (paymentInfo) {
+        form.append('paymentInfo', JSON.stringify(paymentInfo));
+      }
+
       const res = await createVendor(form).unwrap();
-      console.log("Vendor Created ✅:", res);
-      toast.success("🎉 Vendor created successfully!");
+      console.log("Vendor Application Submitted ✅:", res);
+      toast.success("🎉 Application submitted successfully! Check your email for confirmation.");
 
       // Reset form
       setFormData({
@@ -90,8 +151,9 @@ const BecomeAVendor = () => {
         aadharFrontUrl: null,
         aadharBackUrl: null,
         panImageUrl: null,
-        plan: "Basic",
       });
+      setSelectedServices({ film_trade: false, events: false, movie_watch: false });
+      setSelectedPackageId(null);
       setPreviews({
         aadharFrontUrl: null,
         aadharBackUrl: null,
@@ -100,7 +162,6 @@ const BecomeAVendor = () => {
       setStep(1);
     } catch (err) {
       console.log("❌ Full error object:", err);
-
       let message = "Failed to submit form";
       if (err?.data?.message) {
         message = err.data.message;
@@ -109,13 +170,99 @@ const BecomeAVendor = () => {
       } else if (err?.error) {
         message = err.error;
       }
-
       toast.error(`❌ ${message}`);
     }
   };
 
-  if (subLoading) return <div>Loading...</div>;
-  if (subError) return <div>Error fetching subscription plans</div>;
+  // ✅ Handle Cashfree Payment
+  const handlePayment = async () => {
+    if (!cashfree) {
+      toast.error("Payment system not loaded. Please refresh the page.");
+      return;
+    }
+
+    setIsProcessingPayment(true);
+
+    try {
+      // Create payment order
+      const orderRes = await createPaymentOrder({
+        packageId: selectedPackageId,
+        customerDetails: {
+          name: formData.vendorName,
+          email: formData.email,
+          phone: formData.phone,
+        },
+        returnUrl: `${window.location.origin}/become-vendor`,
+      }).unwrap();
+
+      const { sessionId, orderId, orderAmount } = orderRes.data;
+
+      // Open Cashfree checkout
+      const checkoutOptions = {
+        paymentSessionId: sessionId,
+        redirectTarget: "_modal",
+      };
+
+      cashfree.checkout(checkoutOptions).then(async (result) => {
+        if (result.error) {
+          console.error("Payment error:", result.error);
+          toast.error("Payment failed. Please try again.");
+          setIsProcessingPayment(false);
+          return;
+        }
+
+        if (result.paymentDetails) {
+          // Verify payment
+          const verifyRes = await verifyPayment(orderId);
+          
+          if (verifyRes?.data?.data?.isPaid) {
+            toast.success("Payment successful! Submitting your application...");
+            
+            // Submit form with payment info
+            await submitApplication({
+              status: 'completed',
+              amount: orderAmount,
+              transactionId: orderId,
+              paymentMethod: 'cashfree',
+            });
+          } else {
+            toast.error("Payment verification failed. Please contact support.");
+          }
+        }
+        setIsProcessingPayment(false);
+      });
+
+    } catch (err) {
+      console.error("Payment error:", err);
+      toast.error(err?.data?.message || "Failed to initiate payment");
+      setIsProcessingPayment(false);
+    }
+  };
+
+  // ✅ Submit handler
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!hasSelectedService) {
+      toast.error("Please select at least one service");
+      return;
+    }
+
+    if (selectedServices.film_trade && !selectedPackageId) {
+      toast.error("Please select a Film Trade package");
+      return;
+    }
+
+    // If Film Trade is selected, process payment first
+    if (selectedServices.film_trade && totalAmount > 0) {
+      await handlePayment();
+    } else {
+      // No payment needed, submit directly
+      await submitApplication();
+    }
+  };
+
+  if (packagesLoading || settingsLoading) return <div className="min-h-screen bg-[#0B1730] flex items-center justify-center text-white">Loading...</div>;
 
   return (
     <section className="min-h-screen bg-[#0B1730] py-4 px-4">
@@ -209,80 +356,240 @@ const BecomeAVendor = () => {
             </div>
           )}
 
-          {/* Step 3 - Plan Purchase */}
+          {/* Step 3 - Select Services */}
           {step === 3 && (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 animate-fadeIn px-2">
-              {subscriptionData?.map((plan) => (
-                <label
-                  key={plan._id}
-                  className={`relative block rounded-2xl border transition-all duration-300 p-6 cursor-pointer shadow-sm hover:shadow-lg hover:-translate-y-1 ${
-                    formData.plan === plan.planName
-                      ? "border-blue-500 bg-gradient-to-r from-blue-600/10 to-purple-600/10 ring-2 ring-blue-500"
-                      : "border-gray-300 bg-white/5"
-                  }`}
-                >
+            <div className="space-y-6 animate-fadeIn">
+              <p className="text-gray-300 text-sm mb-4">
+                Select the services you want to offer on MovieMart. You can choose one or more services.
+              </p>
+
+              {/* Film Trade Service */}
+              <div className={`rounded-2xl border-2 p-5 transition-all ${selectedServices.film_trade ? 'border-blue-500 bg-blue-500/10' : 'border-gray-600 bg-white/5'}`}>
+                <div className="flex items-start gap-4">
                   <input
-                    type="radio"
-                    name="plan"
-                    value={plan.planName}
-                    checked={formData.plan === plan.planName}
-                    onChange={handleChange}
-                    className="absolute top-4 right-4 w-5 h-5 text-blue-600 accent-blue-600 cursor-pointer"
+                    type="checkbox"
+                    checked={selectedServices.film_trade}
+                    onChange={(e) => {
+                      setSelectedServices(prev => ({ ...prev, film_trade: e.target.checked }));
+                      if (!e.target.checked) setSelectedPackageId(null);
+                    }}
+                    className="w-5 h-5 mt-1 accent-blue-500"
                   />
-                  <div className="flex flex-col h-full justify-between">
-                    <h3 className="text-lg font-bold mb-2 text-white">
-                      {plan.planName}
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                      🎬 Film Trade
+                      <span className="text-xs bg-blue-500 px-2 py-1 rounded-full">Requires Package</span>
                     </h3>
-                    <ul className="text-sm text-gray-300 space-y-1 mb-3">
-                      {plan.planInclude.map((item, index) => (
-                        <li key={index} className="flex items-center gap-2">
-                          <span className="text-blue-400">✔</span>
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="mt-4">
-                      <p className="text-xl font-semibold text-blue-400">
-                        ₹{plan.planCost}
-                      </p>
-                      <p className="text-xs text-gray-400">{plan.duration}</p>
+                    <p className="text-gray-400 text-sm mt-1">
+                      List and sell your movies on our platform. Choose a package below.
+                    </p>
+                    
+                    {selectedServices.film_trade && (
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {packages.map((pkg) => (
+                          <label
+                            key={pkg._id}
+                            className={`relative block rounded-xl border p-4 cursor-pointer transition-all ${
+                              selectedPackageId === pkg._id
+                                ? 'border-blue-400 bg-blue-500/20 ring-2 ring-blue-400'
+                                : 'border-gray-500 bg-white/5 hover:border-gray-400'
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name="package"
+                              checked={selectedPackageId === pkg._id}
+                              onChange={() => setSelectedPackageId(pkg._id)}
+                              className="absolute top-3 right-3 w-4 h-4 accent-blue-500"
+                            />
+                            {pkg.isPopular && (
+                              <span className="absolute -top-2 left-3 text-xs bg-yellow-500 text-black px-2 py-0.5 rounded-full font-semibold">
+                                Popular
+                              </span>
+                            )}
+                            <h4 className="font-bold text-white">{pkg.name}</h4>
+                            <p className="text-2xl font-bold text-blue-400 my-2">₹{pkg.price?.toLocaleString()}</p>
+                            <p className="text-xs text-gray-400">{pkg.duration} {pkg.durationType}</p>
+                            <ul className="mt-2 space-y-1">
+                              {pkg.features?.slice(0, 3).map((f, i) => (
+                                <li key={i} className="text-xs text-gray-300 flex items-center gap-1">
+                                  <span className="text-green-400">✓</span> {f}
+                                </li>
+                              ))}
+                            </ul>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Events Service */}
+              <div className={`rounded-2xl border-2 p-5 transition-all ${selectedServices.events ? 'border-yellow-500 bg-yellow-500/10' : 'border-gray-600 bg-white/5'}`}>
+                <div className="flex items-start gap-4">
+                  <input
+                    type="checkbox"
+                    checked={selectedServices.events}
+                    onChange={(e) => setSelectedServices(prev => ({ ...prev, events: e.target.checked }))}
+                    className="w-5 h-5 mt-1 accent-yellow-500"
+                  />
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                      🎭 Events
+                      <span className="text-xs bg-yellow-500 text-black px-2 py-1 rounded-full">No Upfront Cost</span>
+                    </h3>
+                    <p className="text-gray-400 text-sm mt-1">
+                      Host and sell tickets for your events, concerts, and shows.
+                    </p>
+                    <div className="mt-3 p-3 bg-yellow-500/10 rounded-lg">
+                      <p className="text-yellow-400 font-semibold">Platform Fee: {eventFee}%</p>
+                      <p className="text-xs text-gray-400">Deducted from each ticket sale</p>
                     </div>
                   </div>
-                </label>
-              ))}
+                </div>
+              </div>
+
+              {/* Movie Watch Service */}
+              <div className={`rounded-2xl border-2 p-5 transition-all ${selectedServices.movie_watch ? 'border-cyan-500 bg-cyan-500/10' : 'border-gray-600 bg-white/5'}`}>
+                <div className="flex items-start gap-4">
+                  <input
+                    type="checkbox"
+                    checked={selectedServices.movie_watch}
+                    onChange={(e) => setSelectedServices(prev => ({ ...prev, movie_watch: e.target.checked }))}
+                    className="w-5 h-5 mt-1 accent-cyan-500"
+                  />
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                      🎥 Movie Watch
+                      <span className="text-xs bg-cyan-500 text-black px-2 py-1 rounded-full">No Upfront Cost</span>
+                    </h3>
+                    <p className="text-gray-400 text-sm mt-1">
+                      Stream your movies for viewers to rent or purchase.
+                    </p>
+                    <div className="mt-3 p-3 bg-cyan-500/10 rounded-lg">
+                      <p className="text-cyan-400 font-semibold">Platform Fee: {movieWatchFee}%</p>
+                      <p className="text-xs text-gray-400">Deducted from each movie sale/rental</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Total Summary */}
+              {hasSelectedService && (
+                <div className="mt-6 p-4 bg-white/10 rounded-xl border border-gray-500">
+                  <h4 className="font-bold text-white mb-2">Summary</h4>
+                  <div className="space-y-2 text-sm">
+                    {selectedServices.film_trade && selectedPackageId && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-300">Film Trade Package</span>
+                        <span className="text-white font-semibold">₹{totalAmount.toLocaleString()}</span>
+                      </div>
+                    )}
+                    {selectedServices.events && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-300">Events Service</span>
+                        <span className="text-green-400">Free ({eventFee}% per sale)</span>
+                      </div>
+                    )}
+                    {selectedServices.movie_watch && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-300">Movie Watch Service</span>
+                        <span className="text-green-400">Free ({movieWatchFee}% per sale)</span>
+                      </div>
+                    )}
+                    <hr className="border-gray-600 my-2" />
+                    <div className="flex justify-between text-lg font-bold">
+                      <span className="text-white">Total Due Now</span>
+                      <span className="text-blue-400">₹{totalAmount.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
           {/* Step 4 - Review */}
           {step === 4 && (
-            <div className="space-y-4 animate-fadeIn">
+            <div className="space-y-6 animate-fadeIn">
               <h3 className="text-lg font-semibold mb-4 text-white">
-                Review Your Details
+                Review Your Application
               </h3>
-              <div className="overflow-x-auto rounded-lg border border-gray-700 shadow-sm">
-                <table className="min-w-full divide-y divide-gray-700 text-sm text-left">
-                  <thead className="bg-gray-800">
-                    <tr>
-                      <th className="px-4 py-2 text-gray-200 font-medium">Field</th>
-                      <th className="px-4 py-2 text-gray-200 font-medium">Value</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-700 bg-gray-900">
-                    {Object.entries(formData).map(([key, value]) => (
-                      <tr key={key} className="hover:bg-gray-700">
-                        <td className="px-4 py-2 capitalize">{key.replace(/([A-Z])/g, ' $1')}</td>
-                        <td className="px-4 py-2">
-                          {value instanceof File ? (
-                            <span className="text-blue-400">{value.name}</span>
-                          ) : (
-                            <span className="text-gray-200">{value?.toString() || "-"}</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              
+              {/* Vendor Info */}
+              <div className="bg-gray-800/50 rounded-xl p-4">
+                <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
+                  👤 Vendor Information
+                </h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div><span className="text-gray-400">Name:</span> <span className="text-white">{formData.vendorName}</span></div>
+                  <div><span className="text-gray-400">Business:</span> <span className="text-white">{formData.businessType}</span></div>
+                  <div><span className="text-gray-400">Email:</span> <span className="text-white">{formData.email}</span></div>
+                  <div><span className="text-gray-400">Phone:</span> <span className="text-white">{formData.phone}</span></div>
+                  <div><span className="text-gray-400">PAN:</span> <span className="text-white">{formData.panNumber}</span></div>
+                  <div><span className="text-gray-400">GST:</span> <span className="text-white">{formData.gstNumber || 'N/A'}</span></div>
+                  <div className="col-span-2"><span className="text-gray-400">Address:</span> <span className="text-white">{formData.address}</span></div>
+                </div>
               </div>
+
+              {/* KYC Documents */}
+              <div className="bg-gray-800/50 rounded-xl p-4">
+                <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
+                  📄 KYC Documents
+                </h4>
+                <div className="flex gap-4 flex-wrap">
+                  {formData.aadharFrontUrl && <div className="text-center"><span className="text-xs text-gray-400 block mb-1">Aadhar Front</span><span className="text-green-400">✓ Uploaded</span></div>}
+                  {formData.aadharBackUrl && <div className="text-center"><span className="text-xs text-gray-400 block mb-1">Aadhar Back</span><span className="text-green-400">✓ Uploaded</span></div>}
+                  {formData.panImageUrl && <div className="text-center"><span className="text-xs text-gray-400 block mb-1">PAN Card</span><span className="text-green-400">✓ Uploaded</span></div>}
+                </div>
+              </div>
+
+              {/* Selected Services */}
+              <div className="bg-gray-800/50 rounded-xl p-4">
+                <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
+                  🎯 Selected Services
+                </h4>
+                <div className="space-y-3">
+                  {selectedServices.film_trade && (
+                    <div className="flex items-center justify-between p-3 bg-blue-500/10 rounded-lg border border-blue-500/30">
+                      <div>
+                        <span className="text-blue-400 font-semibold">🎬 Film Trade</span>
+                        {selectedPackageId && (
+                          <span className="ml-2 text-sm text-gray-300">
+                            ({packages.find(p => p._id === selectedPackageId)?.name} Package)
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-white font-bold">₹{totalAmount.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {selectedServices.events && (
+                    <div className="flex items-center justify-between p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
+                      <span className="text-yellow-400 font-semibold">🎭 Events</span>
+                      <span className="text-green-400">Free ({eventFee}% fee)</span>
+                    </div>
+                  )}
+                  {selectedServices.movie_watch && (
+                    <div className="flex items-center justify-between p-3 bg-cyan-500/10 rounded-lg border border-cyan-500/30">
+                      <span className="text-cyan-400 font-semibold">🎥 Movie Watch</span>
+                      <span className="text-green-400">Free ({movieWatchFee}% fee)</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Payment Summary */}
+              {totalAmount > 0 && (
+                <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-xl p-4 border border-blue-500/30">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white font-semibold text-lg">Total Payment</span>
+                    <span className="text-2xl font-bold text-blue-400">₹{totalAmount.toLocaleString()}</span>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-2">
+                    Payment will be processed after submission. You'll receive a confirmation email.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -308,10 +615,21 @@ const BecomeAVendor = () => {
             ) : (
               <button
                 type="submit"
-                disabled={vendorLoading}
-                className="ml-auto px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 cursor-pointer"
+                disabled={vendorLoading || isProcessingPayment}
+                className={`ml-auto px-6 py-3 text-white rounded-lg font-semibold transition-all cursor-pointer ${
+                  selectedServices.film_trade && totalAmount > 0
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+                    : 'bg-green-500 hover:bg-green-600'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {vendorLoading ? "Submitting..." : "Submit"}
+                {isProcessingPayment 
+                  ? "Processing Payment..." 
+                  : vendorLoading 
+                    ? "Submitting..." 
+                    : selectedServices.film_trade && totalAmount > 0
+                      ? `Pay ₹${totalAmount.toLocaleString()} & Submit`
+                      : "Submit Application"
+                }
               </button>
             )}
           </div>
