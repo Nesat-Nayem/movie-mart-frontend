@@ -9,7 +9,7 @@ import { FaPhone, FaEnvelope } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://ifmdb.atpuae.com/v1/api";
 
 const Login = () => {
   const { login, isAuthenticated } = useAuth();

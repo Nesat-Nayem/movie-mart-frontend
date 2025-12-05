@@ -4,7 +4,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const termsConditionsApi = createApi({
   reducerPath: "termsConditionsApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:8080/v1/api",
+    baseUrl: "https://ifmdb.atpuae.com/v1/api",
   }),
   tagTypes: ["termsConditionsApi"],
   endpoints: (builder) => ({

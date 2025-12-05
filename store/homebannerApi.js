@@ -18,7 +18,7 @@ export const btnData = [
 export const homeBannerApi = createApi({
   reducerPath: "homeBannerApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:8080/v1/api",
+    baseUrl: "https://ifmdb.atpuae.com/v1/api",
   }),
   tagTypes: ["homeBanner"],
   endpoints: (builder) => ({
