@@ -74,7 +74,7 @@ const HeroBanner = () => {
       </button>
       <button
         ref={nextRef}
-        className="absolute top-1/2 right-3 z-10 -translate-y-1/2 bg-white/70 text-black rounded-full p-2 shadow hover:bg-white transition cursor-pointer"
+        className="absolute top-1/2 right-3 md:mr-3 z-10 -translate-y-1/2 bg-white/70 text-black rounded-full p-2 shadow hover:bg-white transition cursor-pointer"
       >
         ❯
       </button>
