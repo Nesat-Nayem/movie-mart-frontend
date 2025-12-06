@@ -36,8 +36,8 @@ const FilmMartList = () => {
 
   return (
     <section className="min-h-screen">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex gap-6 p-4">
+      <div className="w-full px-4 md:px-8 lg:px-12">
+        <div className="flex gap-6 py-4">
           {/* Left filter - visible only on lg+ */}
           <div className="hidden lg:block w-72 flex-shrink-0">
             <Filter onFilterChange={handleFilterChange} initialFilters={filters} />

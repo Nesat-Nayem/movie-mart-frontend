@@ -166,16 +166,31 @@ const MoviesSection = ({ filters = { languages: [], genres: [], formats: [] } })
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentMovies = filteredMovies.slice(startIndex, startIndex + itemsPerPage);
 
-  // Loading state
+  // Loading state with modern shimmer skeleton
   if (isLoading) {
     return (
       <div className="rounded-lg">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {[...Array(6)].map((_, idx) => (
-            <div key={idx} className="animate-pulse">
-              <div className="bg-gray-700 aspect-[2/3] rounded-xl mb-2"></div>
-              <div className="bg-gray-700 h-4 rounded w-3/4 mb-1"></div>
-              <div className="bg-gray-700 h-3 rounded w-1/2"></div>
+        {/* Header skeleton */}
+        <div className="flex justify-between items-center mb-4 bg-gray-800/50 py-3 px-4 rounded-xl">
+          <div className="h-5 w-32 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full" />
+          <div className="h-4 w-20 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full" />
+        </div>
+        {/* Cards skeleton */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          {[...Array(8)].map((_, idx) => (
+            <div key={idx} className="rounded-xl overflow-hidden bg-gray-800/50 backdrop-blur-sm">
+              <div className="aspect-[2/3] bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%]" />
+              <div className="p-3 space-y-3">
+                <div className="h-4 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-3/4" />
+                <div className="flex justify-between">
+                  <div className="h-3 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-1/3" />
+                  <div className="h-3 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-1/4" />
+                </div>
+                <div className="flex gap-1">
+                  <div className="h-5 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded w-12" />
+                  <div className="h-5 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded w-10" />
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -215,7 +230,7 @@ const MoviesSection = ({ filters = { languages: [], genres: [], formats: [] } })
 
       {/* Movies Grid */}
       {currentMovies.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {currentMovies.map((movie) => (
             <FilmCard key={movie._id} movie={movie} />
           ))}

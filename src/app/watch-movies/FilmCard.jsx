@@ -59,9 +59,19 @@ const FilmCard = ({ movie }) => (
   </div>
 );
 
-// Skeleton
+// Modern Shimmer Skeleton
 const FilmCardSkeleton = () => (
-  <div className="rounded-lg shadow-md border border-dashed border-gray-400 overflow-hidden animate-pulse h-60 bg-gray-700"></div>
+  <div className="rounded-xl overflow-hidden bg-gray-800/50 backdrop-blur-sm">
+    <div className="h-60 sm:h-80 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%]" />
+    <div className="p-3 space-y-3">
+      <div className="h-4 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-3/4" />
+      <div className="flex justify-between">
+        <div className="h-3 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-1/3" />
+        <div className="h-3 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-1/4" />
+      </div>
+      <div className="h-6 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-1/3" />
+    </div>
+  </div>
 );
 
 const MoviesSection = () => {
@@ -93,10 +103,17 @@ const MoviesSection = () => {
 
   return (
     <div className="rounded-lg">
+      {/* Results Header */}
+      <div className="flex justify-between items-center mb-4 bg-[#13162f] py-3 px-4 rounded-xl border border-gray-700/50">
+        <span className="font-medium text-sm sm:text-base text-white">
+          {filteredMovies.length} {filteredMovies.length === 1 ? 'Movie' : 'Movies'} Found
+        </span>
+      </div>
+
       {/* Movies Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
         {isLoading ? (
-          Array.from({ length: 6 }).map((_, idx) => (
+          Array.from({ length: 8 }).map((_, idx) => (
             <FilmCardSkeleton key={idx} />
           ))
         ) : currentMovies.length > 0 ? (
@@ -104,7 +121,7 @@ const MoviesSection = () => {
             <FilmCard key={movie._id || movie.id} movie={movie} />
           ))
         ) : (
-          <p className="text-gray-500 col-span-full text-center">
+          <p className="text-gray-500 col-span-full text-center py-16">
             No movies available{selectedLang ? ` in ${selectedLang}` : ""}
           </p>
         )}
@@ -116,27 +133,41 @@ const MoviesSection = () => {
           <button
             onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
             disabled={currentPage === 1}
-            className="px-3 py-1 border rounded disabled:opacity-50 cursor-pointer"
+            className="px-3 py-1.5 text-sm border border-gray-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/5 transition-colors text-white"
           >
             Prev
           </button>
-          {[...Array(totalPages)].map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentPage(i + 1)}
-              className={`px-3 py-1 border rounded ${
-                currentPage === i + 1
-                  ? "bg-red-500 text-white border-red-500 cursor-pointer"
-                  : "hover:bg-red-100"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
+          <div className="flex items-center gap-1">
+            {[...Array(Math.min(totalPages, 5))].map((_, i) => {
+              let pageNum;
+              if (totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i;
+              } else {
+                pageNum = currentPage - 2 + i;
+              }
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => setCurrentPage(pageNum)}
+                  className={`w-8 h-8 text-sm rounded-lg transition-all ${
+                    currentPage === pageNum
+                      ? "bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg"
+                      : "border border-gray-600 hover:bg-white/5 text-gray-300"
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+          </div>
           <button
             onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
             disabled={currentPage === totalPages}
-            className="px-3 py-1 border rounded disabled:opacity-50 cursor-pointer"
+            className="px-3 py-1.5 text-sm border border-gray-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/5 transition-colors text-white"
           >
             Next
           </button>

@@ -204,12 +204,33 @@ const EventsCards = ({ filters = {} }) => {
     return events;
   }, [eventsData, filters]);
 
+  // Modern shimmer skeleton loading
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-center">
-          <div className="w-10 h-10 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-          <p className="text-gray-400 text-sm">Loading events...</p>
+      <div className="rounded-lg">
+        {/* Header skeleton */}
+        <div className="mb-4 flex items-center justify-between">
+          <div className="h-4 w-28 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full" />
+          <div className="h-3 w-20 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full" />
+        </div>
+        {/* Cards skeleton */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          {[...Array(8)].map((_, idx) => (
+            <div key={idx} className="rounded-xl overflow-hidden bg-gray-800/50 backdrop-blur-sm">
+              <div className="aspect-[3/4] bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%]" />
+              <div className="p-3 space-y-3">
+                <div className="h-4 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-3/4" />
+                <div className="space-y-2">
+                  <div className="h-3 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-1/2" />
+                  <div className="flex justify-between">
+                    <div className="h-3 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-1/3" />
+                    <div className="h-3 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-1/4" />
+                  </div>
+                </div>
+                <div className="h-8 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-lg w-full" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -249,7 +270,7 @@ const EventsCards = ({ filters = {} }) => {
       </div>
 
       {/* -------- Events Grid -------- */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
         {currentEvents.length > 0 ? (
           currentEvents.map((event) => (
             <EventCard
