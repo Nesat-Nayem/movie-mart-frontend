@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const faqApi = createApi({
   reducerPath: "faqApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://ifmdb.atpuae.com/v1/api",
+    baseUrl: "https://api.moviemart.org/v1/api",
   }),
   tagTypes: ["Faq"], // ✅ Correct tag type name
   endpoints: (builder) => ({
