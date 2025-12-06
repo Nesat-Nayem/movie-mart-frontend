@@ -9,10 +9,10 @@ import "swiper/css/pagination";
 import Link from "next/link";
 import { useGetHomeBannerQuery } from "../../../../store/homebannerApi";
 
-// Skeleton slide
+// Modern Skeleton slide
 const HeroBannerSkeleton = () => (
-  <div className="w-full h-[220px] md:h-[400px] lg:h-[480px] bg-gray-300 animate-pulse rounded-lg relative">
-    <div className="absolute bottom-0 left-0 w-full bg-black/20 h-10"></div>
+  <div className="w-full h-[220px] md:h-[400px] lg:h-[480px] bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-xl relative">
+    <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 animate-shimmer bg-[length:200%_100%] rounded-b-xl" />
   </div>
 );
 
@@ -45,7 +45,7 @@ const HeroBanner = () => {
       ));
 
   return (
-    <section className="w-full relative">
+    <section className="w-full relative px-4 md:px-8 lg:px-12 py-4">
       <Swiper
         modules={[Navigation, Pagination, Autoplay]}
         pagination={{ clickable: true }}
@@ -60,7 +60,7 @@ const HeroBanner = () => {
           swiper.params.navigation.prevEl = prevRef.current;
           swiper.params.navigation.nextEl = nextRef.current;
         }}
-        className="rounded-lg overflow-hidden"
+        className="rounded-xl overflow-hidden"
       >
         {slides}
       </Swiper>
@@ -68,13 +68,13 @@ const HeroBanner = () => {
       {/* Custom Navigation Arrows */}
       <button
         ref={prevRef}
-        className="absolute top-1/2 left-3 z-10 -translate-y-1/2 bg-white/70 text-black rounded-full p-2 shadow hover:bg-white transition cursor-pointer"
+        className="absolute top-1/2 left-6 md:left-10 lg:left-14 z-10 -translate-y-1/2 bg-white/70 text-black rounded-full p-2 shadow hover:bg-white transition cursor-pointer"
       >
         ❮
       </button>
       <button
         ref={nextRef}
-        className="absolute top-1/2 right-3 md:mr-3 z-10 -translate-y-1/2 bg-white/70 text-black rounded-full p-2 shadow hover:bg-white transition cursor-pointer"
+        className="absolute top-1/2 right-6 md:right-10 lg:right-14 z-10 -translate-y-1/2 bg-white/70 text-black rounded-full p-2 shadow hover:bg-white transition cursor-pointer"
       >
         ❯
       </button>

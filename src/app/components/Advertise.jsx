@@ -13,14 +13,14 @@ import Link from "next/link";
 const Advertise = () => {
   const { data: adsData = [], isLoading, isError } = useGetAdsQuery();
 
-  // 🔥 Skeleton Loader (optional)
+  // 🔥 Modern Skeleton Loader
   if (isLoading) {
     return (
       <section className="py-2 lg:py-5">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="grid grid-cols-2 gap-2 animate-pulse">
-            <div className="h-24 bg-gray-300 rounded-md"></div>
-            <div className="h-24 bg-gray-300 rounded-md"></div>
+        <div className="w-full px-4 md:px-8 lg:px-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="h-20 md:h-28 lg:h-36 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-lg" />
+            <div className="hidden md:block h-20 md:h-28 lg:h-36 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-lg" />
           </div>
         </div>
       </section>
@@ -28,16 +28,12 @@ const Advertise = () => {
   }
 
   if (isError || !adsData.length) {
-    return (
-      <section className="py-2 lg:py-5">
-        <div className="text-center text-gray-500">No ads found</div>
-      </section>
-    );
+    return null;
   }
 
   return (
     <section className="py-2 lg:py-5">
-      <div className="max-w-6xl mx-auto px-4">
+      <div className="w-full px-4 md:px-8 lg:px-12">
         {/* ⭐ Mobile Swiper */}
         <div className="block md:hidden">
           <Swiper
@@ -52,13 +48,13 @@ const Advertise = () => {
           >
             {adsData.map((ad) => (
               <SwiperSlide key={ad._id}>
-                <div className="relative w-full h-20 sm:h-20">
+                <div className="relative w-full h-24 sm:h-28">
                   <Link href={ad.link} target="_blank">
                     <Image
                       src={ad?.image || "/assets/img/banner/default.jpg"}
                       alt={ad?.title || "Advertisement Banner"}
                       fill
-                      className="object-fill rounded-md"
+                      className="object-cover rounded-lg"
                     />
                   </Link>
                 </div>
@@ -68,15 +64,15 @@ const Advertise = () => {
         </div>
 
         {/* ⭐ Desktop Grid */}
-        <div className="hidden md:grid grid-cols-2 gap-2">
+        <div className="hidden md:grid grid-cols-2 gap-3">
           {adsData.map((ad) => (
-            <div key={ad._id} className="relative w-full h-10 md:h-20 lg:h-32">
+            <div key={ad._id} className="relative w-full h-28 lg:h-36 xl:h-40">
               <Link href={ad.link} target="_blank">
                 <Image
                   src={ad?.image || "/assets/img/banner/default.jpg"}
                   alt={ad?.title || "Advertisement Banner"}
                   fill
-                  className="object-fill rounded-md"
+                  className="object-cover rounded-lg"
                 />
               </Link>
             </div>

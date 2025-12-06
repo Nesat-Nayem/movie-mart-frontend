@@ -7,9 +7,14 @@ import Link from "next/link";
 import "swiper/css";
 import "swiper/css/navigation";
 
-// Skeleton Card
+// Modern Skeleton Card
 const EventsCardSkeleton = () => (
-  <div className="rounded-lg shadow-md border border-dashed border-gray-400 w-full animate-pulse bg-gray-700 h-48 sm:h-56 md:h-64 lg:h-72"></div>
+  <div className="rounded-xl overflow-hidden bg-gray-800/50 backdrop-blur-sm">
+    <div className="relative w-full h-48 sm:h-56 md:h-64 lg:h-72 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%]" />
+    <div className="p-3 space-y-2">
+      <div className="h-4 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-3/4" />
+    </div>
+  </div>
 );
 
 const EventCards = () => {
@@ -83,33 +88,32 @@ const EventCards = () => {
 
   return (
     <section className="w-full relative">
-      <div className="max-w-7xl mx-auto px-4">
-        <Swiper
-          modules={[Navigation]}
-          spaceBetween={8} // gap like tailwind gap-2
-          breakpoints={{
-            320: { slidesPerView: 2 },
-            640: { slidesPerView: 2 },
-            1024: { slidesPerView: 3 },
-            1280: { slidesPerView: 4 },
-          }}
-          onSwiper={setSwiperInstance}
-          className="pb-10"
-        >
-          {slides}
-        </Swiper>
-      </div>
+      <Swiper
+        modules={[Navigation]}
+        spaceBetween={12}
+        breakpoints={{
+          320: { slidesPerView: 2 },
+          640: { slidesPerView: 3 },
+          1024: { slidesPerView: 4 },
+          1280: { slidesPerView: 5 },
+          1536: { slidesPerView: 6 },
+        }}
+        onSwiper={setSwiperInstance}
+        className="pb-10"
+      >
+        {slides}
+      </Swiper>
 
       {/* Custom Navigation Arrows */}
       <button
         ref={prevRef}
-        className="cursor-pointer absolute top-1/2 left-2 z-20 -translate-y-1/2 bg-white/80 text-black rounded-full p-2 sm:p-3 shadow hover:bg-white transition"
+        className="cursor-pointer absolute top-1/2 left-0 z-20 -translate-y-1/2 bg-white/80 text-black rounded-full p-2 sm:p-3 shadow hover:bg-white transition"
       >
         ❮
       </button>
       <button
         ref={nextRef}
-        className="cursor-pointer absolute top-1/2 right-2 z-20 -translate-y-1/2 bg-white/80 text-black rounded-full p-2 sm:p-3 shadow hover:bg-white transition"
+        className="cursor-pointer absolute top-1/2 right-0 z-20 -translate-y-1/2 bg-white/80 text-black rounded-full p-2 sm:p-3 shadow hover:bg-white transition"
       >
         ❯
       </button>

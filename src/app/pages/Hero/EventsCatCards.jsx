@@ -20,34 +20,32 @@ const categories = [
 
 const EventsCatCards = () => {
   return (
-    <section className="w-full">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/events?category=${cat.title.toLowerCase()}`}
+    <div className="w-full">
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-12 gap-3">
+        {categories.map((cat) => (
+          <Link
+            key={cat.id}
+            href={`/events?category=${cat.title.toLowerCase()}`}
+          >
+            <div
+              className="relative bg-gradient-to-b from-gray-900 to-black rounded-2xl shadow-lg border border-gray-700 
+                            flex flex-col items-center justify-center p-3 md:p-4 hover:scale-105 transition-transform duration-300 cursor-pointer"
             >
-              <div
-                className="relative bg-gradient-to-b from-gray-900 to-black rounded-2xl shadow-lg border border-gray-700 
-                              flex flex-col items-center justify-center p-4 hover:scale-105 transition-transform duration-300 cursor-pointer"
-              >
-                {/* Icon */}
-                <img
-                  src={cat.image}
-                  alt={cat.title}
-                  className="w-20 h-20 object-contain mb-3"
-                />
-                {/* Title */}
-                <h3 className="text-xs font-bold text-yellow-300 uppercase tracking-wide text-center">
-                  {cat.title}
-                </h3>
-              </div>
-            </Link>
-          ))}
-        </div>
+              {/* Icon */}
+              <img
+                src={cat.image}
+                alt={cat.title}
+                className="w-12 h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 object-contain mb-2"
+              />
+              {/* Title */}
+              <h3 className="text-[10px] md:text-xs font-bold text-yellow-300 uppercase tracking-wide text-center">
+                {cat.title}
+              </h3>
+            </div>
+          </Link>
+        ))}
       </div>
-    </section>
+    </div>
   );
 };
 
