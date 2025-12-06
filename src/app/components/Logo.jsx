@@ -5,14 +5,12 @@ import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { useGetGeneralSettingsQuery } from "../../../store/generalSettingsApi";
 
-const Logo = () => {
+const Logo = ({ width = 55, height = 55 }) => {
   const {
     data: generalSettings = {},
     isLoading,
-    isError,
   } = useGetGeneralSettingsQuery();
 
-  console.log(generalSettings);
   const [mounted, setMounted] = useState(false);
 
   // Only render on client to avoid SSR hydration mismatch
@@ -20,33 +18,30 @@ const Logo = () => {
     setMounted(true);
   }, []);
 
-  if (!mounted) return null;
-
-  // Safely get the logo URL
+  // Safely get the logo URL - use dynamic logo from settings or fallback
   const logoUrl = generalSettings?.logo || "/assets/img/logo.png";
 
+  // Show skeleton while loading or not mounted
+  if (!mounted || isLoading) {
+    return (
+      <div 
+        className="animate-pulse bg-gray-700 rounded-full"
+        style={{ width, height }}
+      />
+    );
+  }
+
   return (
-    <>
-      {/* <Link href="/">
+    <Link href="/">
       <Image
         src={logoUrl}
         alt="Logo"
-        width={55}
-        height={55}
+        width={width}
+        height={height}
         style={{ objectFit: "contain" }}
+        unoptimized={logoUrl.includes("cloudinary") || logoUrl.includes("http")}
       />
-    </Link> */}
-
-      <Link href="/">
-        <Image
-          src={"/assets/img/logo.png"}
-          alt="Logo"
-          width={55}
-          height={55}
-          style={{ objectFit: "contain" }}
-        />
-      </Link>
-    </>
+    </Link>
   );
 };
 

@@ -8,11 +8,13 @@ import { FcGoogle } from "react-icons/fc";
 import { FaPhone, FaEnvelope } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
+import { useGetGeneralSettingsQuery } from "../../../store/generalSettingsApi";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.moviemart.org/v1/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1/api";
 
 const Login = () => {
   const { login, isAuthenticated } = useAuth();
+  const { data: generalSettings = {} } = useGetGeneralSettingsQuery();
   
   // Auth method: 'select' | 'phone' | 'phone-otp' | 'email-login' | 'email-register'
   const [authMethod, setAuthMethod] = useState("select");
@@ -34,7 +36,8 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   
-  const logoUrl = "/assets/img/default-logo.png";
+  // Dynamic logo from settings
+  const logoUrl = generalSettings?.logo || "/assets/img/logo.png";
   
   // Redirect if already authenticated
   useEffect(() => {
@@ -567,6 +570,7 @@ const Login = () => {
               width={60}
               height={60}
               style={{ objectFit: "contain" }}
+              unoptimized={logoUrl.includes("cloudinary") || logoUrl.includes("http")}
             />
           </Link>
         </div>

@@ -27,14 +27,14 @@ const Footer = () => {
 
   if (!mounted) return null;
 
-  // Fallback URLs to prevent broken links
-  const socialLinks = {
-    facebook: generalSettings.facebook || "#",
-    twitter: generalSettings.twitter || "#",
-    instagram: generalSettings.instagram || "#",
-    youtube: generalSettings.youtube || "#",
-    linkedin: generalSettings.linkedin || "#",
-  };
+  // Social links configuration - only show if URL is set
+  const socialLinks = [
+    { key: 'facebook', url: generalSettings.facebook, icon: FaFacebookF },
+    { key: 'instagram', url: generalSettings.instagram, icon: FaInstagram },
+    { key: 'linkedin', url: generalSettings.linkedin, icon: FaLinkedinIn },
+    { key: 'twitter', url: generalSettings.twitter, icon: FaXTwitter },
+    { key: 'youtube', url: generalSettings.youtube, icon: FaYoutube },
+  ].filter(link => link.url && link.url.trim() !== '');
 
   return (
     <footer className="text-gray-400 text-center py-8">
@@ -45,50 +45,22 @@ const Footer = () => {
         <hr className="flex-grow border-gray-600" />
       </div>
 
-      {/* Social Icons */}
-      <div className="flex justify-center gap-6 mb-6">
-        <a
-          href={socialLinks.facebook}
-          className="text-gray-400 hover:text-white transition"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <FaFacebookF size={20} />
-        </a>
-        <a
-          href={socialLinks.instagram}
-          className="text-gray-400 hover:text-white transition"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <FaInstagram size={20} />
-        </a>
-        <a
-          href={socialLinks.linkedin}
-          className="text-gray-400 hover:text-white transition"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <FaLinkedinIn size={20} />
-        </a>
-        <a
-          href={socialLinks.twitter}
-          className="text-gray-400 hover:text-white transition"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <FaXTwitter size={20} />
-        </a>
-
-        <a
-          href={socialLinks.youtube}
-          className="text-gray-400 hover:text-white transition"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <FaYoutube size={20} />
-        </a>
-      </div>
+      {/* Social Icons - Only show if there are valid links */}
+      {socialLinks.length > 0 && (
+        <div className="flex justify-center gap-6 mb-6">
+          {socialLinks.map(({ key, url, icon: Icon }) => (
+            <a
+              key={key}
+              href={url}
+              className="text-gray-400 hover:text-white transition"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Icon size={20} />
+            </a>
+          ))}
+        </div>
+      )}
 
       {/* Copyright */}
       <p className="text-sm max-w-4xl mx-auto leading-relaxed px-4">
