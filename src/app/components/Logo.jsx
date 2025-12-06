@@ -5,7 +5,7 @@ import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { useGetGeneralSettingsQuery } from "../../../store/generalSettingsApi";
 
-const Logo = ({ width = 55, height = 55 }) => {
+const Logo = ({ width = 45, height = 45 }) => {
   const {
     data: generalSettings = {},
     isLoading,
