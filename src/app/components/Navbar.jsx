@@ -20,11 +20,11 @@ const Navbar = () => {
     <header className="w-full shadow-md border-b border-dotted border-gray-500 text-white bg-[#0f172a] sticky top-0 z-40">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between relative">
-          {/* Left Section - Logo + Search Icon (Desktop) */}
+          {/* Left Section - Logo + Search Box (Desktop) */}
           <div className="flex items-center space-x-3">
             <Logo />
-            {/* Search Icon - after logo on desktop */}
-            <SearchModal iconOnly={true} className="hidden md:block" />
+            {/* Always-visible search on desktop */}
+            <SearchModal className="hidden md:block w-64" />
           </div>
 
           {/* Middle Section - Nav Items (Desktop) - Absolutely centered */}
