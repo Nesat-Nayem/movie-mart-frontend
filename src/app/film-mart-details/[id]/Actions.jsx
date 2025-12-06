@@ -9,25 +9,9 @@ import {
   FaInstagram,
 } from "react-icons/fa";
 
-import { useParams } from "next/navigation";
-import { useGetMoviesQuery } from "../../../../store/moviesApi";
-
-const Actions = () => {
+const Actions = ({ movie }) => {
   const [bookmarked, setBookmarked] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-
-  // ✅ FIX: Get ID from dynamic URL
-  const { id } = useParams();
-
-  const { data: moviesData = [], isLoading } = useGetMoviesQuery();
-
-  console.log("URL ID =", id);
-  console.log("moviesData =", moviesData);
-
-  // ✅ FIX: Match both _id and id
-  const movie = moviesData.find((item) => item._id === id || item.id === id);
-
-  console.log("Found Movie =", movie);
 
   /** Bookmark Load */
   useEffect(() => {
@@ -36,18 +20,12 @@ const Actions = () => {
     setBookmarked(saved.some((b) => b._id === movie._id || b.id === movie.id));
   }, [movie]);
 
-  if (isLoading) {
-    return <div className="text-white">Loading movies…</div>;
-  }
-
-  if (!id) {
-    return <div className="text-red-400 mt-4">❌ No ID found in URL</div>;
-  }
-
+  // If no movie, show skeleton buttons
   if (!movie) {
     return (
-      <div className="text-red-400 mt-4">
-        ❌ Movie not found <br /> ID: {id}
+      <div className="flex items-center gap-3 self-start">
+        <div className="h-10 w-24 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-lg" />
+        <div className="h-10 w-10 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-lg" />
       </div>
     );
   }

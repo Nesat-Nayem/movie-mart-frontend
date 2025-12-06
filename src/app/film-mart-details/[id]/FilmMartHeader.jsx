@@ -4,17 +4,18 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Play, X } from "lucide-react";
-import { useParams } from "next/navigation";
-import { useGetMoviesQuery } from "../../../../store/moviesApi";
 
-const FilmMartHeader = () => {
+const FilmMartHeader = ({ movie }) => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
-  const { id } = useParams();
 
-  const { data: moviesData = [], isLoading, isError } = useGetMoviesQuery();
-
-  // Find current movie by ID
-  const movie = moviesData?.find((item) => item._id === id);
+  // If no movie data, show skeleton
+  if (!movie) {
+    return (
+      <div className="relative w-full">
+        <div className="w-full h-[200px] sm:h-[320px] md:h-[300px] lg:h-[400px] bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-b-2xl" />
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full">
@@ -63,6 +64,7 @@ const FilmMartHeader = () => {
             width={200}
             height={300}
             className="w-full h-auto rounded-lg object-cover"
+            unoptimized
           />
 
           {/* Upcoming Badge */}
