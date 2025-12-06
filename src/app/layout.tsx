@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Jura } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/app/components/Navbar";
-import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import Script from "next/script";
 import { Providers } from "../../providers/ReduxProvider";
@@ -32,7 +31,6 @@ export default function RootLayout({
           <AuthProvider>
             <Toaster position="top-center" />
             <Navbar />
-            <Header />
             {children}
             <Footer />
           </AuthProvider>

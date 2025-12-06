@@ -1,13 +1,15 @@
 "use client";
 import Link from "next/link";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import { IoMdClose } from "react-icons/io";
 
-const SearchModal = ({ className = "" }) => {
+const SearchModal = ({ className = "", iconOnly = false }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState("Movies");
-  const inputRef = useRef(null); // ref to focus input inside modal
+  const inputRef = useRef(null);
+  const searchBarRef = useRef(null);
 
   const tabData = {
     Movies: ["Demon Slayer", "Heer Express", "Jolly LLB 3", "The Conjuring"],
@@ -20,25 +22,75 @@ const SearchModal = ({ className = "" }) => {
 
   const openModal = () => {
     setIsOpen(true);
-    setTimeout(() => inputRef.current?.focus(), 0); // focus modal input
+    setTimeout(() => inputRef.current?.focus(), 0);
   };
+
+  const handleIconClick = () => {
+    if (iconOnly) {
+      setIsExpanded(!isExpanded);
+      if (!isExpanded) {
+        setTimeout(() => searchBarRef.current?.focus(), 100);
+      }
+    } else {
+      openModal();
+    }
+  };
+
+  // Close expanded search when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (isExpanded && searchBarRef.current && !searchBarRef.current.closest('.search-container')?.contains(e.target)) {
+        setIsExpanded(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isExpanded]);
 
   return (
     <>
-      {/* Search Bar (Trigger) */}
-      <div
-        onClick={openModal}
-        className={`flex-1 max-w-2xl mx-4 cursor-pointer ${className}`}
-      >
-        <div className="relative w-full">
-          <FaSearch className="absolute left-3 top-3 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search for Movies, Events, Plays, Sports and Activities"
-            className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-400 text-sm cursor-pointer"
-            readOnly
-          />
-        </div>
+      {/* Search Trigger - Icon only or full bar */}
+      <div className={`search-container ${className}`}>
+        {iconOnly ? (
+          <div className="flex items-center">
+            <button
+              onClick={handleIconClick}
+              className="p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-full transition-all duration-300 cursor-pointer"
+            >
+              <FaSearch className="text-lg" />
+            </button>
+            {/* Expandable search input */}
+            <div
+              className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                isExpanded ? "w-48 md:w-64 opacity-100 ml-2" : "w-0 opacity-0"
+              }`}
+            >
+              <input
+                ref={searchBarRef}
+                type="text"
+                placeholder="Search..."
+                onClick={openModal}
+                className="w-full px-3 py-1.5 rounded-full border border-gray-500 bg-transparent text-white text-sm focus:border-gray-500 focus:outline-none cursor-pointer"
+                readOnly
+              />
+            </div>
+          </div>
+        ) : (
+          <div
+            onClick={openModal}
+            className="flex-1 max-w-md mx-4 cursor-pointer"
+          >
+            <div className="relative w-full">
+              <FaSearch className="absolute left-3 top-2.5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search movies, events..."
+                className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-500 bg-transparent text-white text-sm cursor-pointer focus:outline-none"
+                readOnly
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Fullscreen Modal */}
