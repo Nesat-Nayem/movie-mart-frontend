@@ -2,56 +2,124 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
-import { FaClock, FaLanguage, FaThumbsUp, FaStar } from "react-icons/fa";
-import { useGetMoviesQuery } from "../../../store/moviesApi";
+import Image from "next/image";
+import { FaClock, FaLanguage, FaThumbsUp, FaStar, FaPlay, FaCrown } from "react-icons/fa";
+import { MdVerified } from "react-icons/md";
+import { useGetWatchVideosQuery } from "../../../store/watchVideosApi";
 
-// Single Movie Card
-const FilmCard = ({ movie }) => (
-  <div className="rounded-lg shadow-md border border-dashed border-gray-400 overflow-hidden relative group transition-all duration-300 hover:shadow-2xl hover:scale-105">
-    <Link href={movie.url || "/watch-movie-deatils"}>
+// Format duration from seconds to readable format
+const formatDuration = (seconds) => {
+  if (!seconds) return "N/A";
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  return `${minutes}m`;
+};
+
+// Single Video Card
+const VideoCard = ({ video }) => (
+  <div className="rounded-xl shadow-lg border border-gray-700/50 overflow-hidden relative group transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] bg-gradient-to-b from-gray-800/50 to-gray-900/50 backdrop-blur-sm">
+    <Link href={`/watch-movie-deatils?id=${video._id}`}>
       <div className="relative overflow-hidden">
         <img
-          src={movie.posterUrl}
-          alt={movie.title}
-          className="w-full h-60 sm:h-80  object-fill rounded-t-lg transform transition-transform duration-500 group-hover:scale-110"
+          src={video.thumbnailUrl || video.posterUrl || "/assets/img/placeholder-video.jpg"}
+          alt={video.title}
+          className="w-full h-52 sm:h-64 object-cover rounded-t-xl transform transition-transform duration-500 group-hover:scale-110"
         />
-        {movie.Released && (
-          <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
-            Released
-          </span>
-        )}
+        
+        {/* Video Type Badge */}
+        <span className={`absolute top-2 left-2 text-white text-xs px-2 py-1 rounded-full font-medium ${
+          video.videoType === 'series' ? 'bg-purple-600' : 'bg-blue-600'
+        }`}>
+          {video.videoType === 'series' ? '📺 Series' : '🎬 Movie'}
+        </span>
 
-        <div className="absolute inset-0 bg-[#000000d6] flex items-center justify-center opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-          <span className="text-white text-sm font-medium">View Details</span>
+        {/* Free/Paid Badge */}
+        <span className={`absolute top-2 right-2 text-white text-xs px-2 py-1 rounded-full font-medium ${
+          video.isFree ? 'bg-green-600' : 'bg-gradient-to-r from-yellow-600 to-orange-600'
+        }`}>
+          {video.isFree ? '✓ Free' : <><FaCrown className="inline mr-1" /> ₹{video.defaultPrice}</>}
+        </span>
+
+        {/* Duration Badge */}
+        <span className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">
+          {formatDuration(video.duration)}
+        </span>
+
+        {/* Hover Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent flex items-center justify-center opacity-0 transition-all duration-500 group-hover:opacity-100">
+          <div className="bg-white/20 backdrop-blur-md p-4 rounded-full hover:scale-110 transition-transform">
+            <FaPlay className="text-white text-xl" />
+          </div>
         </div>
       </div>
 
-      <div className="p-3">
-        <h3 className="text-sm font-semibold line-clamp-2 mb-2">
-          {movie.title}
+      <div className="p-4">
+        {/* Title */}
+        <h3 className="text-sm font-semibold line-clamp-2 mb-2 text-white group-hover:text-pink-400 transition-colors">
+          {video.title}
         </h3>
 
-        <div className="flex items-center justify-between mt-1 text-xs">
-          <p className="flex items-center gap-1">
-            <FaLanguage className="text-red-500" /> {movie.language || "N/A"}
-          </p>
-          <p className="flex items-center gap-1">
-            <FaClock className="text-red-500" /> {movie.duration || "N/A"}
-          </p>
-        </div>
-
-        {/* Rating */}
-        {movie.rating != null && !isNaN(movie.rating) && (
-          <div className="flex items-center gap-1 mt-2 text-xs text-yellow-400">
-            <FaStar />
-            {Number(movie.rating).toFixed(1)}
+        {/* Channel Info */}
+        {video.channelId && (
+          <div className="flex items-center gap-2 mb-2">
+            <img
+              src={video.channelId.logoUrl || "/assets/img/default-channel.png"}
+              alt={video.channelId.name}
+              className="w-5 h-5 rounded-full object-cover"
+            />
+            <span className="text-xs text-gray-400 truncate flex items-center gap-1">
+              {video.channelId.name}
+              {video.channelId.isVerified && <MdVerified className="text-blue-500" />}
+            </span>
           </div>
         )}
 
-        {/* Likes */}
-        {movie.likes != null && (
-          <div className="flex items-center gap-1 mt-2 text-xs text-white bg-black px-2 py-1 rounded transition-colors duration-300 group-hover:bg-gray-800">
-            <FaThumbsUp className="text-green-400" /> {movie.likes} Likes
+        {/* Meta Info */}
+        <div className="flex items-center justify-between text-xs text-gray-400">
+          <p className="flex items-center gap-1">
+            <FaLanguage className="text-pink-500" /> 
+            {video.languages?.[0] || "N/A"}
+          </p>
+          <p className="flex items-center gap-1">
+            {video.videoType === 'series' && video.totalEpisodes 
+              ? `${video.totalEpisodes} Eps`
+              : formatDuration(video.duration)
+            }
+          </p>
+        </div>
+
+        {/* Rating & Stats */}
+        <div className="flex items-center justify-between mt-3">
+          {video.averageRating > 0 && (
+            <div className="flex items-center gap-1 text-xs text-yellow-400">
+              <FaStar />
+              <span>{Number(video.averageRating).toFixed(1)}</span>
+            </div>
+          )}
+          
+          <div className="flex items-center gap-3 text-xs text-gray-400">
+            {video.viewCount > 0 && (
+              <span>{video.viewCount.toLocaleString()} views</span>
+            )}
+            {video.likeCount > 0 && (
+              <span className="flex items-center gap-1">
+                <FaThumbsUp className="text-green-400" /> {video.likeCount}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Genres */}
+        {video.genres?.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-3">
+            {video.genres.slice(0, 2).map((genre, idx) => (
+              <span key={idx} className="text-xs bg-gray-700/50 text-gray-300 px-2 py-0.5 rounded-full">
+                {genre}
+              </span>
+            ))}
           </div>
         )}
       </div>
@@ -60,92 +128,172 @@ const FilmCard = ({ movie }) => (
 );
 
 // Modern Shimmer Skeleton
-const FilmCardSkeleton = () => (
-  <div className="rounded-xl overflow-hidden bg-gray-800/50 backdrop-blur-sm">
-    <div className="h-60 sm:h-80 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%]" />
-    <div className="p-3 space-y-3">
+const VideoCardSkeleton = () => (
+  <div className="rounded-xl overflow-hidden bg-gray-800/50 backdrop-blur-sm border border-gray-700/30">
+    <div className="h-52 sm:h-64 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%]" />
+    <div className="p-4 space-y-3">
       <div className="h-4 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-3/4" />
+      <div className="flex items-center gap-2">
+        <div className="h-5 w-5 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer rounded-full" />
+        <div className="h-3 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-1/2" />
+      </div>
       <div className="flex justify-between">
         <div className="h-3 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-1/3" />
         <div className="h-3 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-1/4" />
       </div>
-      <div className="h-6 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-1/3" />
+      <div className="flex gap-2">
+        <div className="h-5 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-16" />
+        <div className="h-5 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-16" />
+      </div>
     </div>
   </div>
 );
 
-const MoviesSection = () => {
-  const { data: moviesData = [], isLoading, isError } = useGetMoviesQuery();
-  const [selectedLang, setSelectedLang] = useState(null);
+const WatchVideosSection = () => {
+  const [filters, setFilters] = useState({
+    category: '',
+    genre: '',
+    language: '',
+    videoType: '',
+    isFree: '',
+    sortBy: 'createdAt',
+    sortOrder: 'desc'
+  });
   const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
-  // Dynamic unique languages
-  const languages = useMemo(() => {
-    const langs = moviesData.map((m) => m.language).filter(Boolean);
-    return [...new Set(langs)];
-  }, [moviesData]);
+  const { data, isLoading, isError } = useGetWatchVideosQuery({
+    page: currentPage,
+    limit: itemsPerPage,
+    status: 'published',
+    ...filters,
+  });
 
-  // Filter by selected language
-  const filteredMovies = selectedLang
-    ? moviesData.filter((m) => m.language === selectedLang)
-    : moviesData;
+  const videos = data?.videos || [];
+  const meta = data?.meta || { total: 0, totalPages: 1 };
 
-  // Pagination
-  const itemsPerPage = 6;
-  const totalPages = Math.ceil(filteredMovies.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentMovies = filteredMovies.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
-
-  if (isError) return <p className="text-red-500">Error loading movies</p>;
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <p className="text-red-500 text-lg">Error loading videos</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-lg">
       {/* Results Header */}
-      <div className="flex justify-between items-center mb-4 bg-[#13162f] py-3 px-4 rounded-xl border border-gray-700/50">
-        <span className="font-medium text-sm sm:text-base text-white">
-          {filteredMovies.length} {filteredMovies.length === 1 ? 'Movie' : 'Movies'} Found
-        </span>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6 bg-gradient-to-r from-gray-800/50 to-gray-900/50 py-4 px-5 rounded-xl border border-gray-700/50 backdrop-blur-sm">
+        <div>
+          <span className="font-semibold text-base sm:text-lg text-white">
+            {meta.total} {meta.total === 1 ? 'Video' : 'Videos'} Found
+          </span>
+          <p className="text-xs text-gray-400 mt-1">Watch premium content from top creators</p>
+        </div>
+        
+        {/* Sort Options */}
+        <div className="flex items-center gap-2">
+          <select
+            value={`${filters.sortBy}-${filters.sortOrder}`}
+            onChange={(e) => {
+              const [sortBy, sortOrder] = e.target.value.split('-');
+              setFilters(prev => ({ ...prev, sortBy, sortOrder }));
+              setCurrentPage(1);
+            }}
+            className="bg-gray-800 border border-gray-600 text-white text-sm rounded-lg px-3 py-2 focus:ring-pink-500 focus:border-pink-500"
+          >
+            <option value="createdAt-desc">Newest First</option>
+            <option value="createdAt-asc">Oldest First</option>
+            <option value="viewCount-desc">Most Viewed</option>
+            <option value="averageRating-desc">Top Rated</option>
+            <option value="defaultPrice-asc">Price: Low to High</option>
+            <option value="defaultPrice-desc">Price: High to Low</option>
+          </select>
+        </div>
       </div>
 
-      {/* Movies Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* Video Type Tabs */}
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+        {[
+          { label: 'All', value: '' },
+          { label: '🎬 Movies', value: 'single' },
+          { label: '📺 Series', value: 'series' },
+        ].map((type) => (
+          <button
+            key={type.value}
+            onClick={() => {
+              setFilters(prev => ({ ...prev, videoType: type.value }));
+              setCurrentPage(1);
+            }}
+            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+              filters.videoType === type.value
+                ? 'bg-gradient-to-r from-pink-600 to-red-600 text-white shadow-lg'
+                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+            }`}
+          >
+            {type.label}
+          </button>
+        ))}
+        <button
+          onClick={() => {
+            setFilters(prev => ({ ...prev, isFree: prev.isFree === 'true' ? '' : 'true' }));
+            setCurrentPage(1);
+          }}
+          className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+            filters.isFree === 'true'
+              ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg'
+              : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+          }`}
+        >
+          ✓ Free Only
+        </button>
+      </div>
+
+      {/* Videos Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
         {isLoading ? (
           Array.from({ length: 8 }).map((_, idx) => (
-            <FilmCardSkeleton key={idx} />
+            <VideoCardSkeleton key={idx} />
           ))
-        ) : currentMovies.length > 0 ? (
-          currentMovies.map((movie) => (
-            <FilmCard key={movie._id || movie.id} movie={movie} />
+        ) : videos.length > 0 ? (
+          videos.map((video) => (
+            <VideoCard key={video._id} video={video} />
           ))
         ) : (
-          <p className="text-gray-500 col-span-full text-center py-16">
-            No movies available{selectedLang ? ` in ${selectedLang}` : ""}
-          </p>
+          <div className="col-span-full flex flex-col items-center justify-center py-20">
+            <div className="text-6xl mb-4">🎬</div>
+            <p className="text-gray-400 text-lg">No videos found</p>
+            <p className="text-gray-500 text-sm mt-1">Try adjusting your filters</p>
+          </div>
         )}
       </div>
 
       {/* Pagination */}
-      {filteredMovies.length > itemsPerPage && (
-        <div className="flex justify-center items-center gap-2 mt-6">
+      {meta.totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-8">
           <button
             onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
             disabled={currentPage === 1}
-            className="px-3 py-1.5 text-sm border border-gray-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/5 transition-colors text-white"
+            className="px-4 py-2 text-sm border border-gray-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/5 transition-colors text-white"
           >
-            Prev
+            ← Prev
           </button>
+          
           <div className="flex items-center gap-1">
-            {[...Array(Math.min(totalPages, 5))].map((_, i) => {
+            {[...Array(Math.min(meta.totalPages, 5))].map((_, i) => {
               let pageNum;
-              if (totalPages <= 5) {
+              if (meta.totalPages <= 5) {
                 pageNum = i + 1;
               } else if (currentPage <= 3) {
                 pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
+              } else if (currentPage >= meta.totalPages - 2) {
+                pageNum = meta.totalPages - 4 + i;
               } else {
                 pageNum = currentPage - 2 + i;
               }
@@ -153,9 +301,9 @@ const MoviesSection = () => {
                 <button
                   key={pageNum}
                   onClick={() => setCurrentPage(pageNum)}
-                  className={`w-8 h-8 text-sm rounded-lg transition-all ${
+                  className={`w-10 h-10 text-sm rounded-lg transition-all font-medium ${
                     currentPage === pageNum
-                      ? "bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg"
+                      ? "bg-gradient-to-r from-pink-600 to-red-600 text-white shadow-lg"
                       : "border border-gray-600 hover:bg-white/5 text-gray-300"
                   }`}
                 >
@@ -164,17 +312,29 @@ const MoviesSection = () => {
               );
             })}
           </div>
+          
           <button
-            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-            disabled={currentPage === totalPages}
-            className="px-3 py-1.5 text-sm border border-gray-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/5 transition-colors text-white"
+            onClick={() => setCurrentPage((p) => Math.min(p + 1, meta.totalPages))}
+            disabled={currentPage === meta.totalPages}
+            className="px-4 py-2 text-sm border border-gray-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/5 transition-colors text-white"
           >
-            Next
+            Next →
           </button>
         </div>
       )}
+
+      {/* Shimmer Animation Styles */}
+      <style jsx>{`
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+        .animate-shimmer {
+          animation: shimmer 1.5s infinite;
+        }
+      `}</style>
     </div>
   );
 };
 
-export default MoviesSection;
+export default WatchVideosSection;

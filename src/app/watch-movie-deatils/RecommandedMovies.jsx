@@ -1,164 +1,159 @@
 "use client";
 
-import Link from "next/link";
 import React from "react";
-import {
-  FaChevronRight,
-  FaClock,
-  FaLanguage,
-  FaThumbsUp,
-} from "react-icons/fa";
-import { useGetMoviesQuery } from "../../../store/moviesApi";
+import Link from "next/link";
+import { FaLanguage, FaThumbsUp, FaStar, FaPlay } from "react-icons/fa";
+import { useGetRecommendedVideosQuery } from "../../../store/watchVideosApi";
 
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay } from "swiper/modules";
-import "swiper/css";
+// Format duration from seconds
+const formatDuration = (seconds) => {
+  if (!seconds) return "N/A";
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  if (hrs > 0) return `${hrs}h ${mins}m`;
+  return `${mins}m`;
+};
 
-// ----------------------
-// Skeleton Loader Card
-// ----------------------
-const SkeletonCard = () => (
-  <div className="rounded-lg border border-dashed border-gray-600 overflow-hidden animate-pulse">
-    <div className="w-full h-48 sm:h-56 md:h-64 lg:h-72 bg-gray-700"></div>
-
+// Loading skeleton
+const VideoSkeleton = () => (
+  <div className="rounded-xl overflow-hidden bg-gray-800/50 animate-pulse">
+    <div className="h-40 sm:h-48 bg-gray-700" />
     <div className="p-3 space-y-2">
-      <div className="h-3 bg-gray-700 rounded w-3/4"></div>
-      <div className="h-3 bg-gray-700 rounded w-1/2"></div>
-
-      <div className="flex justify-between mt-2">
-        <div className="h-3 bg-gray-700 rounded w-1/4"></div>
-        <div className="h-3 bg-gray-700 rounded w-1/4"></div>
+      <div className="h-4 bg-gray-700 rounded w-3/4" />
+      <div className="flex gap-2">
+        <div className="h-3 bg-gray-700 rounded w-1/3" />
+        <div className="h-3 bg-gray-700 rounded w-1/4" />
       </div>
-
-      <div className="h-4 bg-gray-700 rounded w-1/3 mt-3"></div>
+      <div className="h-6 bg-gray-700 rounded w-1/2" />
     </div>
   </div>
 );
 
-// ----------------------
-// Film Card (Slider Item)
-// ----------------------
-const FilmCard = ({ movie }) => (
-  <div className="rounded-lg shadow-md border border-dashed border-gray-400 overflow-hidden relative group transition-all duration-300 hover:shadow-2xl hover:scale-105">
-    <Link href={`/film-mart-details/${movie._id}`}>
-      <div className="relative overflow-hidden">
-        <img
-          src={movie.posterUrl}
-          alt={movie.title}
-          className="w-full h-48 sm:h-56 md:h-64 lg:h-72 object-fill rounded-t-lg transform transition-transform duration-500 group-hover:scale-110"
-        />
+const RecommandedMovies = ({ currentVideoId }) => {
+  const { data: videos = [], isLoading } = useGetRecommendedVideosQuery({
+    videoId: currentVideoId,
+    limit: 8
+  });
 
-        {movie.status === "upcoming" && (
-          <span className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
-            Recommanded
-          </span>
-        )}
-      </div>
-
-      <div className="p-2 sm:p-3">
-        <h3 className="text-xs sm:text-sm font-semibold line-clamp-2 mb-1 sm:mb-2">
-          {movie.title}
-        </h3>
-
-        <div className="flex items-center justify-between mt-1">
-          <p className="flex items-center gap-1 text-[10px] sm:text-xs">
-            <FaLanguage className="text-red-500 text-[10px]" />
-            {movie.languages}
-          </p>
-
-          <p className="flex items-center gap-1 text-[10px] sm:text-xs">
-            <FaClock className="text-red-500 text-[10px]" />
-            {movie.duration}
-          </p>
-        </div>
-
-        {movie.likes && (
-          <div className="flex items-center gap-1 mt-1.5 sm:mt-2 text-[10px] sm:text-xs text-white bg-black px-2 py-1 rounded">
-            <FaThumbsUp className="text-green-400 text-[10px]" />
-            <span>{movie.likes} Likes</span>
-          </div>
-        )}
-      </div>
-    </Link>
-  </div>
-);
-
-// ----------------------
-// Main Component (Slider)
-// ----------------------
-const RecommandedMovies = () => {
-  const { data: moviesData = [], isLoading, isError } = useGetMoviesQuery();
-
-  console.log(moviesData);
-  // ⭐ Skeleton while loading
-  if (isLoading)
+  if (isLoading) {
     return (
-      <section className="py-5">
-        <div className="max-w-6xl mx-auto w-full px-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl md:text-3xl font-bold gradient-text">
-              Recommanded Movies
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {Array.from({ length: 5 }).map((_, idx) => (
-              <SkeletonCard key={idx} />
-            ))}
-          </div>
+      <div className="px-4 mt-6 mb-20">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-white">Recommended for You</h2>
         </div>
-      </section>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, idx) => (
+            <VideoSkeleton key={idx} />
+          ))}
+        </div>
+      </div>
     );
+  }
 
-  // ⭐ Error state
-  if (isError)
-    return (
-      <div className="text-center py-5 text-red-400">Error loading movies</div>
-    );
-
-  // ⭐ Filter only upcoming movies
-  const upcomingMovies = moviesData.filter(
-    (movie) => movie.status === "upcoming"
-  );
+  if (!videos || videos.length === 0) {
+    return null;
+  }
 
   return (
-    <section className="py-5">
-      <div className="max-w-6xl mx-auto w-full px-4">
-        {/* Title */}
-        <div className="flex items-center justify-between mb-4 ">
-          <h2 className="text-xl md:text-3xl font-bold gradient-text">
-            Recommanded Movies
-          </h2>
-
-          <Link
-            href="/watch-movies"
-            className="inline-flex items-center font-medium hover:bg-red-300 hover:text-black bg-gray-700 py-2 px-4 rounded-2xl text-xs md:text-sm"
-          >
-            View More <FaChevronRight className="ml-2" />
-          </Link>
-        </div>
-
-        {/* Slider */}
-        <Swiper
-          modules={[Autoplay]}
-          autoplay={{ delay: 2000 }}
-          spaceBetween={10}
-          loop={true}
-          breakpoints={{
-            0: { slidesPerView: 2 },
-            640: { slidesPerView: 3 },
-            768: { slidesPerView: 4 },
-            1024: { slidesPerView: 5 },
-          }}
+    <div className="px-4 mt-8 mb-20">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-white">Recommended for You</h2>
+        <Link
+          href="/watch-movies"
+          className="text-sm text-pink-400 hover:underline"
         >
-          {upcomingMovies.map((movie) => (
-            <SwiperSlide key={movie._id}>
-              <FilmCard movie={movie} />
-            </SwiperSlide>
-          ))}
-        </Swiper>
+          View All
+        </Link>
       </div>
-    </section>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        {videos.map((video) => (
+          <Link
+            key={video._id}
+            href={`/watch-movie-deatils?id=${video._id}`}
+            className="group rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:shadow-xl hover:border-pink-500/30 transition-all"
+          >
+            <div className="relative">
+              <img
+                src={video.thumbnailUrl || video.posterUrl || "/assets/img/placeholder-video.jpg"}
+                alt={video.title}
+                className="w-full h-40 sm:h-48 object-cover transition-transform group-hover:scale-105"
+              />
+              
+              {/* Video Type Badge */}
+              <span className={`absolute top-2 left-2 text-white text-xs px-2 py-0.5 rounded-full ${
+                video.videoType === 'series' ? 'bg-purple-600' : 'bg-blue-600'
+              }`}>
+                {video.videoType === 'series' ? 'Series' : 'Movie'}
+              </span>
+              
+              {/* Age Rating */}
+              <span className="absolute top-2 right-2 bg-black/70 text-xs text-white px-2 py-0.5 rounded">
+                {video.ageRating}
+              </span>
+
+              {/* Price Badge */}
+              <span className={`absolute bottom-2 right-2 text-white text-xs px-2 py-0.5 rounded ${
+                video.isFree ? 'bg-green-600' : 'bg-gradient-to-r from-yellow-600 to-orange-600'
+              }`}>
+                {video.isFree ? 'Free' : `₹${video.defaultPrice}`}
+              </span>
+
+              {/* Duration */}
+              <span className="absolute bottom-2 left-2 bg-black/70 text-xs text-white px-2 py-0.5 rounded">
+                {formatDuration(video.duration)}
+              </span>
+
+              {/* Hover Play Icon */}
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="bg-white/20 backdrop-blur-sm p-3 rounded-full">
+                  <FaPlay className="text-white text-lg" />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-3">
+              <h3 className="text-white text-sm font-medium line-clamp-2 mb-2 group-hover:text-pink-400 transition-colors">
+                {video.title}
+              </h3>
+
+              {/* Channel Info */}
+              {video.channelId && (
+                <p className="text-xs text-gray-400 truncate mb-2">
+                  {video.channelId.name}
+                </p>
+              )}
+
+              <div className="flex items-center gap-3 text-xs text-gray-400">
+                {video.languages?.[0] && (
+                  <span className="flex items-center gap-1">
+                    <FaLanguage className="text-pink-400" /> {video.languages[0]}
+                  </span>
+                )}
+                {video.averageRating > 0 && (
+                  <span className="flex items-center gap-1 text-yellow-400">
+                    <FaStar /> {video.averageRating.toFixed(1)}
+                  </span>
+                )}
+              </div>
+
+              {/* Stats */}
+              <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                {video.viewCount > 0 && (
+                  <span>{video.viewCount.toLocaleString()} views</span>
+                )}
+                {video.likeCount > 0 && (
+                  <span className="flex items-center gap-1">
+                    <FaThumbsUp className="text-green-400" />
+                    {video.likeCount}
+                  </span>
+                )}
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
   );
 };
 

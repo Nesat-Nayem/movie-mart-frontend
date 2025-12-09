@@ -12,6 +12,7 @@ import { eventsApi } from "./eventsApi";
 import { generalSettingsApi } from "./generalSettingsApi";
 import { advertisementApi } from "./advertisementApi";
 import { enquiryApi } from "./enquiryApi";
+import { watchVideosApi } from "./watchVideosApi";
 import eventBookingReducer from "./eventBookingSlice";
 
 export const store = configureStore({
@@ -29,6 +30,7 @@ export const store = configureStore({
     [generalSettingsApi.reducerPath]: generalSettingsApi.reducer,
     [advertisementApi.reducerPath]: advertisementApi.reducer,
     [enquiryApi.reducerPath]: enquiryApi.reducer,
+    [watchVideosApi.reducerPath]: watchVideosApi.reducer,
     eventBooking: eventBookingReducer,
   },
   middleware: (getDefaultMiddleware) =>
@@ -45,6 +47,7 @@ export const store = configureStore({
       eventsApi.middleware,
       generalSettingsApi.middleware,
       advertisementApi.middleware,
-      enquiryApi.middleware
+      enquiryApi.middleware,
+      watchVideosApi.middleware
     ),
 });
