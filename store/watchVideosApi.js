@@ -178,10 +178,23 @@ export const watchVideosApi = createApi({
 
     /** Get all watch videos */
     getWatchVideos: builder.query({
-      query: (params) => ({
-        url: "/watch-videos",
-        params: params || {},
-      }),
+      query: (params) => {
+        // Filter out empty string values to avoid validation errors
+        const cleanParams = {};
+        if (params) {
+          Object.keys(params).forEach(key => {
+            const value = params[key];
+            // Only include non-empty values
+            if (value !== '' && value !== null && value !== undefined) {
+              cleanParams[key] = value;
+            }
+          });
+        }
+        return {
+          url: "/watch-videos",
+          params: cleanParams,
+        };
+      },
       transformResponse: (response) => ({
         videos: response.data,
         meta: response.meta,
@@ -191,10 +204,15 @@ export const watchVideosApi = createApi({
 
     /** Get watch video by ID */
     getWatchVideoById: builder.query({
-      query: ({ id, userId, countryCode }) => ({
-        url: `/watch-videos/${id}`,
-        params: { userId, countryCode },
-      }),
+      query: ({ id, userId, countryCode }) => {
+        // Build params object, excluding null/undefined values
+        const params = { countryCode };
+        if (userId) params.userId = userId;
+        return {
+          url: `/watch-videos/${id}`,
+          params,
+        };
+      },
       transformResponse: (response) => response.data,
       providesTags: (result, error, { id }) => [{ type: "WatchVideos", id }],
     }),

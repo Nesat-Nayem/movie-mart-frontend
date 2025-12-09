@@ -26,6 +26,7 @@ import {
   useGetVideoReviewsQuery,
   useAddVideoReviewMutation,
 } from "../../../store/watchVideosApi";
+import { load } from "@cashfreepayments/cashfree-js";
 
 // Format duration from seconds
 const formatDuration = (seconds) => {
@@ -83,16 +84,30 @@ const WatchMovieDetails = () => {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState('');
   const [selectedSeason, setSelectedSeason] = useState(0);
+  const [cashfree, setCashfree] = useState(null);
 
-  // Initialize user data
+  // Initialize user data and Cashfree SDK
   useEffect(() => {
     setUserId(getUserId());
     setCountryCode(getUserCountry());
+    
+    // Initialize Cashfree SDK
+    const initCashfree = async () => {
+      try {
+        const cf = await load({
+          mode: process.env.NEXT_PUBLIC_CASHFREE_ENV === "production" ? "production" : "sandbox",
+        });
+        setCashfree(cf);
+      } catch (error) {
+        console.error("Failed to load Cashfree:", error);
+      }
+    };
+    initCashfree();
   }, []);
 
-  // Fetch video data
+  // Fetch video data - skip if no videoId, pass userId only if available
   const { data: video, isLoading, isError, refetch } = useGetWatchVideoByIdQuery(
-    { id: videoId, userId, countryCode },
+    { id: videoId, userId: userId || undefined, countryCode },
     { skip: !videoId }
   );
 
@@ -140,6 +155,11 @@ const WatchMovieDetails = () => {
       return;
     }
 
+    if (!cashfree) {
+      alert('Payment system is loading. Please try again in a moment.');
+      return;
+    }
+
     setPaymentLoading(true);
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -174,13 +194,17 @@ const WatchMovieDetails = () => {
   // Cashfree payment SDK integration
   const initiateCashfreePayment = async (cashfreeOrder) => {
     try {
-      const cashfree = await load({ mode: process.env.NEXT_PUBLIC_CASHFREE_ENV || 'sandbox' });
+      if (!cashfree) {
+        alert('Payment system not ready. Please try again.');
+        return;
+      }
       await cashfree.checkout({
         paymentSessionId: cashfreeOrder.paymentSessionId,
         redirectTarget: '_self',
       });
     } catch (error) {
       console.error('Cashfree error:', error);
+      alert('Payment failed. Please try again.');
     }
   };
 
