@@ -309,14 +309,6 @@ const VideoPlayer = ({
             <h2 className="text-white text-lg font-medium truncate">{title}</h2>
           </div>
         )}
-
-        {/* Fullscreen Toggle */}
-        <button 
-          onClick={toggleFullscreen}
-          className="absolute bottom-4 right-4 text-white bg-black/50 p-2 rounded-lg hover:bg-black/70 transition-colors z-10"
-        >
-          {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
-        </button>
       </div>
     );
   }
