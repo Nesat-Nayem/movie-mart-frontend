@@ -687,8 +687,13 @@ const WatchMovieDetails = () => {
             </div>
           </div>
 
-          {/* Recommended Videos */}
-          <RecommandedMovies currentVideoId={videoId} />
+          {/* Recommended Videos / Episodes */}
+          <RecommandedMovies 
+            currentVideoId={videoId} 
+            currentVideo={video}
+            currentSeason={selectedSeason + 1}
+            currentEpisode={1}
+          />
         </div>
       </div>
     </section>

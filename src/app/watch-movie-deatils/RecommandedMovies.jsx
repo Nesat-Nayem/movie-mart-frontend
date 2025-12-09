@@ -16,23 +16,72 @@ const formatDuration = (seconds) => {
 
 // Loading skeleton
 const VideoSkeleton = () => (
-  <div className="rounded-xl overflow-hidden bg-gray-800/50 animate-pulse">
-    <div className="h-40 sm:h-48 bg-gray-700" />
+  <div className="rounded-xl overflow-hidden bg-gray-800/50 animate-shimmer bg-[length:200%_100%]">
+    <div className="h-40 sm:h-48 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800" />
     <div className="p-3 space-y-2">
-      <div className="h-4 bg-gray-700 rounded w-3/4" />
+      <div className="h-4 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded w-3/4" />
       <div className="flex gap-2">
-        <div className="h-3 bg-gray-700 rounded w-1/3" />
-        <div className="h-3 bg-gray-700 rounded w-1/4" />
+        <div className="h-3 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded w-1/3" />
+        <div className="h-3 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded w-1/4" />
       </div>
-      <div className="h-6 bg-gray-700 rounded w-1/2" />
+      <div className="h-6 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded w-1/2" />
     </div>
   </div>
 );
 
-const RecommandedMovies = ({ currentVideoId }) => {
+// Episode card for series
+const EpisodeCard = ({ episode, seasonNumber, videoId, isCurrentEpisode }) => (
+  <Link
+    href={`/watch-movie-deatils?id=${videoId}&season=${seasonNumber}&episode=${episode.episodeNumber}`}
+    className={`group rounded-xl overflow-hidden border transition-all ${
+      isCurrentEpisode 
+        ? 'bg-pink-500/20 border-pink-500' 
+        : 'bg-white/5 border-white/10 hover:border-pink-500/30'
+    }`}
+  >
+    <div className="relative">
+      <img
+        src={episode.thumbnailUrl || "/assets/img/placeholder-video.jpg"}
+        alt={episode.title}
+        className="w-full h-32 sm:h-36 object-cover transition-transform group-hover:scale-105"
+      />
+      <span className="absolute top-2 left-2 bg-purple-600 text-white text-xs px-2 py-0.5 rounded-full">
+        S{seasonNumber} E{episode.episodeNumber}
+      </span>
+      <span className="absolute bottom-2 left-2 bg-black/70 text-xs text-white px-2 py-0.5 rounded">
+        {formatDuration(episode.duration)}
+      </span>
+      {!isCurrentEpisode && (
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="bg-white/20 backdrop-blur-sm p-2 rounded-full">
+            <FaPlay className="text-white text-sm" />
+          </div>
+        </div>
+      )}
+      {isCurrentEpisode && (
+        <div className="absolute inset-0 bg-pink-500/30 flex items-center justify-center">
+          <span className="bg-pink-600 text-white text-xs px-2 py-1 rounded">Now Playing</span>
+        </div>
+      )}
+    </div>
+    <div className="p-2">
+      <h4 className="text-white text-sm font-medium line-clamp-1 group-hover:text-pink-400 transition-colors">
+        {episode.title}
+      </h4>
+    </div>
+  </Link>
+);
+
+const RecommandedMovies = ({ currentVideoId, currentVideo, currentSeason, currentEpisode }) => {
+  // Check if current video is a series with episodes
+  const isSeries = currentVideo?.videoType === 'series' && currentVideo?.seasons?.length > 0;
+  
+  // Fetch recommended videos (used for single videos or as fallback)
   const { data: videos = [], isLoading } = useGetRecommendedVideosQuery({
     videoId: currentVideoId,
     limit: 8
+  }, {
+    skip: isSeries // Skip if it's a series, we'll show episodes instead
   });
 
   if (isLoading) {
@@ -50,6 +99,43 @@ const RecommandedMovies = ({ currentVideoId }) => {
     );
   }
 
+  // For series: show episodes
+  if (isSeries) {
+    return (
+      <div className="px-4 mt-8 mb-20">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-white">
+            Episodes - {currentVideo.title}
+          </h2>
+        </div>
+
+        {currentVideo.seasons.map((season) => (
+          <div key={season.seasonNumber} className="mb-6">
+            <h3 className="text-md font-medium text-gray-300 mb-3">
+              Season {season.seasonNumber}: {season.title || ''}
+              <span className="text-gray-500 text-sm ml-2">({season.episodes?.length || 0} episodes)</span>
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {season.episodes?.map((episode) => (
+                <EpisodeCard
+                  key={`${season.seasonNumber}-${episode.episodeNumber}`}
+                  episode={episode}
+                  seasonNumber={season.seasonNumber}
+                  videoId={currentVideoId}
+                  isCurrentEpisode={
+                    currentSeason === season.seasonNumber && 
+                    currentEpisode === episode.episodeNumber
+                  }
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // For single videos: show recommended
   if (!videos || videos.length === 0) {
     return null;
   }
