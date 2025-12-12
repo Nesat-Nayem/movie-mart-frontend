@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   images: {
     domains: [
       "www.youtube.com",
-      "ifmdb.vercel.app",
+      "moviemart.vercel.app",
       "assets.img.com",
       "res.cloudinary.com",
       "www.filmofilia.com",
