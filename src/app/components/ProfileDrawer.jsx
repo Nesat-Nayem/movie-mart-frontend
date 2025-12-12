@@ -141,7 +141,7 @@ const ProfileDrawer = () => {
               { href: "/profile-settings", label: "⚙️ Accounts & Settings", requireAuth: true },
               {
                 href: "/become-vendor",
-                label: "🚀 Become A Vendor",
+                label: "🚀 Partner With Us",
                 highlight: true,
               },
             ].map((item) => {
