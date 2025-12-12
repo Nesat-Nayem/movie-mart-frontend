@@ -298,7 +298,7 @@ const BecomeAVendor = () => {
           {/* Step 1 - Vendor Info */}
           {step === 1 && (
             <div className="space-y-4 animate-fadeIn">
-              {[{ label: "Vendor Name", name: "vendorName", type: "text" },
+              {[{ label: "Partner Name", name: "vendorName", type: "text" },
                 { label: "Business Type", name: "businessType", type: "text" },
                 { label: "GST Number", name: "gstNumber", type: "text" },
                 { label: "PAN Number", name: "panNumber", type: "text" },
