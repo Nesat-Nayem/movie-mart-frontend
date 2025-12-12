@@ -11,7 +11,7 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { icon: FaShoppingBasket, label: "Film Mart", href: "/film-mart" },
+    { icon: FaShoppingBasket, label: "Film Trade", href: "/film-mart" },
     { icon: FaCalendarAlt, label: "Events", href: "/events" },
     { icon: FaFilm, label: "Watch Movies", href: "/watch-movies" },
   ];

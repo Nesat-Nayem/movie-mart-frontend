@@ -16,7 +16,7 @@ const Header = () => {
         <ul className="flex items-center flex-nowrap space-x-1 sm:space-x-2 md:space-x-4 text-xs sm:text-sm md:text-base font-medium">
           <li className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-xl cursor-pointer hover:text-red-400 hover:bg-gray-700 transition whitespace-nowrap">
             <FaShoppingBasket className="text-sm sm:text-base" />
-            <Link href="/film-mart">Film Mart</Link>
+            <Link href="/film-mart">Film Trade</Link>
           </li>
           <li className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-xl cursor-pointer hover:text-red-400 hover:bg-gray-700 transition whitespace-nowrap">
             <FaCalendarAlt className="text-sm sm:text-base" />
