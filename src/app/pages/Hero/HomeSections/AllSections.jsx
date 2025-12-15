@@ -7,7 +7,7 @@ import WatchVideoSection from "./WatchVideoSection";
 
 // Section divider with gradient
 const SectionDivider = ({ title, subtitle }) => (
-  <div className="w-full px-4 md:px-8 lg:px-12 py-8">
+  <div className="w-full px-4 md:px-8  py-8">
     <div className="relative">
       <div className="absolute inset-0 flex items-center">
         <div className="w-full border-t border-gray-700"></div>

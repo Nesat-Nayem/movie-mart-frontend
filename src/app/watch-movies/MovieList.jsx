@@ -194,7 +194,7 @@ const MovieList = () => {
 
   return (
     <section className="min-h-screen">
-      <div className="w-full px-4 md:px-8 lg:px-12">
+      <div className="w-full px-4 md:px-8 ">
         <div className="flex gap-6 py-4">
           {/* Left filter - visible only on lg+ */}
           <div className="hidden lg:block w-72 flex-shrink-0">

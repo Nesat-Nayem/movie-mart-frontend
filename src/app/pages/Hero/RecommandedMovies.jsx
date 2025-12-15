@@ -90,7 +90,7 @@ const UpcomingMovies = () => {
   if (isLoading)
     return (
       <section className="py-5">
-        <div className="w-full px-4 md:px-8 lg:px-12">
+        <div className="w-full px-4 md:px-8 ">
           <div className="flex items-center justify-between mb-4">
             <div className="h-8 w-48 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full" />
             <div className="h-10 w-28 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full" />
@@ -117,7 +117,7 @@ const UpcomingMovies = () => {
 
   return (
     <section className="py-5">
-      <div className="w-full px-4 md:px-8 lg:px-12">
+      <div className="w-full px-4 md:px-8 ">
         {/* Title */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl md:text-3xl font-bold gradient-text">

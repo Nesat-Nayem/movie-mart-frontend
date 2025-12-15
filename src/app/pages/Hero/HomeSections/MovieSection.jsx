@@ -70,7 +70,7 @@ const MovieSection = ({ homeSection, title, viewMoreLink = "/film-mart" }) => {
 
   return (
     <section className="py-5">
-      <div className="w-full px-4 md:px-8 lg:px-12">
+      <div className="w-full px-4 md:px-8 ">
         {/* Title */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl md:text-3xl font-bold gradient-text">

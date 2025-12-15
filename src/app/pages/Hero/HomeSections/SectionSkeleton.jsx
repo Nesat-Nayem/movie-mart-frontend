@@ -20,7 +20,7 @@ const SkeletonCard = () => (
 // Section skeleton with title
 const SectionSkeleton = ({ title }) => (
   <section className="py-5">
-    <div className="w-full px-4 md:px-8 lg:px-12">
+    <div className="w-full px-4 md:px-8 ">
       <div className="flex items-center justify-between mb-4">
         {title ? (
           <h2 className="text-xl md:text-3xl font-bold gradient-text">{title}</h2>

@@ -26,7 +26,7 @@ const Faq = () => {
   if (isLoading) {
     return (
       <section className="py-6">
-        <div className="w-full px-4 md:px-8 lg:px-12">
+        <div className="w-full px-4 md:px-8 ">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-2">
             <div className="h-8 w-72 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full" />
           </div>
@@ -41,7 +41,7 @@ const Faq = () => {
 
   return (
     <section className="py-6">
-      <div className="w-full px-4 md:px-8 lg:px-12">
+      <div className="w-full px-4 md:px-8 ">
         {/* Title */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-2">
           <h2 className="text-xl md:text-3xl font-bold bg-gradient-to-r from-red-500 to-yellow-500 bg-clip-text text-transparent">

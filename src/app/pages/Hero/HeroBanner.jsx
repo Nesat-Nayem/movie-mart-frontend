@@ -45,7 +45,7 @@ const HeroBanner = () => {
       ));
 
   return (
-    <section className="w-full relative px-4 md:px-8 lg:px-12 py-4">
+    <section className="w-full relative px-4 md:px-8  py-4">
       <Swiper
         modules={[Navigation, Pagination, Autoplay]}
         pagination={{ clickable: true }}

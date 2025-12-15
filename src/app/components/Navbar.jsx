@@ -35,7 +35,7 @@ const Navbar = () => {
                 href={item.href}
                 className="flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full text-sm font-medium hover:text-red-400 hover:bg-gray-700/50 transition-all duration-200"
               >
-                <item.icon className="text-md" />
+                <item.icon className="text-lg lg:text-xl" />
                 <span>{item.label}</span>
               </Link>
             ))}

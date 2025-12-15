@@ -116,7 +116,7 @@ const MovieDetailsSkeleton = () => (
     {/* Header Skeleton */}
     <div className="w-full h-[200px] sm:h-[320px] lg:h-[400px] bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-b-2xl" />
     
-    <div className="px-4 md:px-8 lg:px-12 mt-4 space-y-6">
+    <div className="px-4 md:px-8  mt-4 space-y-6">
       {/* Title */}
       <div className="space-y-3">
         <div className="h-8 w-2/3 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full" />
@@ -225,7 +225,7 @@ const FilmMartDetails = () => {
   if (isError || !movie) {
     return (
       <section>
-        <div className="w-full px-4 md:px-8 lg:px-12 py-20 text-center">
+        <div className="w-full px-4 md:px-8  py-20 text-center">
           <div className="max-w-md mx-auto">
             <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-4xl">🎬</span>
@@ -262,7 +262,7 @@ const FilmMartDetails = () => {
         {/* Show blurred/restricted background */}
         <div className="w-full min-h-screen relative">
           <div className="absolute inset-0 bg-gradient-to-b from-gray-900 to-black" />
-          <div className="relative px-4 md:px-8 lg:px-12 py-20 text-center">
+          <div className="relative px-4 md:px-8  py-20 text-center">
             <div className="max-w-md mx-auto">
               <div className="w-24 h-24 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Lock className="w-12 h-12 text-white" />
@@ -300,7 +300,7 @@ const FilmMartDetails = () => {
           <FilmMartHeader movie={movie} />
 
           {/* Movie Info */}
-          <div className="px-4 md:px-8 lg:px-12 mt-4">
+          <div className="px-4 md:px-8  mt-4">
             {/* Title and Basic Info */}
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
               <div className="flex-1">
@@ -398,7 +398,7 @@ const FilmMartDetails = () => {
 
           {/* Buy Movie Section */}
           {movie.status === "released" && (
-            <div className="px-4 md:px-8 lg:px-12 mt-6">
+            <div className="px-4 md:px-8  mt-6">
               <h2 className="text-lg font-semibold mb-2">Buy This Movie</h2>
               <div className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-xl p-4 flex justify-between items-center border border-pink-500/30">
                 <div>
@@ -413,7 +413,7 @@ const FilmMartDetails = () => {
           )}
 
           {/* Cast Section */}
-          <div className="px-4 md:px-8 lg:px-12 mt-8">
+          <div className="px-4 md:px-8  mt-8">
             <h2 className="text-lg font-semibold mb-3">Cast</h2>
             {castMembers.length > 0 ? (
               <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide">
@@ -439,7 +439,7 @@ const FilmMartDetails = () => {
           </div>
 
           {/* Crew Section */}
-          <div className="px-4 md:px-8 lg:px-12 mt-8">
+          <div className="px-4 md:px-8  mt-8">
             <h2 className="text-lg font-semibold mb-3">Crew</h2>
             {crewMembers.length > 0 ? (
               <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide">
@@ -466,7 +466,7 @@ const FilmMartDetails = () => {
 
           {/* Asking Price Section - Country-wise Pricing */}
           {movie.countryPricing && movie.countryPricing.length > 0 && (
-            <div className="px-4 md:px-8 lg:px-12 mt-8">
+            <div className="px-4 md:px-8  mt-8">
               <div className="bg-gradient-to-br from-amber-900/20 via-orange-900/10 to-red-900/20 rounded-2xl p-5 md:p-6 border border-amber-500/20">
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
@@ -544,7 +544,7 @@ const FilmMartDetails = () => {
 
                {/* Company Details */}
           {movie.company && (
-            <div className="px-4 md:px-8 lg:px-12 mt-8">
+            <div className="px-4 md:px-8  mt-8">
               <div className="bg-white/5 rounded-xl p-5">
                 <h2 className="text-lg font-semibold mb-4">Company Details</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
