@@ -101,8 +101,69 @@ const BecomeAVendor = () => {
     }
   };
 
+  // ✅ Step Validation
+  const validateStep = (currentStep) => {
+    switch (currentStep) {
+      case 1: // Vendor Info
+        if (!formData.vendorName.trim()) {
+          toast.error("Please enter your name");
+          return false;
+        }
+        if (!formData.businessType.trim()) {
+          toast.error("Please enter your business name");
+          return false;
+        }
+        if (!formData.email.trim()) {
+          toast.error("Please enter your email");
+          return false;
+        }
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+          toast.error("Please enter a valid email address");
+          return false;
+        }
+        if (!formData.phone.trim()) {
+          toast.error("Please enter your phone number");
+          return false;
+        }
+        // Phone validation (at least 10 digits)
+        const phoneDigits = formData.phone.replace(/\D/g, '');
+        if (phoneDigits.length < 10) {
+          toast.error("Please enter a valid phone number (at least 10 digits)");
+          return false;
+        }
+        if (!formData.address.trim()) {
+          toast.error("Please enter your address");
+          return false;
+        }
+        return true;
+
+      case 2: // KYC Upload - Optional, so always valid
+        return true;
+
+      case 3: // Select Services
+        if (!selectedServices.film_trade && !selectedServices.events && !selectedServices.movie_watch) {
+          toast.error("Please select at least one service");
+          return false;
+        }
+        if (selectedServices.film_trade && !selectedPackageId) {
+          toast.error("Please select a Film Trade package");
+          return false;
+        }
+        return true;
+
+      default:
+        return true;
+    }
+  };
+
   // ✅ Navigation
-  const nextStep = () => setStep((prev) => Math.min(prev + 1, steps.length));
+  const nextStep = () => {
+    if (validateStep(step)) {
+      setStep((prev) => Math.min(prev + 1, steps.length));
+    }
+  };
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
   // Calculate total amount
@@ -311,18 +372,22 @@ const BecomeAVendor = () => {
           {/* Step 1 - Vendor Info */}
           {step === 1 && (
             <div className="space-y-4 animate-fadeIn">
-              {[{ label: "Partner Name", name: "vendorName", type: "text", required: true },
-                { label: "Business Type", name: "businessType", type: "text", required: true },
+              {[{ label: "Name", name: "vendorName", type: "text", required: true },
+                { label: "Business Name", name: "businessType", type: "text", required: true },
                 { label: "GST Number (Optional)", name: "gstNumber", type: "text", required: false },
                 { label: "Email", name: "email", type: "email", required: true },
                 { label: "Phone", name: "phone", type: "text", required: true }].map((field) => (
                 <div key={field.name}>
-                  <label>{field.label}</label>
+                  <label className="text-gray-300">
+                    {field.label}
+                    {field.required && <span className="text-red-500 ml-1">*</span>}
+                  </label>
                   <input
                     type={field.type}
                     name={field.name}
                     value={formData[field.name]}
                     onChange={handleChange}
+                    required={field.required}
                     className="w-full bg-gray-800 border border-gray-400 text-xs py-3 px-2 rounded"
                   />
                 </div>
@@ -350,11 +415,14 @@ const BecomeAVendor = () => {
                 </select>
               </div>
 
-              <label>Address</label>
+              <label className="text-gray-300">
+                Address <span className="text-red-500">*</span>
+              </label>
               <textarea
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
+                required
                 className="w-full bg-gray-800 border border-gray-400 text-xs py-3 px-2 rounded"
               />
             </div>
@@ -455,7 +523,13 @@ const BecomeAVendor = () => {
                     </p>
                     
                     {selectedServices.film_trade && (
-                      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      <div className="mt-4">
+                        {!selectedPackageId && (
+                          <p className="text-red-400 text-sm mb-3 flex items-center gap-2">
+                            <span>⚠️</span> Please select a package to continue
+                          </p>
+                        )}
+                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         {packages.map((pkg) => (
                           <label
                             key={pkg._id}
@@ -489,6 +563,7 @@ const BecomeAVendor = () => {
                             </ul>
                           </label>
                         ))}
+                        </div>
                       </div>
                     )}
                   </div>
