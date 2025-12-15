@@ -310,6 +310,84 @@ const FilmMartDetails = () => {
             )}
           </div>
 
+          {/* Asking Price Section - Country-wise Pricing */}
+          {movie.countryPricing && movie.countryPricing.length > 0 && (
+            <div className="px-4 md:px-8 lg:px-12 mt-8">
+              <div className="bg-gradient-to-br from-amber-900/20 via-orange-900/10 to-red-900/20 rounded-2xl p-5 md:p-6 border border-amber-500/20">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
+                    <span className="text-xl">💰</span>
+                  </div>
+                  <div>
+                    <h2 className="text-lg md:text-xl font-bold text-white">Asking Price</h2>
+                    <p className="text-xs text-gray-400">Country-wise film rights pricing</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {movie.countryPricing.map((pricing, idx) => (
+                    <div 
+                      key={idx} 
+                      className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:border-amber-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/10"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl">
+                            {pricing.countryCode === 'IN' ? '🇮🇳' :
+                             pricing.countryCode === 'US' ? '🇺🇸' :
+                             pricing.countryCode === 'GB' ? '🇬🇧' :
+                             pricing.countryCode === 'AE' ? '🇦🇪' :
+                             pricing.countryCode === 'AU' ? '🇦🇺' :
+                             pricing.countryCode === 'CA' ? '🇨🇦' :
+                             pricing.countryCode === 'DE' ? '🇩🇪' :
+                             pricing.countryCode === 'FR' ? '🇫🇷' :
+                             pricing.countryCode === 'JP' ? '🇯🇵' :
+                             pricing.countryCode === 'CN' ? '🇨🇳' :
+                             pricing.countryCode === 'SG' ? '🇸🇬' :
+                             pricing.countryCode === 'MY' ? '🇲🇾' :
+                             pricing.countryCode === 'SA' ? '🇸🇦' :
+                             pricing.countryCode === 'ZA' ? '🇿🇦' :
+                             pricing.countryCode === 'BR' ? '🇧🇷' :
+                             pricing.countryCode === 'RU' ? '🇷🇺' :
+                             pricing.countryCode === 'KR' ? '🇰🇷' :
+                             pricing.countryCode === 'NZ' ? '🇳🇿' :
+                             pricing.countryCode === 'BD' ? '🇧🇩' :
+                             pricing.countryCode === 'PK' ? '🇵🇰' : '🌍'}
+                          </span>
+                          <span className="font-semibold text-white">{pricing.countryName}</span>
+                        </div>
+                        {pricing.negotiable && (
+                          <span className="text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full border border-green-500/30">
+                            Negotiable
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xs text-gray-400">{pricing.currency}</span>
+                        <span className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
+                          {pricing.askingPrice?.toLocaleString() || '0'}
+                        </span>
+                      </div>
+                      
+                      {pricing.notes && (
+                        <p className="mt-2 text-xs text-gray-400 line-clamp-2">
+                          {pricing.notes}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="mt-5 pt-4 border-t border-white/10">
+                  <p className="text-xs text-gray-400 text-center">
+                    💡 Contact us for detailed pricing information and negotiations
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
                {/* Company Details */}
           {movie.company && (
             <div className="px-4 md:px-8 lg:px-12 mt-8">
