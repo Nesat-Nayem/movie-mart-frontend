@@ -191,6 +191,14 @@ const FilmMartDetails = () => {
               ))}
             </div>
 
+                   {/* Synopsis */}
+            <div className="mt-6">
+              <h2 className="text-lg font-semibold mb-2">Synopsis</h2>
+              <p className="text-gray-300 text-sm leading-relaxed">
+                {movie.description}
+              </p>
+            </div>
+
             {/* Crew + Buttons */}
             <div className="flex flex-col md:flex-row md:items-start md:justify-between mt-6 gap-4">
               {/* Crew Details */}
@@ -228,13 +236,10 @@ const FilmMartDetails = () => {
               <Actions movie={movie} />
             </div>
 
-            {/* Synopsis */}
-            <div className="mt-6">
-              <h2 className="text-lg font-semibold mb-2">Synopsis</h2>
-              <p className="text-gray-300 text-sm leading-relaxed">
-                {movie.description}
-              </p>
-            </div>
+     
+
+
+
           </div>
 
           {/* Buy Movie Section */}
@@ -305,13 +310,7 @@ const FilmMartDetails = () => {
             )}
           </div>
 
-          {/* Ads */}
-          <Advertise />
-
-          {/* Recommended Movies */}
-          <RecommandedMovies />
-
-          {/* Company Details */}
+               {/* Company Details */}
           {movie.company && (
             <div className="px-4 md:px-8 lg:px-12 mt-8">
               <div className="bg-white/5 rounded-xl p-5">
@@ -377,6 +376,14 @@ const FilmMartDetails = () => {
               </div>
             </div>
           )}
+
+          {/* Ads */}
+          <Advertise />
+
+          {/* Recommended Movies */}
+          <RecommandedMovies />
+
+     
 
           {/* Bottom Fixed Button */}
           <div className="fixed bottom-0 left-0 right-0 bg-[#0B1730] border-t border-gray-700 p-4 z-50">
