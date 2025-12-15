@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
 import { useGetGeneralSettingsQuery } from "../../../store/generalSettingsApi";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.moviemart.org/v1/api";
 
 const Login = () => {
   const { login, isAuthenticated } = useAuth();
