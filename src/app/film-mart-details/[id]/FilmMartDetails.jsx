@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   MapPin,
   Globe,
@@ -10,6 +10,9 @@ import {
   Star,
   Clock,
   Calendar,
+  X,
+  ShieldCheck,
+  Lock,
 } from "lucide-react";
 import Image from "next/image";
 import { User, Clapperboard, Building2 } from "lucide-react";
@@ -20,6 +23,92 @@ import FilmMartHeader from "./FilmMartHeader";
 import RecommandedMovies from "../../pages/Hero/RecommandedMovies";
 import Advertise from "@/app/components/Advertise";
 import { useGetMovieByIdQuery } from "../../../../store/moviesApi";
+import { useAuth } from "@/context/AuthContext";
+
+// Vendor Access Modal Component
+const VendorAccessModal = ({ isOpen, onClose, onBecomePartner }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      
+      {/* Modal */}
+      <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl max-w-md w-full p-6 md:p-8 border border-white/10 shadow-2xl animate-in fade-in zoom-in duration-300">
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+        >
+          <X className="w-4 h-4 text-white" />
+        </button>
+
+        {/* Icon */}
+        <div className="flex justify-center mb-6">
+          <div className="w-20 h-20 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
+            <Lock className="w-10 h-10 text-white" />
+          </div>
+        </div>
+
+        {/* Title */}
+        <h2 className="text-2xl md:text-3xl font-bold text-white text-center mb-3">
+          Vendor Access Only
+        </h2>
+
+        {/* Description */}
+        <p className="text-gray-400 text-center mb-6 leading-relaxed">
+          Film Trade details are exclusively available for verified vendor partners. 
+          Become a partner to access film rights, pricing, and business opportunities.
+        </p>
+
+        {/* Benefits */}
+        <div className="bg-white/5 rounded-xl p-4 mb-6 space-y-3">
+          <div className="flex items-center gap-3">
+            <ShieldCheck className="w-5 h-5 text-green-400 flex-shrink-0" />
+            <span className="text-sm text-gray-300">Access exclusive film trade deals</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <ShieldCheck className="w-5 h-5 text-green-400 flex-shrink-0" />
+            <span className="text-sm text-gray-300">View country-wise asking prices</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <ShieldCheck className="w-5 h-5 text-green-400 flex-shrink-0" />
+            <span className="text-sm text-gray-300">Connect with production houses</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <ShieldCheck className="w-5 h-5 text-green-400 flex-shrink-0" />
+            <span className="text-sm text-gray-300">List your own films for trade</span>
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={onBecomePartner}
+            className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-amber-500/25"
+          >
+            Become a Partner
+          </button>
+          <button
+            onClick={onClose}
+            className="flex-1 bg-white/10 hover:bg-white/20 text-white font-medium py-3 px-6 rounded-xl transition-colors border border-white/10"
+          >
+            Close
+          </button>
+        </div>
+
+        {/* Footer note */}
+        <p className="text-xs text-gray-500 text-center mt-4">
+          Already a vendor? Make sure you're logged in with your vendor account.
+        </p>
+      </div>
+    </div>
+  );
+};
 
 // Modern Shimmer Skeleton
 const MovieDetailsSkeleton = () => (
@@ -81,11 +170,34 @@ const MovieDetailsSkeleton = () => (
 const FilmMartDetails = () => {
   const router = useRouter();
   const { id } = useParams();
+  const { user, loading: authLoading } = useAuth();
+  const [showAccessModal, setShowAccessModal] = useState(false);
+
+  // Check if user is a vendor
+  const isVendor = user?.role === 'vendor' || user?.role === 'admin';
 
   // Fetch single movie by ID - more efficient than fetching all movies
   const { data: movie, isLoading, isError } = useGetMovieByIdQuery(id, {
     skip: !id,
   });
+
+  // Show access modal for non-vendor users after auth loads
+  useEffect(() => {
+    if (!authLoading && !isVendor) {
+      setShowAccessModal(true);
+    }
+  }, [authLoading, isVendor]);
+
+  // Handle become partner button
+  const handleBecomePartner = () => {
+    router.push('/become-vendor');
+  };
+
+  // Handle close modal - redirect to film mart list
+  const handleCloseModal = () => {
+    setShowAccessModal(false);
+    router.push('/film-mart');
+  };
 
   // Function to format date
   const formatDate = (dateString) => {
@@ -137,6 +249,48 @@ const FilmMartDetails = () => {
   const crewMembers = movie.crew || movie.castCrew?.filter(p => 
     p.role !== "actor" && p.role !== "actress" && p.role !== "Actor" && p.role !== "Actress"
   ) || [];
+
+  // If not vendor, show modal and restricted content
+  if (!isVendor && !authLoading) {
+    return (
+      <section>
+        <VendorAccessModal 
+          isOpen={showAccessModal}
+          onClose={handleCloseModal}
+          onBecomePartner={handleBecomePartner}
+        />
+        {/* Show blurred/restricted background */}
+        <div className="w-full min-h-screen relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-gray-900 to-black" />
+          <div className="relative px-4 md:px-8 lg:px-12 py-20 text-center">
+            <div className="max-w-md mx-auto">
+              <div className="w-24 h-24 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Lock className="w-12 h-12 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-3">Vendor Access Required</h2>
+              <p className="text-gray-400 mb-8">
+                This Film Trade details page is exclusively available for verified vendor partners.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button
+                  onClick={handleBecomePartner}
+                  className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300"
+                >
+                  Become a Partner
+                </button>
+                <button
+                  onClick={() => router.push('/film-mart')}
+                  className="bg-white/10 hover:bg-white/20 text-white font-medium py-3 px-8 rounded-xl transition-colors"
+                >
+                  Back to Film Mart
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section>

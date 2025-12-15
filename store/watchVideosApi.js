@@ -266,6 +266,29 @@ export const watchVideosApi = createApi({
       providesTags: ["WatchVideos"],
     }),
 
+    /** Get related videos for "Related For You" section based on genres/category */
+    getRelatedVideos: builder.query({
+      query: ({ videoId, genres, categoryId, limit = 10 }) => {
+        const params = { limit, status: 'published' };
+        if (genres && genres.length > 0) {
+          params.genres = genres.join(',');
+        }
+        if (categoryId) {
+          params.categoryId = categoryId;
+        }
+        return {
+          url: "/watch-videos",
+          params,
+        };
+      },
+      transformResponse: (response, meta, arg) => {
+        // Filter out the current video from results
+        const videos = response.data || [];
+        return videos.filter(v => v._id !== arg.videoId);
+      },
+      providesTags: ["WatchVideos"],
+    }),
+
     /** Get videos by home section */
     getVideosByHomeSection: builder.query({
       query: ({ homeSection, limit = 10 }) => ({
@@ -490,6 +513,7 @@ export const {
   useGetFeaturedVideosQuery,
   useGetTrendingVideosQuery,
   useGetRecommendedVideosQuery,
+  useGetRelatedVideosQuery,
   useGetVideosByHomeSectionQuery,
   
   // Episode hooks

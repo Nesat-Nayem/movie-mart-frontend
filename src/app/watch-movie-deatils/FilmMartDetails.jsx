@@ -12,6 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 import VideoPlayer from "./VideoPlayer";
 import RecommandedMovies from "./RecommandedMovies";
+import RelatedForYou from "./RelatedForYou";
 import {
   useGetWatchVideoByIdQuery,
   useCheckVideoAccessQuery,
@@ -693,6 +694,12 @@ const WatchMovieDetails = () => {
             currentVideo={video}
             currentSeason={selectedSeason + 1}
             currentEpisode={1}
+          />
+
+          {/* Related For You Section */}
+          <RelatedForYou 
+            currentVideoId={videoId}
+            currentVideo={video}
           />
         </div>
       </div>
