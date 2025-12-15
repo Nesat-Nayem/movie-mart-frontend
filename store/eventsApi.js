@@ -58,6 +58,17 @@ export const eventsApi = createApi({
       providesTags: ["Events"],
     }),
 
+    /** Get events by home section */
+    getEventsByHomeSection: builder.query({
+      query: ({ homeSection, limit = 10 }) => ({
+        url: "/events",
+        params: { homeSection, limit },
+      }),
+      transformResponse: (response) =>
+        Array.isArray(response.data) ? response.data : [response.data],
+      providesTags: ["Events"],
+    }),
+
     // ==================== EVENT CATEGORY ENDPOINTS ====================
     
     /** Get all event categories */
@@ -191,6 +202,7 @@ export const {
   useGetEventsByCategoryQuery,
   useSearchEventsQuery,
   useLazySearchEventsQuery,
+  useGetEventsByHomeSectionQuery,
   
   // Category hooks
   useGetEventCategoriesQuery,

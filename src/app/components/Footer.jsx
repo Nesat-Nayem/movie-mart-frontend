@@ -64,7 +64,7 @@ const Footer = () => {
 
       {/* Copyright */}
       <p className="text-sm max-w-4xl mx-auto leading-relaxed px-4">
-        Copyright 2025 © Moviemart All Rights Reserved. <br />
+        All Rights Reserved & Copiright MovieMart @ ARIGC TECH PVT LTD <br />
         The content and images used on this site are copyright protected and
         copyrights vests with the respective owners. The usage of the content
         and images on this website is intended to promote the works and no

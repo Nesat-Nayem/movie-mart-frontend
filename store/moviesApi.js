@@ -68,6 +68,17 @@ export const moviesApi = createApi({
       }),
       providesTags: ["Movies"],
     }),
+
+    /** Get movies by home section */
+    getMoviesByHomeSection: builder.query({
+      query: ({ homeSection, limit = 10 }) => ({
+        url: "/movies",
+        params: { homeSection, limit },
+      }),
+      transformResponse: (response) =>
+        Array.isArray(response.data) ? response.data : [response.data],
+      providesTags: ["Movies"],
+    }),
   }),
 });
 
@@ -78,4 +89,5 @@ export const {
   useGetUpcomingMoviesQuery,
   useGetTopRatedMoviesQuery,
   useGetMoviesByGenreQuery,
+  useGetMoviesByHomeSectionQuery,
 } = moviesApi;

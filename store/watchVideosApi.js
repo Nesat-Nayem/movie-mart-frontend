@@ -266,6 +266,19 @@ export const watchVideosApi = createApi({
       providesTags: ["WatchVideos"],
     }),
 
+    /** Get videos by home section */
+    getVideosByHomeSection: builder.query({
+      query: ({ homeSection, limit = 10 }) => ({
+        url: "/watch-videos",
+        params: { homeSection, limit, status: 'published' },
+      }),
+      transformResponse: (response) => ({
+        videos: response.data || [],
+        meta: response.meta,
+      }),
+      providesTags: ["WatchVideos"],
+    }),
+
     // ==================== EPISODE ENDPOINTS ====================
 
     /** Add season to video */
@@ -477,6 +490,7 @@ export const {
   useGetFeaturedVideosQuery,
   useGetTrendingVideosQuery,
   useGetRecommendedVideosQuery,
+  useGetVideosByHomeSectionQuery,
   
   // Episode hooks
   useAddSeasonMutation,
