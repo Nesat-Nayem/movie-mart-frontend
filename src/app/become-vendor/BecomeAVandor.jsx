@@ -48,13 +48,17 @@ const BecomeAVendor = () => {
     vendorName: "",
     businessType: "",
     gstNumber: "",
-    panNumber: "",
+    country: "IN",
     address: "",
     email: "",
     phone: "",
+    // India specific
     aadharFrontUrl: null,
     aadharBackUrl: null,
     panImageUrl: null,
+    // International
+    nationalIdUrl: null,
+    passportUrl: null,
   });
 
   // ✅ Selected Services
@@ -70,7 +74,12 @@ const BecomeAVendor = () => {
     aadharFrontUrl: null,
     aadharBackUrl: null,
     panImageUrl: null,
+    nationalIdUrl: null,
+    passportUrl: null,
   });
+
+  // Check if country is India
+  const isIndia = formData.country === 'IN';
 
   const steps = ["Vendor Info", "KYC Upload", "Select Services", "Review"];
 
@@ -144,13 +153,15 @@ const BecomeAVendor = () => {
         vendorName: "",
         businessType: "",
         gstNumber: "",
-        panNumber: "",
+        country: "IN",
         address: "",
         email: "",
         phone: "",
         aadharFrontUrl: null,
         aadharBackUrl: null,
         panImageUrl: null,
+        nationalIdUrl: null,
+        passportUrl: null,
       });
       setSelectedServices({ film_trade: false, events: false, movie_watch: false });
       setSelectedPackageId(null);
@@ -158,6 +169,8 @@ const BecomeAVendor = () => {
         aadharFrontUrl: null,
         aadharBackUrl: null,
         panImageUrl: null,
+        nationalIdUrl: null,
+        passportUrl: null,
       });
       setStep(1);
     } catch (err) {
@@ -298,12 +311,11 @@ const BecomeAVendor = () => {
           {/* Step 1 - Vendor Info */}
           {step === 1 && (
             <div className="space-y-4 animate-fadeIn">
-              {[{ label: "Partner Name", name: "vendorName", type: "text" },
-                { label: "Business Type", name: "businessType", type: "text" },
-                { label: "GST Number", name: "gstNumber", type: "text" },
-                { label: "PAN Number", name: "panNumber", type: "text" },
-                { label: "Email", name: "email", type: "email" },
-                { label: "Phone", name: "phone", type: "text" }].map((field) => (
+              {[{ label: "Partner Name", name: "vendorName", type: "text", required: true },
+                { label: "Business Type", name: "businessType", type: "text", required: true },
+                { label: "GST Number (Optional)", name: "gstNumber", type: "text", required: false },
+                { label: "Email", name: "email", type: "email", required: true },
+                { label: "Phone", name: "phone", type: "text", required: true }].map((field) => (
                 <div key={field.name}>
                   <label>{field.label}</label>
                   <input
@@ -315,6 +327,28 @@ const BecomeAVendor = () => {
                   />
                 </div>
               ))}
+
+              {/* Country Selection */}
+              <div>
+                <label>Country</label>
+                <select
+                  name="country"
+                  value={formData.country}
+                  onChange={handleChange}
+                  className="w-full bg-gray-800 border border-gray-400 text-xs py-3 px-2 rounded"
+                >
+                  <option value="IN">India</option>
+                  <option value="US">United States</option>
+                  <option value="GB">United Kingdom</option>
+                  <option value="AE">United Arab Emirates</option>
+                  <option value="CA">Canada</option>
+                  <option value="AU">Australia</option>
+                  <option value="SG">Singapore</option>
+                  <option value="DE">Germany</option>
+                  <option value="FR">France</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
 
               <label>Address</label>
               <textarea
@@ -329,30 +363,66 @@ const BecomeAVendor = () => {
           {/* Step 2 - KYC Upload */}
           {step === 2 && (
             <div className="space-y-4 animate-fadeIn">
-              {[{ label: "Aadhar Front", name: "aadharFrontUrl" },
-                { label: "Aadhar Back", name: "aadharBackUrl" },
-                { label: "PAN Image", name: "panImageUrl" }].map((file) => (
-                <div key={file.name}>
-                  <label>{file.label}</label>
-                  <input
-                    type="file"
-                    name={file.name}
-                    accept="image/*"
-                    onChange={handleChange}
-                    className="w-full bg-gray-800 border border-gray-400 text-xs py-3 px-2 rounded"
-                  />
-                  {/* ✅ Preview */}
-                  {previews[file.name] && (
-                    <div className="mt-2 flex justify-start items-center gap-4 flex-wrap">
-                      <img
-                        src={previews[file.name]}
-                        alt={file.label}
-                        className="h-24 w-auto rounded-lg border border-gray-300 object-cover shadow-sm"
+              <p className="text-gray-400 text-sm mb-4">
+                {isIndia 
+                  ? "Upload your Aadhar and PAN documents for verification (optional but recommended)."
+                  : "Upload your National ID or Passport for verification (optional but recommended)."}
+              </p>
+
+              {isIndia ? (
+                <>
+                  {/* India - Aadhar & PAN */}
+                  {[{ label: "Aadhar Front (Optional)", name: "aadharFrontUrl" },
+                    { label: "Aadhar Back (Optional)", name: "aadharBackUrl" },
+                    { label: "PAN Card (Optional)", name: "panImageUrl" }].map((file) => (
+                    <div key={file.name}>
+                      <label>{file.label}</label>
+                      <input
+                        type="file"
+                        name={file.name}
+                        accept="image/*"
+                        onChange={handleChange}
+                        className="w-full bg-gray-800 border border-gray-400 text-xs py-3 px-2 rounded"
                       />
+                      {previews[file.name] && (
+                        <div className="mt-2 flex justify-start items-center gap-4 flex-wrap">
+                          <img
+                            src={previews[file.name]}
+                            alt={file.label}
+                            className="h-24 w-auto rounded-lg border border-gray-300 object-cover shadow-sm"
+                          />
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              ))}
+                  ))}
+                </>
+              ) : (
+                <>
+                  {/* International - National ID & Passport */}
+                  {[{ label: "National ID Card (Optional)", name: "nationalIdUrl" },
+                    { label: "Passport (Optional)", name: "passportUrl" }].map((file) => (
+                    <div key={file.name}>
+                      <label>{file.label}</label>
+                      <input
+                        type="file"
+                        name={file.name}
+                        accept="image/*"
+                        onChange={handleChange}
+                        className="w-full bg-gray-800 border border-gray-400 text-xs py-3 px-2 rounded"
+                      />
+                      {previews[file.name] && (
+                        <div className="mt-2 flex justify-start items-center gap-4 flex-wrap">
+                          <img
+                            src={previews[file.name]}
+                            alt={file.label}
+                            className="h-24 w-auto rounded-lg border border-gray-300 object-cover shadow-sm"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           )}
 
@@ -526,7 +596,7 @@ const BecomeAVendor = () => {
                   <div><span className="text-gray-400">Business:</span> <span className="text-white">{formData.businessType}</span></div>
                   <div><span className="text-gray-400">Email:</span> <span className="text-white">{formData.email}</span></div>
                   <div><span className="text-gray-400">Phone:</span> <span className="text-white">{formData.phone}</span></div>
-                  <div><span className="text-gray-400">PAN:</span> <span className="text-white">{formData.panNumber}</span></div>
+                  <div><span className="text-gray-400">Country:</span> <span className="text-white">{formData.country}</span></div>
                   <div><span className="text-gray-400">GST:</span> <span className="text-white">{formData.gstNumber || 'N/A'}</span></div>
                   <div className="col-span-2"><span className="text-gray-400">Address:</span> <span className="text-white">{formData.address}</span></div>
                 </div>
@@ -538,9 +608,20 @@ const BecomeAVendor = () => {
                   📄 KYC Documents
                 </h4>
                 <div className="flex gap-4 flex-wrap">
-                  {formData.aadharFrontUrl && <div className="text-center"><span className="text-xs text-gray-400 block mb-1">Aadhar Front</span><span className="text-green-400">✓ Uploaded</span></div>}
-                  {formData.aadharBackUrl && <div className="text-center"><span className="text-xs text-gray-400 block mb-1">Aadhar Back</span><span className="text-green-400">✓ Uploaded</span></div>}
-                  {formData.panImageUrl && <div className="text-center"><span className="text-xs text-gray-400 block mb-1">PAN Card</span><span className="text-green-400">✓ Uploaded</span></div>}
+                  {isIndia ? (
+                    <>
+                      {formData.aadharFrontUrl && <div className="text-center"><span className="text-xs text-gray-400 block mb-1">Aadhar Front</span><span className="text-green-400">✓ Uploaded</span></div>}
+                      {formData.aadharBackUrl && <div className="text-center"><span className="text-xs text-gray-400 block mb-1">Aadhar Back</span><span className="text-green-400">✓ Uploaded</span></div>}
+                      {formData.panImageUrl && <div className="text-center"><span className="text-xs text-gray-400 block mb-1">PAN Card</span><span className="text-green-400">✓ Uploaded</span></div>}
+                      {!formData.aadharFrontUrl && !formData.aadharBackUrl && !formData.panImageUrl && <span className="text-gray-500">No documents uploaded</span>}
+                    </>
+                  ) : (
+                    <>
+                      {formData.nationalIdUrl && <div className="text-center"><span className="text-xs text-gray-400 block mb-1">National ID</span><span className="text-green-400">✓ Uploaded</span></div>}
+                      {formData.passportUrl && <div className="text-center"><span className="text-xs text-gray-400 block mb-1">Passport</span><span className="text-green-400">✓ Uploaded</span></div>}
+                      {!formData.nationalIdUrl && !formData.passportUrl && <span className="text-gray-500">No documents uploaded</span>}
+                    </>
+                  )}
                 </div>
               </div>
 
