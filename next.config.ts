@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
       "assets-in.bmscdn.com",
       "lh3.googleusercontent.com", // Google profile images
       "googleusercontent.com",
+      "i.ibb.co.com"
     ],
   },
 };
