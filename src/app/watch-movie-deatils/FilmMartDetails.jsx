@@ -7,6 +7,7 @@ import {
   User, Clapperboard, Building2, Lock, CreditCard, CheckCircle, Loader2,
   ThumbsUp, Eye, Globe, ChevronDown, ChevronUp, AlertCircle
 } from "lucide-react";
+import ShareModal from "@/components/ShareModal";
 import { MdVerified } from "react-icons/md";
 import Image from "next/image";
 import Link from "next/link";
@@ -86,6 +87,7 @@ const WatchMovieDetails = () => {
   const [reviewText, setReviewText] = useState('');
   const [selectedSeason, setSelectedSeason] = useState(0);
   const [cashfree, setCashfree] = useState(null);
+  const [shareOpen, setShareOpen] = useState(false);
 
   // Initialize user data and Cashfree SDK
   useEffect(() => {
@@ -427,10 +429,24 @@ const WatchMovieDetails = () => {
                 <Bookmark className="w-5 h-5" />
                 Save
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition">
+              <button 
+                onClick={() => setShareOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition"
+              >
                 <Share2 className="w-5 h-5" />
                 Share
               </button>
+
+              {/* Share Modal */}
+              <ShareModal
+                isOpen={shareOpen}
+                onClose={() => setShareOpen(false)}
+                title={video.title}
+                description={video.description || `Watch ${video.title} on Movie Mart`}
+                imageUrl={video.posterUrl || video.thumbnailUrl}
+                url={typeof window !== "undefined" ? window.location.href : ""}
+                contentType="video"
+              />
             </div>
 
             {/* Channel Info */}

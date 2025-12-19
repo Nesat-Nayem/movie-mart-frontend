@@ -1,15 +1,9 @@
+"use client";
 import React, { useState } from "react";
-import { Bookmark, Share2, X } from "lucide-react";
-import {
-  FaFacebookF,
-  FaTwitter,
-  FaLinkedinIn,
-  FaWhatsapp,
-  FaTelegramPlane,
-  FaInstagram,
-} from "react-icons/fa";
+import { Bookmark, Share2 } from "lucide-react";
+import ShareModal from "@/components/ShareModal";
 
-const Actions = () => {
+const Actions = ({ event }) => {
   const [bookmarked, setBookmarked] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
 
@@ -32,64 +26,21 @@ const Actions = () => {
       {/* Share Button */}
       <button
         onClick={() => setShareOpen(true)}
-        className="p-2 cursor-pointer bg-white/10 rounded-lg hover:bg-white/20"
+        className="p-2 cursor-pointer bg-white/10 rounded-lg hover:bg-white/20 transition"
       >
         <Share2 size={16} />
       </button>
 
       {/* Share Modal */}
-      {shareOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-[#0B1730] p-6 rounded-xl w-80 relative">
-            <button
-              onClick={() => setShareOpen(false)}
-              className="absolute top-3 right-3 text-gray-400 hover:text-white cursor-pointer"
-            >
-              <X size={18} />
-            </button>
-            <h2 className="text-lg font-semibold text-white mb-4">
-              Share this Event
-            </h2>
-            <div className="flex justify-between text-white text-xl">
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                className="p-3 bg-blue-600 rounded-full hover:opacity-80"
-              >
-                <FaFacebookF />
-              </a>
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                className="p-3 bg-sky-500 rounded-full hover:opacity-80"
-              >
-                <FaTwitter />
-              </a>
-              <a
-                href="https://linkedin.com"
-                target="_blank"
-                className="p-3 bg-blue-700 rounded-full hover:opacity-80"
-              >
-                <FaLinkedinIn />
-              </a>
-              <a
-                href="https://wa.me/"
-                target="_blank"
-                className="p-3 bg-green-500 rounded-full hover:opacity-80"
-              >
-                <FaWhatsapp />
-              </a>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                className="p-3 bg-pink-500 rounded-full hover:opacity-80"
-              >
-                <FaInstagram />
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
+      <ShareModal
+        isOpen={shareOpen}
+        onClose={() => setShareOpen(false)}
+        title={event?.title || "Event"}
+        description={event?.shortDescription || event?.description || `Check out this amazing event: ${event?.title || "Event"}`}
+        imageUrl={event?.posterImage || event?.bannerImage}
+        url={typeof window !== "undefined" ? window.location.href : ""}
+        contentType="event"
+      />
     </div>
   );
 };

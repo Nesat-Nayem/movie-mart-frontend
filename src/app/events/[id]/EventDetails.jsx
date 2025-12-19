@@ -259,7 +259,7 @@ const EventDetails = () => {
                     </div>
 
                     {/* Buttons */}
-                    <Actions />
+                    <Actions event={event} />
                   </div>
 
                   {/* Synopsis */}
