@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import toast from "react-hot-toast";
 import { load } from "@cashfreepayments/cashfree-js";
+import { FaMapMarkerAlt } from "react-icons/fa";
 import { 
   useGetVendorPackagesQuery, 
   useGetPlatformSettingsQuery, 
@@ -10,11 +11,15 @@ import {
   useCreatePaymentOrderMutation,
   useLazyVerifyPaymentQuery,
 } from "../../../store/becomeVendorApi";
+import { detectUserCountry, getPriceForCountry } from "@/services/geolocationService";
+import { getCountryByCode } from "@/data/countries";
 
 const BecomeAVendor = () => {
   const [step, setStep] = useState(1);
   const [cashfree, setCashfree] = useState(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [userCountry, setUserCountry] = useState(null);
+  const [locationLoading, setLocationLoading] = useState(true);
 
   // ✅ Initialize Cashfree SDK
   useEffect(() => {
@@ -24,6 +29,57 @@ const BecomeAVendor = () => {
     };
     initCashfree();
   }, []);
+
+  // ✅ Detect user's country for location-based pricing
+  useEffect(() => {
+    const detectCountry = async () => {
+      try {
+        setLocationLoading(true);
+        const country = await detectUserCountry();
+        setUserCountry(country);
+        // Update form country based on detected location
+        if (country?.countryCode) {
+          setFormData(prev => ({ ...prev, country: country.countryCode }));
+        }
+      } catch (error) {
+        console.error('Failed to detect country:', error);
+        setUserCountry({ countryCode: 'IN', currency: 'INR', currencySymbol: '₹', flag: '🇮🇳' });
+      } finally {
+        setLocationLoading(false);
+      }
+    };
+    detectCountry();
+  }, []);
+
+  // Helper function to get package price for user's country
+  const getPackagePrice = (pkg) => {
+    if (!pkg) return { price: 0, currency: 'INR', currencySymbol: '₹' };
+    
+    // Check if package has country-wise pricing
+    const countryPricing = pkg.countryPricing || [];
+    const userCountryCode = userCountry?.countryCode || 'IN';
+    
+    // Find pricing for user's country
+    const countryPrice = countryPricing.find(
+      cp => cp.countryCode === userCountryCode && cp.isActive
+    );
+    
+    if (countryPrice) {
+      const countryData = getCountryByCode(countryPrice.countryCode);
+      return {
+        price: countryPrice.price,
+        currency: countryPrice.currency,
+        currencySymbol: countryData?.currencySymbol || countryPrice.currency,
+      };
+    }
+    
+    // Default to base price (INR)
+    return {
+      price: pkg.price,
+      currency: 'INR',
+      currencySymbol: '₹',
+    };
+  };
 
   // ✅ Fetch packages and settings
   const { data: packages = [], isLoading: packagesLoading } = useGetVendorPackagesQuery();
@@ -552,7 +608,12 @@ const BecomeAVendor = () => {
                               </span>
                             )}
                             <h4 className="font-bold text-white">{pkg.name}</h4>
-                            <p className="text-2xl font-bold text-blue-400 my-2">₹{pkg.price?.toLocaleString()}</p>
+                            <p className="text-2xl font-bold text-blue-400 my-2">
+                              {(() => {
+                                const priceInfo = getPackagePrice(pkg);
+                                return `${priceInfo.currencySymbol}${priceInfo.price?.toLocaleString()}`;
+                              })()}
+                            </p>
                             <p className="text-xs text-gray-400">{pkg.duration} {pkg.durationType}</p>
                             <ul className="mt-2 space-y-1">
                               {pkg.features?.slice(0, 3).map((f, i) => (
@@ -628,7 +689,9 @@ const BecomeAVendor = () => {
                     {selectedServices.film_trade && selectedPackageId && (
                       <div className="flex justify-between">
                         <span className="text-gray-300">Film Trade Package</span>
-                        <span className="text-white font-semibold">₹{totalAmount.toLocaleString()}</span>
+                        <span className="text-white font-semibold">
+                          {userCountry?.currencySymbol || '₹'}{totalAmount.toLocaleString()}
+                        </span>
                       </div>
                     )}
                     {selectedServices.events && (
@@ -646,7 +709,9 @@ const BecomeAVendor = () => {
                     <hr className="border-gray-600 my-2" />
                     <div className="flex justify-between text-lg font-bold">
                       <span className="text-white">Total Due Now</span>
-                      <span className="text-blue-400">₹{totalAmount.toLocaleString()}</span>
+                      <span className="text-blue-400">
+                        {userCountry?.currencySymbol || '₹'}{totalAmount.toLocaleString()}
+                      </span>
                     </div>
                   </div>
                 </div>

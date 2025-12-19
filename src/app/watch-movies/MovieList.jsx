@@ -2,10 +2,12 @@
 import React, { useState, useEffect } from "react";
 import WatchVideosFilter from "./WatchVideosFilter";
 import { FiFilter } from "react-icons/fi";
-import { FaTimes, FaPlay, FaCrown, FaLanguage, FaStar, FaThumbsUp } from "react-icons/fa";
+import { FaTimes, FaPlay, FaCrown, FaLanguage, FaStar, FaThumbsUp, FaMapMarkerAlt } from "react-icons/fa";
 import { MdVerified } from "react-icons/md";
 import Link from "next/link";
 import { useGetWatchVideosQuery } from "../../../store/watchVideosApi";
+import { detectUserCountry, getPriceForCountry } from "@/services/geolocationService";
+import { getCountryByCode } from "@/data/countries";
 
 // Format duration from seconds to readable format
 const formatDuration = (seconds) => {
@@ -18,8 +20,17 @@ const formatDuration = (seconds) => {
   return `${minutes}m`;
 };
 
-// Single Video Card
-const VideoCard = ({ video }) => (
+// Single Video Card with location-based pricing
+const VideoCard = ({ video, userCountry }) => {
+  // Get price for user's country
+  const priceInfo = getPriceForCountry(
+    video.countryPricing || [],
+    userCountry?.countryCode,
+    video.defaultPrice,
+    'INR'
+  );
+
+  return (
   <div className="rounded-xl shadow-lg border border-gray-700/50 overflow-hidden relative group transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] bg-gradient-to-b from-gray-800/50 to-gray-900/50 backdrop-blur-sm">
     <Link href={`/watch-movie-deatils?id=${video._id}`}>
       <div className="relative overflow-hidden">
@@ -36,11 +47,16 @@ const VideoCard = ({ video }) => (
           {video.videoType === 'series' ? '📺 Series' : '🎬 Movie'}
         </span>
 
-        {/* Free/Paid Badge */}
+        {/* Free/Paid Badge with Location-based Price */}
         <span className={`absolute top-2 right-2 text-white text-xs px-2 py-1 rounded-full font-medium ${
           video.isFree ? 'bg-green-600' : 'bg-gradient-to-r from-yellow-600 to-orange-600'
         }`}>
-          {video.isFree ? '✓ Free' : <><FaCrown className="inline mr-1" /> ₹{video.defaultPrice}</>}
+          {video.isFree ? '✓ Free' : (
+            <>
+              <FaCrown className="inline mr-1" />
+              {priceInfo.currencySymbol}{priceInfo.price?.toLocaleString()}
+            </>
+          )}
         </span>
 
         {/* Duration Badge */}
@@ -125,7 +141,8 @@ const VideoCard = ({ video }) => (
       </div>
     </Link>
   </div>
-);
+  );
+};
 
 // Modern Shimmer Skeleton
 const VideoCardSkeleton = () => (
@@ -161,7 +178,27 @@ const MovieList = () => {
     sortOrder: 'desc'
   });
   const [currentPage, setCurrentPage] = useState(1);
+  const [userCountry, setUserCountry] = useState(null);
+  const [locationLoading, setLocationLoading] = useState(true);
   const itemsPerPage = 12;
+
+  // Detect user's country on mount
+  useEffect(() => {
+    const detectCountry = async () => {
+      try {
+        setLocationLoading(true);
+        const country = await detectUserCountry();
+        setUserCountry(country);
+      } catch (error) {
+        console.error('Failed to detect country:', error);
+        // Use default (India)
+        setUserCountry({ countryCode: 'IN', currency: 'INR', currencySymbol: '₹', flag: '🇮🇳' });
+      } finally {
+        setLocationLoading(false);
+      }
+    };
+    detectCountry();
+  }, []);
 
   // Fetch videos with filters
   const { data, isLoading, isError, isFetching } = useGetWatchVideosQuery({
@@ -212,7 +249,15 @@ const MovieList = () => {
                 <span className="font-semibold text-base sm:text-lg text-white">
                   {isLoading ? 'Loading...' : `${meta.total} ${meta.total === 1 ? 'Video' : 'Videos'} Found`}
                 </span>
-                <p className="text-xs text-gray-400 mt-1">Watch premium content from top creators</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Watch premium content from top creators
+                  {userCountry && (
+                    <span className="ml-2 inline-flex items-center gap-1">
+                      <FaMapMarkerAlt className="text-pink-400" />
+                      <span>{userCountry.flag} Prices in {userCountry.currency}</span>
+                    </span>
+                  )}
+                </p>
               </div>
               
               {/* Sort Options */}
@@ -288,7 +333,7 @@ const MovieList = () => {
                   ))
                 ) : videos.length > 0 ? (
                   videos.map((video) => (
-                    <VideoCard key={video._id} video={video} />
+                    <VideoCard key={video._id} video={video} userCountry={userCountry} />
                   ))
                 ) : (
                   <div className="col-span-full flex flex-col items-center justify-center py-20">
