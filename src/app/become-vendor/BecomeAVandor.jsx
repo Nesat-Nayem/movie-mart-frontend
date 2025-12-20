@@ -35,7 +35,7 @@ const BecomeAVendor = () => {
     const detectCountry = async () => {
       try {
         setLocationLoading(true);
-        const country = await detectUserCountry();
+        const country = await detectUserCountry(false, true);
         setUserCountry(country);
         // Update form country based on detected location
         if (country?.countryCode) {

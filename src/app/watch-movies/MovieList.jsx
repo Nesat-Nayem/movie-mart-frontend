@@ -187,7 +187,7 @@ const MovieList = () => {
     const detectCountry = async () => {
       try {
         setLocationLoading(true);
-        const country = await detectUserCountry();
+        const country = await detectUserCountry(false, true);
         setUserCountry(country);
       } catch (error) {
         console.error('Failed to detect country:', error);
