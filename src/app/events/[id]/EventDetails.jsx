@@ -26,6 +26,7 @@ import { useParams, useRouter } from "next/navigation";
 import EventHeader from "./EventHeader";
 import BookTicketDrawer from "@/app/events/BookTicketDrawer";
 import { useGetEventByIdQuery } from "../../../../store/eventsApi";
+import { BelowPlayerAd, ArticleAd } from "@/components/ads/DetailPageAds";
 
 const EventDetails = () => {
   const [showDrawer, setShowDrawer] = useState(false);
@@ -312,6 +313,9 @@ const EventDetails = () => {
                     </div>
                   </div>
                 )}
+                {/* Google AdSense - Article Ad */}
+                <ArticleAd className="px-4 mt-6" />
+
                 {/* Organizers */}
                 {event.organizers && event.organizers.length > 0 && (
                   <div className="px-4 mt-8 mb-24">

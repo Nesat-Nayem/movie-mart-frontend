@@ -26,6 +26,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Google AdSense Script - Replace ca-pub-XXXXXXXXXX with your Publisher ID */}
+        <Script
+          async
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_ID || 'ca-pub-XXXXXXXXXX'}`}
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
+      </head>
       <body className={`${jura.variable} font-sans antialiased`}>
         <Providers>
           <AuthProvider>

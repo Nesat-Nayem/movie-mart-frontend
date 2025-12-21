@@ -1,5 +1,6 @@
 import HeroBanner from "@/app/pages/Hero/HeroBanner";
 import EventsList from "./EventsList";
+import { TopBannerAd, FooterBannerAd } from "@/components/ads/HomePageAds";
 
 // ✅ Correct way to add Meta Title
 export const metadata = {
@@ -11,8 +12,12 @@ export const metadata = {
 const FilMartPage = () => {
   return (
     <>
+      {/* Google AdSense - Top Banner */}
+      <TopBannerAd />
       <HeroBanner />
       <EventsList />
+      {/* Google AdSense - Footer Banner */}
+      <FooterBannerAd />
     </>
   );
 };

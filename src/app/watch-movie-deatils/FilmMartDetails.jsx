@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import ShareModal from "@/components/ShareModal";
 import { MdVerified } from "react-icons/md";
+import { BelowPlayerAd, ArticleAd } from "@/components/ads/DetailPageAds";
 import Image from "next/image";
 import Link from "next/link";
 import VideoPlayer from "./VideoPlayer";
@@ -358,6 +359,9 @@ const WatchMovieDetails = () => {
             )}
           </div>
 
+          {/* Google AdSense - Below Player */}
+          <BelowPlayerAd className="px-4 mt-4" />
+
           {/* Video Info */}
           <div className="px-4 mt-6">
             {/* Title & Meta */}
@@ -703,6 +707,9 @@ const WatchMovieDetails = () => {
               )}
             </div>
           </div>
+
+          {/* Google AdSense - In Article */}
+          <ArticleAd className="px-4" />
 
           {/* Recommended Videos / Episodes */}
           <RecommandedMovies 
