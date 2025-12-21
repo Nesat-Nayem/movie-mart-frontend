@@ -101,11 +101,15 @@ const Checkout = () => {
     setIsLoading(true);
 
     try {
+      // Get user's country code
+      const countryCode = localStorage.getItem('userCountry') || 'IN';
+      
       // Create payment order
       const orderData = {
         userId: user._id,
         quantity: bookingDetails.quantity,
         seatType: bookingDetails.seatType,
+        countryCode, // Pass country code for gateway routing
         customerDetails: {
           name: form.name,
           email: form.email,
@@ -119,6 +123,36 @@ const Checkout = () => {
         orderData,
       }).unwrap();
 
+      // Check which payment gateway to use
+      if (response.success && response.data?.paymentGateway === 'ccavenue' && response.data?.ccavenueOrder) {
+        // Redirect to CCAvenue for international users
+        const { ccavenueOrder } = response.data;
+        
+        // Store booking ID for verification
+        localStorage.setItem("pendingBookingId", response.data.booking._id);
+        
+        // Create form and submit to CCAvenue
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = ccavenueOrder.ccavenueUrl;
+        
+        const encRequestInput = document.createElement('input');
+        encRequestInput.type = 'hidden';
+        encRequestInput.name = 'encRequest';
+        encRequestInput.value = ccavenueOrder.encRequest;
+        form.appendChild(encRequestInput);
+        
+        const accessCodeInput = document.createElement('input');
+        accessCodeInput.type = 'hidden';
+        accessCodeInput.name = 'access_code';
+        accessCodeInput.value = ccavenueOrder.accessCode;
+        form.appendChild(accessCodeInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+        return;
+      }
+      
       if (response.success && response.data?.cashfreeOrder) {
         const { paymentSessionId, orderId } = response.data.cashfreeOrder;
         
@@ -126,7 +160,7 @@ const Checkout = () => {
         localStorage.setItem("pendingOrderId", orderId);
         localStorage.setItem("pendingBookingId", response.data.booking._id);
 
-        // Open Cashfree checkout
+        // Open Cashfree checkout for Indian users
         const checkoutOptions = {
           paymentSessionId,
           redirectTarget: "_modal",
@@ -266,14 +300,6 @@ const Checkout = () => {
                   <div className="flex justify-between text-gray-400 text-sm">
                     <span>Tickets ({bookingDetails.quantity} x ₹{bookingDetails.unitPrice})</span>
                     <span>₹{bookingDetails.totalAmount}</span>
-                  </div>
-                  <div className="flex justify-between text-gray-400 text-sm">
-                    <span>Booking Fee</span>
-                    <span>₹{bookingDetails.bookingFee}</span>
-                  </div>
-                  <div className="flex justify-between text-gray-400 text-sm">
-                    <span>GST</span>
-                    <span>₹{bookingDetails.taxAmount}</span>
                   </div>
                   <div className="flex justify-between text-white font-bold text-lg pt-2 border-t border-gray-700/50">
                     <span>Total</span>

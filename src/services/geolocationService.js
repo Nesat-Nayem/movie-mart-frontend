@@ -186,6 +186,8 @@ export const setCachedCountry = (countryData) => {
     localStorage.setItem(STORAGE_KEYS.COUNTRY_DATA, JSON.stringify(countryData))
     localStorage.setItem(STORAGE_KEYS.LOCATION_TIMESTAMP, Date.now().toString())
     localStorage.setItem(STORAGE_KEYS.COUNTRY_CODE, countryData.countryCode)
+    // Also store with 'userCountry' key for payment gateway routing compatibility
+    localStorage.setItem('userCountry', countryData.countryCode)
   } catch (error) {
     console.error('Failed to cache country data:', error)
   }

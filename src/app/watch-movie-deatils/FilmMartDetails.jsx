@@ -181,10 +181,14 @@ const WatchMovieDetails = () => {
         }
       }).unwrap();
 
-      if (result.data?.paymentLink) {
+      // Check which payment gateway to use
+      if (result.data?.paymentGateway === 'ccavenue' && result.data?.ccavenueOrder) {
+        // Redirect to CCAvenue for international users
+        initiateCCAvenuePayment(result.data.ccavenueOrder);
+      } else if (result.data?.paymentLink) {
         window.location.href = result.data.paymentLink;
       } else if (result.data?.cashfreeOrder?.paymentSessionId) {
-        // Handle Cashfree SDK integration
+        // Handle Cashfree SDK integration for Indian users
         initiateCashfreePayment(result.data.cashfreeOrder);
       }
     } catch (error) {
@@ -193,6 +197,29 @@ const WatchMovieDetails = () => {
     } finally {
       setPaymentLoading(false);
     }
+  };
+
+  // CCAvenue payment redirect for international users
+  const initiateCCAvenuePayment = (ccavenueOrder) => {
+    // Create a form and submit to CCAvenue
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = ccavenueOrder.ccavenueUrl;
+    
+    const encRequestInput = document.createElement('input');
+    encRequestInput.type = 'hidden';
+    encRequestInput.name = 'encRequest';
+    encRequestInput.value = ccavenueOrder.encRequest;
+    form.appendChild(encRequestInput);
+    
+    const accessCodeInput = document.createElement('input');
+    accessCodeInput.type = 'hidden';
+    accessCodeInput.name = 'access_code';
+    accessCodeInput.value = ccavenueOrder.accessCode;
+    form.appendChild(accessCodeInput);
+    
+    document.body.appendChild(form);
+    form.submit();
   };
 
   // Cashfree payment SDK integration

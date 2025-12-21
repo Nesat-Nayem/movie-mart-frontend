@@ -224,14 +224,6 @@ const BookTicketDrawer = ({ event, onClose }) => {
                     <span>{selectedSeats} x {selectedSeatType?.name || "Standard"} Ticket</span>
                     <span>₹{currentBooking.totalAmount}</span>
                   </div>
-                  <div className="flex justify-between text-gray-400">
-                    <span>Booking Fee (2%)</span>
-                    <span>₹{currentBooking.bookingFee}</span>
-                  </div>
-                  <div className="flex justify-between text-gray-400">
-                    <span>GST (18%)</span>
-                    <span>₹{currentBooking.taxAmount}</span>
-                  </div>
                   <div className="border-t border-gray-600 pt-2 mt-2">
                     <div className="flex justify-between text-white font-bold text-lg">
                       <span>Total</span>

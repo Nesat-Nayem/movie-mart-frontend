@@ -54,15 +54,13 @@ export const eventBookingSlice = createSlice({
       state.currentBooking.quantity = 1;
       state.currentBooking.seatType = "Normal";
       
-      // Calculate initial amounts
+      // Calculate initial amounts (no booking fee or GST)
       const totalAmount = event.ticketPrice * 1;
-      const bookingFee = Math.round(totalAmount * 0.02);
-      const taxAmount = Math.round(totalAmount * 0.18);
       
       state.currentBooking.totalAmount = totalAmount;
-      state.currentBooking.bookingFee = bookingFee;
-      state.currentBooking.taxAmount = taxAmount;
-      state.currentBooking.finalAmount = totalAmount + bookingFee + taxAmount;
+      state.currentBooking.bookingFee = 0;
+      state.currentBooking.taxAmount = 0;
+      state.currentBooking.finalAmount = totalAmount;
     },
     
     // Update ticket quantity
@@ -70,15 +68,13 @@ export const eventBookingSlice = createSlice({
       const quantity = action.payload;
       state.currentBooking.quantity = quantity;
       
-      // Recalculate amounts
+      // Recalculate amounts (no booking fee or GST)
       const totalAmount = state.currentBooking.unitPrice * quantity;
-      const bookingFee = Math.round(totalAmount * 0.02);
-      const taxAmount = Math.round(totalAmount * 0.18);
       
       state.currentBooking.totalAmount = totalAmount;
-      state.currentBooking.bookingFee = bookingFee;
-      state.currentBooking.taxAmount = taxAmount;
-      state.currentBooking.finalAmount = totalAmount + bookingFee + taxAmount;
+      state.currentBooking.bookingFee = 0;
+      state.currentBooking.taxAmount = 0;
+      state.currentBooking.finalAmount = totalAmount;
     },
     
     // Set seat type
@@ -87,15 +83,13 @@ export const eventBookingSlice = createSlice({
       state.currentBooking.seatType = seatType;
       state.currentBooking.unitPrice = price;
       
-      // Recalculate amounts
+      // Recalculate amounts (no booking fee or GST)
       const totalAmount = price * state.currentBooking.quantity;
-      const bookingFee = Math.round(totalAmount * 0.02);
-      const taxAmount = Math.round(totalAmount * 0.18);
       
       state.currentBooking.totalAmount = totalAmount;
-      state.currentBooking.bookingFee = bookingFee;
-      state.currentBooking.taxAmount = taxAmount;
-      state.currentBooking.finalAmount = totalAmount + bookingFee + taxAmount;
+      state.currentBooking.bookingFee = 0;
+      state.currentBooking.taxAmount = 0;
+      state.currentBooking.finalAmount = totalAmount;
     },
     
     // Update customer details
