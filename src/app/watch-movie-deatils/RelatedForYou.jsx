@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { FaPlay, FaStar, FaHeart } from "react-icons/fa";
+import { FaLanguage, FaThumbsUp, FaStar, FaPlay } from "react-icons/fa";
 import { Sparkles } from "lucide-react";
 import { useGetRelatedVideosQuery } from "../../../store/watchVideosApi";
 
@@ -17,73 +17,98 @@ const formatDuration = (seconds) => {
 
 // Loading skeleton
 const VideoSkeleton = () => (
-  <div className="rounded-xl overflow-hidden bg-gray-800/50 animate-pulse">
+  <div className="rounded-xl overflow-hidden bg-gray-800/50 animate-shimmer bg-[length:200%_100%]">
     <div className="h-40 sm:h-48 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800" />
     <div className="p-3 space-y-2">
-      <div className="h-4 bg-gray-700 rounded w-3/4" />
+      <div className="h-4 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded w-3/4" />
       <div className="flex gap-2">
-        <div className="h-3 bg-gray-700 rounded w-1/3" />
-        <div className="h-3 bg-gray-700 rounded w-1/4" />
+        <div className="h-3 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded w-1/3" />
+        <div className="h-3 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded w-1/4" />
       </div>
+      <div className="h-6 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded w-1/2" />
     </div>
   </div>
 );
 
-// Video card component
+// Video card component - matching RecommandedMovies exactly
 const VideoCard = ({ video }) => (
   <Link
     href={`/watch-movie-deatils?id=${video._id}`}
-    className="group rounded-xl overflow-hidden bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-white/10 hover:border-purple-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20"
+    className="group rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:shadow-xl hover:border-pink-500/30 transition-all"
   >
     <div className="relative">
       <img
         src={video.thumbnailUrl || video.posterUrl || "/assets/img/placeholder-video.jpg"}
         alt={video.title}
-        className="w-full h-40 sm:h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+        className="w-full h-40 sm:h-48 object-cover transition-transform group-hover:scale-105"
       />
-      {/* Duration badge */}
-      <span className="absolute bottom-2 left-2 bg-black/80 text-xs text-white px-2 py-0.5 rounded">
+      
+      {/* Video Type Badge */}
+      <span className={`absolute top-2 left-2 text-white text-xs px-2 py-0.5 rounded-full ${
+        video.videoType === 'series' ? 'bg-purple-600' : 'bg-blue-600'
+      }`}>
+        {video.videoType === 'series' ? 'Series' : 'Movie'}
+      </span>
+      
+      {/* Age Rating */}
+      <span className="absolute top-2 right-2 bg-black/70 text-xs text-white px-2 py-0.5 rounded">
+        {video.ageRating}
+      </span>
+
+      {/* Price Badge */}
+      <span className={`absolute bottom-2 right-2 text-white text-xs px-2 py-0.5 rounded ${
+        video.isFree ? 'bg-green-600' : 'bg-gradient-to-r from-yellow-600 to-orange-600'
+      }`}>
+        {video.isFree ? 'Free' : `₹${video.defaultPrice}`}
+      </span>
+
+      {/* Duration */}
+      <span className="absolute bottom-2 left-2 bg-black/70 text-xs text-white px-2 py-0.5 rounded">
         {formatDuration(video.duration)}
       </span>
-      {/* Play overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-        <div className="bg-purple-500/80 backdrop-blur-sm p-3 rounded-full transform scale-75 group-hover:scale-100 transition-transform duration-300">
-          <FaPlay className="text-white text-lg ml-0.5" />
+
+      {/* Hover Play Icon */}
+      <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="bg-white/20 backdrop-blur-sm p-3 rounded-full">
+          <FaPlay className="text-white text-lg" />
         </div>
       </div>
-      {/* Premium badge */}
-      {video.isPremium && (
-        <span className="absolute top-2 right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-          PREMIUM
-        </span>
-      )}
-      {/* Video type badge */}
-      {video.videoType === 'series' && (
-        <span className="absolute top-2 left-2 bg-purple-600 text-white text-[10px] px-2 py-0.5 rounded-full">
-          SERIES
-        </span>
-      )}
     </div>
+
     <div className="p-3">
-      <h4 className="text-white text-sm font-medium line-clamp-1 group-hover:text-purple-400 transition-colors">
+      <h3 className="text-white text-sm font-medium line-clamp-2 mb-2 group-hover:text-pink-400 transition-colors">
         {video.title}
-      </h4>
+      </h3>
+
+      {/* Channel Info */}
+      {video.channelId && (
+        <p className="text-xs text-gray-400 truncate mb-2">
+          {video.channelId.name}
+        </p>
+      )}
+
+      <div className="flex items-center gap-3 text-xs text-gray-400">
+        {video.languages?.[0] && (
+          <span className="flex items-center gap-1">
+            <FaLanguage className="text-pink-400" /> {video.languages[0]}
+          </span>
+        )}
+        {video.averageRating > 0 && (
+          <span className="flex items-center gap-1 text-yellow-400">
+            <FaStar /> {video.averageRating.toFixed(1)}
+          </span>
+        )}
+      </div>
+
+      {/* Stats */}
       <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
-        {video.rating > 0 && (
-          <span className="flex items-center gap-1">
-            <FaStar className="text-yellow-400" />
-            {video.rating.toFixed(1)}
-          </span>
+        {video.viewCount > 0 && (
+          <span>{video.viewCount.toLocaleString()} views</span>
         )}
-        {video.likesCount > 0 && (
+        {video.likeCount > 0 && (
           <span className="flex items-center gap-1">
-            <FaHeart className="text-pink-500" />
-            {video.likesCount}
-          </span>
-        )}
-        {video.genres && video.genres.length > 0 && (
-          <span className="text-purple-400 capitalize">
-            {video.genres[0]}
+            <FaThumbsUp className="text-green-400" />
+            {video.likeCount}
           </span>
         )}
       </div>
@@ -114,25 +139,25 @@ const RelatedForYou = ({ currentVideoId, currentVideo }) => {
     <div className="mt-10 px-4 md:px-8">
       {/* Section Header */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+        {/* <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
           <Sparkles className="w-5 h-5 text-white" />
-        </div>
+        </div> */}
         <div>
-          <h2 className="text-xl md:text-2xl font-bold text-white">Related For You</h2>
-          <p className="text-xs text-gray-400">Based on your current watch</p>
+          <h2 className="text-lg font-semibold text-white">Related For You</h2>
+          {/* <p className="text-xs text-gray-400">Based on your current watch</p> */}
         </div>
       </div>
 
       {/* Videos Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {[...Array(6)].map((_, i) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
             <VideoSkeleton key={i} />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {relatedVideos.slice(0, 12).map((video) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {relatedVideos.slice(0, 8).map((video) => (
             <VideoCard key={video._id} video={video} />
           ))}
         </div>

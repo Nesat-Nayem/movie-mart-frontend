@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/app/components/Button";
 import { 
@@ -271,6 +271,66 @@ const   EventTicket = () => {
   );
 };
 
+// Barcode Generator Component - generates Code128 style barcode using canvas
+const BarcodeGenerator = ({ value }) => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (!canvasRef.current || !value) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const text = value.toString();
+    
+    // Canvas settings
+    const barWidth = 2;
+    const height = 60;
+    const padding = 10;
+    
+    // Generate a simple barcode pattern from the text
+    let pattern = '';
+    for (let i = 0; i < text.length; i++) {
+      const charCode = text.charCodeAt(i);
+      // Create a unique pattern for each character
+      const binary = charCode.toString(2).padStart(8, '0');
+      pattern += binary + '0'; // Add separator
+    }
+    
+    // Add start and stop patterns
+    pattern = '110' + pattern + '1100011101011';
+    
+    const totalWidth = pattern.length * barWidth + padding * 2;
+    canvas.width = totalWidth;
+    canvas.height = height;
+    
+    // Clear canvas
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, totalWidth, height);
+    
+    // Draw barcode
+    ctx.fillStyle = '#000000';
+    let x = padding;
+    for (let i = 0; i < pattern.length; i++) {
+      if (pattern[i] === '1') {
+        ctx.fillRect(x, 5, barWidth, height - 10);
+      }
+      x += barWidth;
+    }
+  }, [value]);
+
+  return (
+    <canvas 
+      ref={canvasRef} 
+      style={{ 
+        width: '100%', 
+        height: '60px', 
+        display: 'block',
+        imageRendering: 'pixelated'
+      }} 
+    />
+  );
+};
+
 // E-Ticket Modal Component
 const ETicketModal = ({ booking, onClose, onDownload, ticketRef, formatDate, formatTime }) => {
   const event = booking.eventId;
@@ -300,19 +360,37 @@ const ETicketModal = ({ booking, onClose, onDownload, ticketRef, formatDate, for
             fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
           }}
         >
-          {/* Header with gradient */}
+          {/* Header with event photo background */}
           <div style={{
             position: "relative",
-            background: "linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #6366f1 100%)",
-            padding: "20px",
-            minHeight: "120px",
+            minHeight: "140px",
+            overflow: "hidden",
           }}>
-            <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0, 0, 0, 0.15)" }}></div>
-            <div style={{ position: "relative", zIndex: 10 }}>
+            {/* Event Photo Background */}
+            {event?.posterImage && (
+              <div style={{
+                position: "absolute",
+                inset: 0,
+                backgroundImage: `url(${event.posterImage})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                filter: "blur(0px)",
+              }}></div>
+            )}
+            {/* Gradient Overlay */}
+            <div style={{ 
+              position: "absolute", 
+              inset: 0, 
+              background: event?.posterImage 
+                ? "linear-gradient(135deg, rgba(236, 72, 153, 0.85) 0%, rgba(168, 85, 247, 0.85) 50%, rgba(99, 102, 241, 0.85) 100%)"
+                : "linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #6366f1 100%)"
+            }}></div>
+            
+            <div style={{ position: "relative", zIndex: 10, padding: "20px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <span style={{ 
-                    color: "rgba(255,255,255,0.9)", 
+                    color: "rgba(255,255,255,0.95)", 
                     fontSize: "11px", 
                     textTransform: "uppercase", 
                     letterSpacing: "2px",
@@ -330,12 +408,13 @@ const ETicketModal = ({ booking, onClose, onDownload, ticketRef, formatDate, for
                     margin: 0,
                     wordWrap: "break-word",
                     overflowWrap: "break-word",
+                    textShadow: "0 2px 4px rgba(0,0,0,0.3)"
                   }}>
                     {event?.title}
                   </h2>
                 </div>
                 <div style={{
-                  backgroundColor: "rgba(255, 255, 255, 0.25)",
+                  backgroundColor: "rgba(255, 255, 255, 0.3)",
                   borderRadius: "8px",
                   padding: "0 14px",
                   flexShrink: 0,
@@ -343,6 +422,7 @@ const ETicketModal = ({ booking, onClose, onDownload, ticketRef, formatDate, for
                   alignItems: "center",
                   justifyContent: "center",
                   height: "32px",
+                  backdropFilter: "blur(10px)",
                 }}>
                   <span style={{ 
                     color: "#ffffff", 
@@ -351,7 +431,7 @@ const ETicketModal = ({ booking, onClose, onDownload, ticketRef, formatDate, for
                     lineHeight: "32px", 
                     display: "inline-block",
                     verticalAlign: "middle",
-                    marginTop: "-2px" // Slight optical correction for html2canvas
+                    marginTop: "-2px"
                   }}>{booking.seatType}</span>
                 </div>
               </div>
@@ -439,7 +519,7 @@ const ETicketModal = ({ booking, onClose, onDownload, ticketRef, formatDate, for
             </div>
           </div>
 
-          {/* QR Code Section */}
+          {/* Barcode Section */}
           <div style={{ padding: "0 20px 20px", position: "relative" }}>
             {/* Dashed separator */}
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
@@ -448,29 +528,34 @@ const ETicketModal = ({ booking, onClose, onDownload, ticketRef, formatDate, for
               <div style={{ flex: 1, borderTop: "1px dashed #4b5563" }}></div>
             </div>
 
-            {/* QR Code */}
+            {/* Modern Barcode */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
               <div style={{
                 backgroundColor: "#ffffff",
-                padding: "12px",
-                borderRadius: "16px",
+                padding: "20px 16px",
+                borderRadius: "12px",
                 boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.3)",
+                width: "100%",
+                maxWidth: "320px",
               }}>
-                <img
-                  src={eTicket?.qrCodeImageUrl || `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${booking.bookingReference}`}
-                  alt="Ticket QR Code"
-                  style={{ width: "140px", height: "140px", display: "block" }}
-                  crossOrigin="anonymous"
-                />
+                {/* Barcode Canvas */}
+                <BarcodeGenerator value={booking.bookingReference} />
+                {/* Barcode Number */}
+                <p style={{ 
+                  color: "#1f2937", 
+                  fontSize: "12px", 
+                  marginTop: "10px", 
+                  textAlign: "center",
+                  fontFamily: "monospace",
+                  letterSpacing: "2px",
+                  fontWeight: "600"
+                }}>
+                  {booking.bookingReference}
+                </p>
               </div>
               <p style={{ color: "#9ca3af", fontSize: "12px", marginTop: "12px", textAlign: "center" }}>
-                Scan this QR code at the venue entrance
+                Scan this barcode at the venue entrance
               </p>
-              {eTicket?.ticketNumber && (
-                <p style={{ color: "#6b7280", fontSize: "11px", marginTop: "4px", fontFamily: "monospace" }}>
-                  {eTicket.ticketNumber}
-                </p>
-              )}
             </div>
           </div>
 
