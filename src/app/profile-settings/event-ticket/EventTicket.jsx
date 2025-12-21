@@ -23,7 +23,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useGetUserBookingsQuery, useGetETicketQuery } from "../../../../store/eventsApi";
 import Image from "next/image";
 
-const EventTicket = () => {
+const   EventTicket = () => {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
   const [selectedBooking, setSelectedBooking] = useState(null);
