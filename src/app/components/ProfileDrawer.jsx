@@ -137,7 +137,11 @@ const ProfileDrawer = () => {
               { href: "/help", label: "❓ Help & Support" },
               { href: "/privacy", label: "🔒 Privacy policy" },
               { href: "/terms", label: "📜 Terms & Conditions" },
-              { href: "/vendor-policy", label: "📜 Vendor Policy" },
+              { href: "/cancellation-refund", label: "💳 Cancellation & Refund Policy" },
+              { href: "/partner-terms", label: "🤝 Partner Terms and Conditions" },
+              { href: "/about-us", label: "ℹ️ About Us" },
+              { href: "/contact-us", label: "📞 Contact Us" },
+              // { href: "/vendor-policy", label: "📜 Vendor Policy" },
               { href: "/profile-settings", label: "⚙️ Accounts & Settings", requireAuth: true },
               {
                 href: "/become-vendor",

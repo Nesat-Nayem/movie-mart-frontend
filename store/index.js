@@ -4,6 +4,10 @@ import { faqApi } from "./faqApi";
 import { helpCenterApi } from "./helpCenterApi";
 import { privacyPolicyApi } from "./privacyPolicyApi";
 import { termsConditionsApi } from "./termsConditionsApi";
+import { cancellationRefundApi } from "./cancellationRefundApi";
+import { partnerTermsApi } from "./partnerTermsApi";
+import { aboutUsApi } from "./aboutUsApi";
+import { contactUsApi } from "./contactUsApi";
 import { vendorPolicyApi } from "./vendorPolicyApi";
 import { becomeVendorApi } from "./becomeVendorApi";
 import { subscriptionApi } from "./subscriptionApi";
@@ -22,6 +26,10 @@ export const store = configureStore({
     [helpCenterApi.reducerPath]: helpCenterApi.reducer,
     [privacyPolicyApi.reducerPath]: privacyPolicyApi.reducer,
     [termsConditionsApi.reducerPath]: termsConditionsApi.reducer,
+    [cancellationRefundApi.reducerPath]: cancellationRefundApi.reducer,
+    [partnerTermsApi.reducerPath]: partnerTermsApi.reducer,
+    [aboutUsApi.reducerPath]: aboutUsApi.reducer,
+    [contactUsApi.reducerPath]: contactUsApi.reducer,
     [vendorPolicyApi.reducerPath]: vendorPolicyApi.reducer,
     [becomeVendorApi.reducerPath]: becomeVendorApi.reducer,
     [subscriptionApi.reducerPath]: subscriptionApi.reducer,
@@ -40,6 +48,10 @@ export const store = configureStore({
       helpCenterApi.middleware,
       privacyPolicyApi.middleware,
       termsConditionsApi.middleware,
+      cancellationRefundApi.middleware,
+      partnerTermsApi.middleware,
+      aboutUsApi.middleware,
+      contactUsApi.middleware,
       vendorPolicyApi.middleware,
       becomeVendorApi.middleware,
       subscriptionApi.middleware,
