@@ -51,7 +51,7 @@ const SectionDivider = ({ divider }) => {
       className="w-full px-4 md:px-8"
       style={{ 
         paddingTop: `${style.paddingY || 8}px`,
-        paddingBottom: `${style.paddingY || 8}px`,
+        // paddingBottom: `${style.paddingY || 8}px`,
       }}
     >
       <div className="relative">

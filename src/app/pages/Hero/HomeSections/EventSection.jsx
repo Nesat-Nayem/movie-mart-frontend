@@ -93,10 +93,11 @@ const EventSection = ({ homeSection, title, viewMoreLink = "/events" }) => {
   if (filteredEvents.length === 0) return null;
 
   return (
-    <section className="py-5">
+    // <section className="py-5">
+    <section className="">
       <div className="w-full px-4 md:px-8 ">
         {/* Title */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 mt-4">
           <h2 className="text-xl md:text-3xl font-bold gradient-text">
             {title}
           </h2>
