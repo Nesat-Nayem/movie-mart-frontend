@@ -19,56 +19,93 @@ const Navbar = () => {
   return (
     <header className="w-full shadow-md border-b border-dotted border-gray-500 text-white bg-[#0f172a] sticky top-0 z-40">
       <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center justify-between relative">
-          {/* Left Section - Logo + Search Box (Desktop) */}
+        {/* Desktop & Large Tablet Layout (lg and up) */}
+        <div className="hidden lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-center lg:gap-4">
+          {/* Left Section - Logo + Search */}
           <div className="flex items-center space-x-3">
             <Logo />
-            {/* Always-visible search on desktop */}
-            <SearchModal className="hidden md:block w-64" />
+            <SearchModal className="w-64" />
           </div>
 
-          {/* Middle Section - Nav Items (Desktop) - Absolutely centered */}
-          <nav className="hidden md:flex items-center space-x-1 lg:space-x-2 absolute left-1/2 -translate-x-1/2">
+          {/* Center Section - Nav Items */}
+          <nav className="flex items-center space-x-2">
             {navItems.map((item, index) => (
               <Link
                 key={index}
                 href={item.href}
-                className="flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full text-sm font-medium hover:text-red-400 hover:bg-gray-700/50 transition-all duration-200"
+                className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium hover:text-red-400 hover:bg-gray-700/50 transition-all duration-200 whitespace-nowrap"
               >
-                <item.icon className="text-lg lg:text-xl" />
+                <item.icon className="text-xl" />
                 <span>{item.label}</span>
               </Link>
             ))}
           </nav>
 
           {/* Right Section - Location & Profile */}
-          <div className="flex items-center space-x-2 md:space-x-4">
-            {/* Location - hidden on mobile */}
-            <div className="hidden sm:block">
-              <LocationModal />
-            </div>
-            
-            {/* Profile */}
+          <div className="flex items-center justify-end space-x-4">
+            <LocationModal />
             <ProfileDrawer />
+          </div>
+        </div>
 
-            {/* Mobile Menu Toggle */}
+        {/* Tablet Layout (md to lg) */}
+        <div className="hidden md:flex lg:hidden items-center justify-between">
+          {/* Left - Logo */}
+          <div className="flex items-center space-x-3 flex-shrink-0">
+            <Logo />
+          </div>
+
+          {/* Center - Compact Nav (Icons Only on smaller tablets) */}
+          <nav className="flex items-center space-x-1 mx-4">
+            {navItems.map((item, index) => (
+              <Link
+                key={index}
+                href={item.href}
+                className="flex items-center gap-1.5 px-2.5 py-2 rounded-full text-xs font-medium hover:text-red-400 hover:bg-gray-700/50 transition-all duration-200 whitespace-nowrap"
+                title={item.label}
+              >
+                <item.icon className="text-lg" />
+                <span className="hidden xl:inline">{item.label}</span>
+              </Link>
+            ))}
+          </nav>
+
+          {/* Right - Search, Location & Profile */}
+          <div className="flex items-center space-x-2 flex-shrink-0">
+            <SearchModal className="w-48" />
+            <LocationModal />
+            <ProfileDrawer />
+          </div>
+        </div>
+
+        {/* Mobile Layout */}
+        <div className="flex md:hidden items-center justify-between">
+          {/* Left Section - Logo */}
+          <div className="flex items-center">
+            <Logo />
+          </div>
+
+          {/* Right Section - Profile & Menu Toggle */}
+          <div className="flex items-center space-x-2">
+            <ProfileDrawer />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition cursor-pointer"
+              className="p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition cursor-pointer"
+              aria-label="Toggle menu"
             >
               {mobileMenuOpen ? <FaTimes className="text-xl" /> : <FaBars className="text-xl" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu Dropdown */}
         <div
           className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
             mobileMenuOpen ? "max-h-96 opacity-100 mt-4" : "max-h-0 opacity-0"
           }`}
         >
           {/* Mobile Search */}
-          <div className="pb-3 sm:hidden">
+          <div className="pb-3">
             <SearchModal />
           </div>
 
@@ -88,7 +125,7 @@ const Navbar = () => {
           </nav>
 
           {/* Mobile Location */}
-          <div className="sm:hidden pb-3 px-2">
+          <div className="pb-3 px-2">
             <LocationModal />
           </div>
         </div>
