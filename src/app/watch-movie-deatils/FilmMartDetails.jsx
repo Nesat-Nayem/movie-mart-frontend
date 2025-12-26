@@ -15,6 +15,7 @@ import Link from "next/link";
 import VideoPlayer from "./VideoPlayer";
 import RecommandedMovies from "./RecommandedMovies";
 import RelatedForYou from "./RelatedForYou";
+import PaymentSuccessAnimation from "./PaymentSuccessAnimation";
 import {
   useGetWatchVideoByIdQuery,
   useCheckVideoAccessQuery,
@@ -34,7 +35,6 @@ import {
   useRemoveFromWatchlistMutation,
   useCheckWatchlistStatusQuery,
 } from "../../../store/watchlistApi";
-import { load } from "@cashfreepayments/cashfree-js";
 
 // Format duration from seconds
 const formatDuration = (seconds) => {
@@ -92,30 +92,29 @@ const WatchMovieDetails = () => {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState('');
   const [selectedSeason, setSelectedSeason] = useState(0);
-  const [cashfree, setCashfree] = useState(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [optimisticLiked, setOptimisticLiked] = useState(false);
   const [optimisticLikeCount, setOptimisticLikeCount] = useState(0);
   const [optimisticSaved, setOptimisticSaved] = useState(false);
   const [optimisticSubscribed, setOptimisticSubscribed] = useState(false);
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
 
-  // Initialize user data and Cashfree SDK
+  // Initialize user data and Razorpay SDK
   useEffect(() => {
     setUserId(getUserId());
     setCountryCode(getUserCountry());
     
-    // Initialize Cashfree SDK
-    const initCashfree = async () => {
-      try {
-        const cf = await load({
-          mode: process.env.NEXT_PUBLIC_CASHFREE_ENV === "production" ? "production" : "sandbox",
-        });
-        setCashfree(cf);
-      } catch (error) {
-        console.error("Failed to load Cashfree:", error);
+    // Load Razorpay script
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+    
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
       }
     };
-    initCashfree();
   }, []);
 
   // Fetch video data - skip if no videoId, pass userId only if available
@@ -205,7 +204,7 @@ const WatchMovieDetails = () => {
       return;
     }
 
-    if (!cashfree) {
+    if (!window.Razorpay) {
       alert('Payment system is loading. Please try again in a moment.');
       return;
     }
@@ -227,61 +226,80 @@ const WatchMovieDetails = () => {
         }
       }).unwrap();
 
-      // Check which payment gateway to use
-      if (result.data?.paymentGateway === 'ccavenue' && result.data?.ccavenueOrder) {
-        // Redirect to CCAvenue for international users
-        initiateCCAvenuePayment(result.data.ccavenueOrder);
-      } else if (result.data?.paymentLink) {
-        window.location.href = result.data.paymentLink;
-      } else if (result.data?.cashfreeOrder?.paymentSessionId) {
-        // Handle Cashfree SDK integration for Indian users
-        initiateCashfreePayment(result.data.cashfreeOrder);
+      if (result.data?.razorpayOrder) {
+        initiateRazorpayPayment(result.data.razorpayOrder, user);
+      } else {
+        alert('Failed to create payment order');
+        setPaymentLoading(false);
       }
     } catch (error) {
       console.error('Payment error:', error);
       alert('Failed to initiate payment. Please try again.');
-    } finally {
       setPaymentLoading(false);
     }
   };
 
-  // CCAvenue payment redirect for international users
-  const initiateCCAvenuePayment = (ccavenueOrder) => {
-    // Create a form and submit to CCAvenue
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = ccavenueOrder.ccavenueUrl;
-    
-    const encRequestInput = document.createElement('input');
-    encRequestInput.type = 'hidden';
-    encRequestInput.name = 'encRequest';
-    encRequestInput.value = ccavenueOrder.encRequest;
-    form.appendChild(encRequestInput);
-    
-    const accessCodeInput = document.createElement('input');
-    accessCodeInput.type = 'hidden';
-    accessCodeInput.name = 'access_code';
-    accessCodeInput.value = ccavenueOrder.accessCode;
-    form.appendChild(accessCodeInput);
-    
-    document.body.appendChild(form);
-    form.submit();
+  // Razorpay payment integration
+  const initiateRazorpayPayment = async (razorpayOrder, user) => {
+    const options = {
+      key: razorpayOrder.keyId,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      name: video.title,
+      description: `Purchase ${video.title}`,
+      order_id: razorpayOrder.orderId,
+      prefill: {
+        name: user.name || 'User',
+        email: user.email || '',
+        contact: user.phone || '',
+      },
+      theme: {
+        color: '#ec4899',
+      },
+      handler: async function (response) {
+        // Payment successful - verify on backend
+        await handlePaymentVerification({
+          orderId: response.razorpay_order_id,
+          paymentId: response.razorpay_payment_id,
+          signature: response.razorpay_signature,
+        });
+      },
+      modal: {
+        ondismiss: function() {
+          setPaymentLoading(false);
+        }
+      }
+    };
+
+    const razorpay = new window.Razorpay(options);
+    razorpay.open();
   };
 
-  // Cashfree payment SDK integration
-  const initiateCashfreePayment = async (cashfreeOrder) => {
+  // Verify payment on backend
+  const handlePaymentVerification = async (paymentData) => {
     try {
-      if (!cashfree) {
-        alert('Payment system not ready. Please try again.');
-        return;
-      }
-      await cashfree.checkout({
-        paymentSessionId: cashfreeOrder.paymentSessionId,
-        redirectTarget: '_self',
+      const verifyResult = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/watch-videos/payment/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(paymentData),
       });
+
+      const result = await verifyResult.json();
+      
+      if (result.success) {
+        setShowSuccessAnimation(true);
+        refetch();
+        setPaymentLoading(false);
+      } else {
+        alert('Payment verification failed');
+        setPaymentLoading(false);
+      }
     } catch (error) {
-      console.error('Cashfree error:', error);
-      alert('Payment failed. Please try again.');
+      console.error('Verification error:', error);
+      alert('Payment verification failed');
+      setPaymentLoading(false);
     }
   };
 
@@ -427,7 +445,14 @@ const WatchMovieDetails = () => {
   const channel = video.channelId;
 
   return (
-    <section>
+    <>
+      <PaymentSuccessAnimation 
+        isOpen={showSuccessAnimation}
+        videoTitle={video?.title}
+        onClose={() => setShowSuccessAnimation(false)}
+      />
+      
+      <section>
       <div className="max-w-6xl mx-auto">
         <div className="min-h-screen text-white">
           {/* Back Button */}
@@ -855,6 +880,7 @@ const WatchMovieDetails = () => {
         </div>
       </div>
     </section>
+    </>
   );
 };
 

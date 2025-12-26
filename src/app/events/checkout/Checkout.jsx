@@ -8,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useCreatePaymentOrderMutation, useLazyVerifyPaymentQuery } from "../../../../store/eventsApi";
 import toast from "react-hot-toast";
 import Image from "next/image";
-import { load } from "@cashfreepayments/cashfree-js";
+import PaymentSuccessModal from "./PaymentSuccessModal";
 
 const Checkout = () => {
   const router = useRouter();
@@ -18,7 +18,8 @@ const Checkout = () => {
   
   const [bookingDetails, setBookingDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [cashfree, setCashfree] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successData, setSuccessData] = useState(null);
   
   const [createPaymentOrder] = useCreatePaymentOrderMutation();
   const [verifyPayment] = useLazyVerifyPaymentQuery();
@@ -29,19 +30,15 @@ const Checkout = () => {
     phone: "",
   });
 
-  // Initialize Cashfree SDK
+  // Load Razorpay script
   useEffect(() => {
-    const initCashfree = async () => {
-      try {
-        const cf = await load({
-          mode: process.env.NEXT_PUBLIC_CASHFREE_ENV === "production" ? "production" : "sandbox",
-        });
-        setCashfree(cf);
-      } catch (error) {
-        console.error("Failed to load Cashfree:", error);
-      }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
     };
-    initCashfree();
   }, []);
 
   // Load booking details from localStorage
@@ -93,7 +90,7 @@ const Checkout = () => {
       router.push("/login");
       return;
     }
-    if (!cashfree) {
+    if (!window.Razorpay) {
       toast.error("Payment system not ready. Please try again.");
       return;
     }
@@ -109,13 +106,12 @@ const Checkout = () => {
         userId: user._id,
         quantity: bookingDetails.quantity,
         seatType: bookingDetails.seatType,
-        countryCode, // Pass country code for gateway routing
+        countryCode,
         customerDetails: {
           name: form.name,
           email: form.email,
           phone: form.phone,
         },
-        returnUrl: `${window.location.origin}/events/checkout/success`,
       };
 
       const response = await createPaymentOrder({
@@ -123,63 +119,46 @@ const Checkout = () => {
         orderData,
       }).unwrap();
 
-      // Check which payment gateway to use
-      if (response.success && response.data?.paymentGateway === 'ccavenue' && response.data?.ccavenueOrder) {
-        // Redirect to CCAvenue for international users
-        const { ccavenueOrder } = response.data;
+      if (response.success && response.data?.razorpayOrder) {
+        const { orderId, amount, currency, keyId } = response.data.razorpayOrder;
         
         // Store booking ID for verification
         localStorage.setItem("pendingBookingId", response.data.booking._id);
-        
-        // Create form and submit to CCAvenue
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = ccavenueOrder.ccavenueUrl;
-        
-        const encRequestInput = document.createElement('input');
-        encRequestInput.type = 'hidden';
-        encRequestInput.name = 'encRequest';
-        encRequestInput.value = ccavenueOrder.encRequest;
-        form.appendChild(encRequestInput);
-        
-        const accessCodeInput = document.createElement('input');
-        accessCodeInput.type = 'hidden';
-        accessCodeInput.name = 'access_code';
-        accessCodeInput.value = ccavenueOrder.accessCode;
-        form.appendChild(accessCodeInput);
-        
-        document.body.appendChild(form);
-        form.submit();
-        return;
-      }
-      
-      if (response.success && response.data?.cashfreeOrder) {
-        const { paymentSessionId, orderId } = response.data.cashfreeOrder;
-        
-        // Store order ID for verification
-        localStorage.setItem("pendingOrderId", orderId);
-        localStorage.setItem("pendingBookingId", response.data.booking._id);
 
-        // Open Cashfree checkout for Indian users
-        const checkoutOptions = {
-          paymentSessionId,
-          redirectTarget: "_modal",
+        // Configure Razorpay options
+        const options = {
+          key: keyId,
+          amount: amount,
+          currency: currency,
+          name: bookingDetails.eventTitle,
+          description: `${bookingDetails.quantity} x ${bookingDetails.seatType} Ticket`,
+          order_id: orderId,
+          prefill: {
+            name: form.name,
+            email: form.email,
+            contact: form.phone,
+          },
+          theme: {
+            color: '#ec4899',
+          },
+          handler: async function (response) {
+            // Payment successful - verify on backend
+            await handlePaymentVerification({
+              orderId: response.razorpay_order_id,
+              paymentId: response.razorpay_payment_id,
+              signature: response.razorpay_signature,
+            });
+          },
+          modal: {
+            ondismiss: function() {
+              setIsLoading(false);
+              toast.error("Payment cancelled");
+            }
+          }
         };
 
-        cashfree.checkout(checkoutOptions).then((result) => {
-          if (result.error) {
-            toast.error(result.error.message || "Payment failed");
-            setIsLoading(false);
-          }
-          if (result.redirect) {
-            // Payment page opened
-            console.log("Payment redirect initiated");
-          }
-          if (result.paymentDetails) {
-            // Payment completed - verify
-            handlePaymentVerification(orderId);
-          }
-        });
+        const razorpay = new window.Razorpay(options);
+        razorpay.open();
       } else {
         toast.error(response.message || "Failed to create payment order");
         setIsLoading(false);
@@ -191,26 +170,34 @@ const Checkout = () => {
     }
   };
 
-  const handlePaymentVerification = async (orderId) => {
+  const handlePaymentVerification = async (paymentData) => {
     try {
-      const verifyResult = await verifyPayment(orderId);
+      // Verify payment signature on backend
+      const verifyResult = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events/payment/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(paymentData),
+      });
+
+      const result = await verifyResult.json();
       
-      if (verifyResult.data?.paymentStatus === "completed") {
+      if (result.success) {
         toast.success("Payment successful!");
         localStorage.removeItem("pendingEventBooking");
-        router.push(`/events/checkout/success?order_id=${orderId}`);
-      } else if (verifyResult.data?.paymentStatus === "pending") {
-        toast.loading("Payment is being processed...");
-        // Retry verification after delay
-        setTimeout(() => handlePaymentVerification(orderId), 3000);
+        localStorage.removeItem("pendingBookingId");
+        setSuccessData(result.data);
+        setShowSuccessModal(true);
+        setIsLoading(false);
       } else {
-        toast.error("Payment verification failed");
+        toast.error(result.message || "Payment verification failed");
         setIsLoading(false);
       }
     } catch (error) {
       console.error("Verification error:", error);
-      // Still redirect to success page - webhook will handle
-      router.push(`/events/checkout/success?order_id=${orderId}`);
+      toast.error("Payment verification failed");
+      setIsLoading(false);
     }
   };
 
@@ -243,7 +230,14 @@ const Checkout = () => {
   }
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-[#0B1730] to-[#1a2744] py-6">
+    <>
+      <PaymentSuccessModal 
+        isOpen={showSuccessModal}
+        bookingData={successData}
+        onClose={() => setShowSuccessModal(false)}
+      />
+      
+      <section className="min-h-screen bg-gradient-to-b from-[#0B1730] to-[#1a2744] py-6">
       <div className="max-w-2xl mx-auto px-4">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
@@ -365,7 +359,7 @@ const Checkout = () => {
                   <div>
                     <p className="text-green-400 font-medium text-sm">Secure Payment</p>
                     <p className="text-gray-400 text-xs mt-1">
-                      Your payment information is encrypted and securely processed by Cashfree.
+                      Your payment information is encrypted and securely processed by Razorpay.
                     </p>
                   </div>
                 </div>
@@ -395,6 +389,7 @@ const Checkout = () => {
         </div>
       </div>
     </section>
+    </>
   );
 };
 
