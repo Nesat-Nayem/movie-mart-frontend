@@ -149,8 +149,12 @@ const ProfileSettings = () => {
                 Quick Actions
               </h2>
               <div className="space-y-2">
-                <Link href="/movie-list">
-                  <MenuItem icon="🔔" title="Movie Reminders" subtitle="Set reminders for upcoming movies" />
+                <Link href="/watchlist">
+                  <MenuItem 
+                    icon="📋" 
+                    title="My Watchlist" 
+                    subtitle="View your saved videos, movies & events" 
+                  />
                 </Link>
                 <Link href="/notification">
                   <MenuItem 

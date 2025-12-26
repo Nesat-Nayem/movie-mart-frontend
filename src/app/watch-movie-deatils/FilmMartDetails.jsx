@@ -29,6 +29,11 @@ import {
   useGetVideoReviewsQuery,
   useAddVideoReviewMutation,
 } from "../../../store/watchVideosApi";
+import {
+  useAddToWatchlistMutation,
+  useRemoveFromWatchlistMutation,
+  useCheckWatchlistStatusQuery,
+} from "../../../store/watchlistApi";
 import { load } from "@cashfreepayments/cashfree-js";
 
 // Format duration from seconds
@@ -89,6 +94,10 @@ const WatchMovieDetails = () => {
   const [selectedSeason, setSelectedSeason] = useState(0);
   const [cashfree, setCashfree] = useState(null);
   const [shareOpen, setShareOpen] = useState(false);
+  const [optimisticLiked, setOptimisticLiked] = useState(false);
+  const [optimisticLikeCount, setOptimisticLikeCount] = useState(0);
+  const [optimisticSaved, setOptimisticSaved] = useState(false);
+  const [optimisticSubscribed, setOptimisticSubscribed] = useState(false);
 
   // Initialize user data and Cashfree SDK
   useEffect(() => {
@@ -133,6 +142,12 @@ const WatchMovieDetails = () => {
     { skip: !videoId || !userId }
   );
 
+  // Check watchlist status
+  const { data: watchlistData } = useCheckWatchlistStatusQuery(
+    { itemType: 'watch-video', itemId: videoId },
+    { skip: !videoId || !userId }
+  );
+
   // Fetch reviews
   const { data: reviewsData } = useGetVideoReviewsQuery(
     { videoId, page: 1, limit: 10 },
@@ -147,10 +162,41 @@ const WatchMovieDetails = () => {
   const [toggleLike] = useToggleVideoLikeMutation();
   const [updateProgress] = useUpdateWatchProgressMutation();
   const [addReview] = useAddVideoReviewMutation();
+  const [addToWatchlist] = useAddToWatchlistMutation();
+  const [removeFromWatchlist] = useRemoveFromWatchlistMutation();
 
   const canWatch = video?.isFree || video?.canWatch || accessData?.hasAccess;
-  const isSubscribed = subscriptionData?.isSubscribed;
-  const isLiked = likeData?.liked;
+  
+  // Use optimistic state if server data has loaded, otherwise show server data
+  const isSubscribed = subscriptionData !== undefined ? optimisticSubscribed : false;
+  const isLiked = likeData !== undefined ? optimisticLiked : false;
+  const isSaved = watchlistData !== undefined ? optimisticSaved : false;
+  const displayLikeCount = optimisticLikeCount || video?.likeCount || 0;
+
+  // Sync optimistic states with server data
+  useEffect(() => {
+    if (likeData?.liked !== undefined) {
+      setOptimisticLiked(likeData.liked);
+    }
+  }, [likeData]);
+
+  useEffect(() => {
+    if (video?.likeCount !== undefined) {
+      setOptimisticLikeCount(video.likeCount);
+    }
+  }, [video?.likeCount]);
+
+  useEffect(() => {
+    if (watchlistData?.inWatchlist !== undefined) {
+      setOptimisticSaved(watchlistData.inWatchlist);
+    }
+  }, [watchlistData]);
+
+  useEffect(() => {
+    if (subscriptionData?.isSubscribed !== undefined) {
+      setOptimisticSubscribed(subscriptionData.isSubscribed);
+    }
+  }, [subscriptionData]);
 
   // Handle payment
   const handlePurchase = async () => {
@@ -254,28 +300,76 @@ const WatchMovieDetails = () => {
   // Handle subscription toggle
   const handleSubscriptionToggle = async () => {
     if (!userId) {
-      router.push('/login');
+      router.push('/login?redirect=' + encodeURIComponent(window.location.pathname + window.location.search));
       return;
     }
 
+    const previousState = optimisticSubscribed;
+    setOptimisticSubscribed(!previousState);
+
     try {
-      if (isSubscribed) {
-        await unsubscribeFromChannel({ channelId: video.channelId._id, userId });
+      if (previousState) {
+        await unsubscribeFromChannel({ channelId: video.channelId._id, userId }).unwrap();
       } else {
-        await subscribeToChannel({ channelId: video.channelId._id, userId });
+        await subscribeToChannel({ channelId: video.channelId._id, userId }).unwrap();
       }
     } catch (error) {
+      setOptimisticSubscribed(previousState);
       console.error('Subscription error:', error);
+      if (error?.data?.message) {
+        alert(error.data.message);
+      }
     }
   };
 
   // Handle like toggle
   const handleLikeToggle = async () => {
     if (!userId) {
-      router.push('/login');
+      router.push('/login?redirect=' + encodeURIComponent(window.location.pathname + window.location.search));
       return;
     }
-    await toggleLike({ videoId, userId });
+
+    const previousLiked = optimisticLiked;
+    const previousCount = optimisticLikeCount;
+    
+    setOptimisticLiked(!previousLiked);
+    setOptimisticLikeCount(previousLiked ? Math.max(0, previousCount - 1) : previousCount + 1);
+
+    try {
+      const result = await toggleLike({ videoId, userId }).unwrap();
+      if (result?.data?.likeCount !== undefined) {
+        setOptimisticLikeCount(result.data.likeCount);
+      }
+    } catch (error) {
+      setOptimisticLiked(previousLiked);
+      setOptimisticLikeCount(previousCount);
+      console.error('Like error:', error);
+    }
+  };
+
+  // Handle save toggle
+  const handleSaveToggle = async () => {
+    if (!userId) {
+      router.push('/login?redirect=' + encodeURIComponent(window.location.pathname + window.location.search));
+      return;
+    }
+
+    const previousState = optimisticSaved;
+    setOptimisticSaved(!previousState);
+
+    try {
+      if (previousState) {
+        await removeFromWatchlist({ itemType: 'watch-video', itemId: videoId }).unwrap();
+      } else {
+        await addToWatchlist({ itemType: 'watch-video', itemId: videoId }).unwrap();
+      }
+    } catch (error) {
+      setOptimisticSaved(previousState);
+      console.error('Save error:', error);
+      if (error?.data?.message) {
+        alert(error.data.message);
+      }
+    }
   };
 
   // Handle watch progress update
@@ -449,16 +543,23 @@ const WatchMovieDetails = () => {
                 onClick={handleLikeToggle}
                 className={`flex items-center gap-2 px-4 py-2 rounded-full transition ${
                   isLiked 
-                    ? 'bg-pink-600 text-white' 
+                    ? 'bg-pink-600 text-white hover:bg-pink-700' 
                     : 'bg-white/10 hover:bg-white/20'
                 }`}
               >
                 <ThumbsUp className={`w-5 h-5 ${isLiked ? 'fill-white' : ''}`} />
-                {video.likeCount || 0}
+                {displayLikeCount}
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition">
-                <Bookmark className="w-5 h-5" />
-                Save
+              <button 
+                onClick={handleSaveToggle}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full transition ${
+                  isSaved
+                    ? 'bg-pink-600 text-white hover:bg-pink-700'
+                    : 'bg-white/10 hover:bg-white/20'
+                }`}
+              >
+                <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-white' : ''}`} />
+                {isSaved ? 'Saved' : 'Save'}
               </button>
               <button 
                 onClick={() => setShareOpen(true)}
@@ -503,8 +604,8 @@ const WatchMovieDetails = () => {
                   onClick={handleSubscriptionToggle}
                   className={`flex items-center gap-2 px-5 py-2 rounded-full font-medium transition ${
                     isSubscribed
-                      ? 'bg-gray-600 hover:bg-gray-700'
-                      : 'bg-red-600 hover:bg-red-700'
+                      ? 'bg-gray-600 hover:bg-gray-700 text-white'
+                      : 'bg-red-600 hover:bg-red-700 text-white'
                   }`}
                 >
                   {isSubscribed ? <BellOff className="w-4 h-4" /> : <Bell className="w-4 h-4" />}

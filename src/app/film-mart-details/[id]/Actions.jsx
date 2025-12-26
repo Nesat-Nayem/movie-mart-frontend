@@ -1,18 +1,51 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Bookmark, Share2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import ShareModal from "@/components/ShareModal";
+import {
+  useAddToWatchlistMutation,
+  useRemoveFromWatchlistMutation,
+  useCheckWatchlistStatusQuery,
+} from "../../../../store/watchlistApi";
 
 const Actions = ({ movie }) => {
-  const [bookmarked, setBookmarked] = useState(false);
+  const router = useRouter();
   const [shareOpen, setShareOpen] = useState(false);
+  const [optimisticSaved, setOptimisticSaved] = useState(false);
 
-  /** Bookmark Load */
+  const getUserId = () => {
+    if (typeof window !== 'undefined') {
+      const user = localStorage.getItem('user');
+      if (user) {
+        try {
+          return JSON.parse(user)?._id || null;
+        } catch {
+          return null;
+        }
+      }
+    }
+    return null;
+  };
+
+  const userId = getUserId();
+  const movieId = movie?._id || movie?.id;
+
+  const { data: watchlistData } = useCheckWatchlistStatusQuery(
+    { itemType: 'movie', itemId: movieId },
+    { skip: !movieId || !userId }
+  );
+
+  const [addToWatchlist] = useAddToWatchlistMutation();
+  const [removeFromWatchlist] = useRemoveFromWatchlistMutation();
+
+  const isSaved = optimisticSaved || watchlistData?.inWatchlist;
+
   useEffect(() => {
-    if (!movie) return;
-    const saved = JSON.parse(localStorage.getItem("bookmarks")) || [];
-    setBookmarked(saved.some((b) => b._id === movie._id || b.id === movie.id));
-  }, [movie]);
+    if (watchlistData?.inWatchlist !== undefined) {
+      setOptimisticSaved(watchlistData.inWatchlist);
+    }
+  }, [watchlistData]);
 
   // If no movie, show skeleton buttons
   if (!movie) {
@@ -26,39 +59,39 @@ const Actions = ({ movie }) => {
 
   const shareURL = typeof window !== "undefined" ? window.location.href : "";
 
-  /** Toggle Bookmark */
-  const handleBookmark = () => {
-    const saved = JSON.parse(localStorage.getItem("bookmarks")) || [];
-    const exists = saved.some((b) => b._id === movie._id || b.id === movie.id);
+  const handleSaveToggle = async () => {
+    if (!userId) {
+      router.push('/login?redirect=' + encodeURIComponent(window.location.pathname));
+      return;
+    }
 
-    if (exists) {
-      const updated = saved.filter(
-        (b) => b._id !== movie._id && b.id !== movie.id
-      );
-      localStorage.setItem("bookmarks", JSON.stringify(updated));
-      setBookmarked(false);
-    } else {
-      const newItem = {
-        _id: movie._id,
-        id: movie.id,
-        title: movie.title,
-        poster: movie.poster,
-        link: `/movies/details/${movie._id || movie.id}`, // ✅ FIXED
-      };
-      localStorage.setItem("bookmarks", JSON.stringify([...saved, newItem]));
-      setBookmarked(true);
+    const previousState = optimisticSaved;
+    setOptimisticSaved(!previousState);
+
+    try {
+      if (previousState) {
+        await removeFromWatchlist({ itemType: 'movie', itemId: movieId }).unwrap();
+      } else {
+        await addToWatchlist({ itemType: 'movie', itemId: movieId }).unwrap();
+      }
+    } catch (error) {
+      setOptimisticSaved(previousState);
+      console.error('Save error:', error);
+      if (error?.data?.message) {
+        alert(error.data.message);
+      }
     }
   };
 
   return (
     <div className="flex items-center gap-3 self-start">
       <button
-        onClick={handleBookmark}
-        className={`px-3 py-2 rounded-lg flex items-center gap-1 ${
-          bookmarked ? "bg-pink-600" : "bg-white/10"
+        onClick={handleSaveToggle}
+        className={`px-3 py-2 rounded-lg flex items-center gap-1 transition ${
+          isSaved ? "bg-pink-600 hover:bg-pink-700 text-white" : "bg-white/10 hover:bg-white/20"
         }`}
       >
-        <Bookmark size={16} /> {bookmarked ? "Saved" : "Watchlist"}
+        <Bookmark size={16} className={isSaved ? 'fill-white' : ''} /> {isSaved ? "Saved" : "Watchlist"}
       </button>
 
       <button

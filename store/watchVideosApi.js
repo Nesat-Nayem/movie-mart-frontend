@@ -101,9 +101,11 @@ export const watchVideosApi = createApi({
     /** Check subscription status */
     checkSubscription: builder.query({
       query: ({ channelId, userId }) => 
-        `/watch-videos/channels/${channelId}/subscription/${userId}`,
+        `/watch-videos/channels/${channelId}/subscription`,
       transformResponse: (response) => response.data,
-      providesTags: ["Subscriptions"],
+      providesTags: (result, error, { channelId }) => [
+        { type: "Subscriptions", id: channelId },
+      ],
     }),
 
     /** Get user's subscribed channels */
