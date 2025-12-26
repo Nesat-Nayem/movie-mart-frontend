@@ -132,8 +132,8 @@ const ProfileDrawer = () => {
           <ul className="space-y-2">
             {[
               { href: "/notification", label: "🔔 Notifications", badge: "4" },
-              { href: "/my-bookmark", label: "📦 My Bookmark" },
-              { href: "/my-booking-tickets", label: "🎬 My Booking Tickets" },
+              // { href: "/my-bookmark", label: "📦 My Bookmark" },
+              // { href: "/my-booking-tickets", label: "🎬 My Booking Tickets" },
               { href: "/help", label: "❓ Help & Support" },
               { href: "/privacy", label: "🔒 Privacy policy" },
               { href: "/terms", label: "📜 Terms & Conditions" },
