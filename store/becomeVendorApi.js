@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const becomeVendorApi = createApi({
   reducerPath: "becomeVendorApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://api.moviemart.org/v1/api",
+    baseUrl: "http://localhost:8080/v1/api",
   }),
   tagTypes: ["becomeVendorApi", "VendorPackages", "PlatformSettings"],
   endpoints: (builder) => ({
@@ -31,8 +31,12 @@ export const becomeVendorApi = createApi({
     }),
 
     // Verify payment status
-    verifyPayment: builder.query({
-      query: (orderId) => `/vendors/payment/verify/${orderId}`,
+    verifyPayment: builder.mutation({
+      query: ({ orderId, paymentDetails }) => ({
+        url: `/vendors/payment/verify/${orderId}`,
+        method: "POST",
+        body: paymentDetails,
+      }),
     }),
 
     // Create vendor application
@@ -51,6 +55,6 @@ export const {
   useGetVendorPackagesQuery,
   useGetPlatformSettingsQuery,
   useCreatePaymentOrderMutation,
-  useLazyVerifyPaymentQuery,
+  useVerifyPaymentMutation,
   useCreateVendorApplicationMutation,
 } = becomeVendorApi;

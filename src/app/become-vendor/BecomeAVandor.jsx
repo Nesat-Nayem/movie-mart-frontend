@@ -2,32 +2,33 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import toast from "react-hot-toast";
-import { load } from "@cashfreepayments/cashfree-js";
-import { FaMapMarkerAlt } from "react-icons/fa";
+import { FaMapMarkerAlt, FaCheckCircle, FaTimesCircle, FaRocket, FaShieldAlt, FaGlobe } from "react-icons/fa";
+import { MdVerified } from "react-icons/md";
 import { 
   useGetVendorPackagesQuery, 
   useGetPlatformSettingsQuery, 
   useCreateVendorApplicationMutation,
   useCreatePaymentOrderMutation,
-  useLazyVerifyPaymentQuery,
+  useVerifyPaymentMutation,
 } from "../../../store/becomeVendorApi";
 import { detectUserCountry, getPriceForCountry } from "@/services/geolocationService";
-import { getCountryByCode } from "@/data/countries";
+import { getCountryByCode, COUNTRIES } from "@/data/countries";
 
 const BecomeAVendor = () => {
   const [step, setStep] = useState(1);
-  const [cashfree, setCashfree] = useState(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [userCountry, setUserCountry] = useState(null);
   const [locationLoading, setLocationLoading] = useState(true);
 
-  // ✅ Initialize Cashfree SDK
+  // ✅ Load Razorpay script
   useEffect(() => {
-    const initCashfree = async () => {
-      const cf = await load({ mode: "sandbox" }); // Change to "production" for live
-      setCashfree(cf);
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
     };
-    initCashfree();
   }, []);
 
   // ✅ Detect user's country for location-based pricing
@@ -86,7 +87,8 @@ const BecomeAVendor = () => {
   const { data: platformSettings = [], isLoading: settingsLoading } = useGetPlatformSettingsQuery();
   const [createVendor, { isLoading: vendorLoading }] = useCreateVendorApplicationMutation();
   const [createPaymentOrder] = useCreatePaymentOrderMutation();
-  const [verifyPayment] = useLazyVerifyPaymentQuery();
+  const [verifyPayment] = useVerifyPaymentMutation();
+  const [createVendorApplication, { isLoading: vendorApplicationLoading }] = useCreateVendorApplicationMutation();
 
   // Get platform fees
   const eventFee = useMemo(() => {
@@ -304,9 +306,9 @@ const BecomeAVendor = () => {
     }
   };
 
-  // ✅ Handle Cashfree Payment
+  // ✅ Handle Razorpay Payment
   const handlePayment = async () => {
-    if (!cashfree) {
+    if (!window.Razorpay) {
       toast.error("Payment system not loaded. Please refresh the page.");
       return;
     }
@@ -322,45 +324,70 @@ const BecomeAVendor = () => {
           email: formData.email,
           phone: formData.phone,
         },
-        returnUrl: `${window.location.origin}/become-vendor`,
       }).unwrap();
 
-      const { sessionId, orderId, orderAmount } = orderRes.data;
+      const { orderId, amount, razorpayOrderId, currency } = orderRes.data;
 
-      // Open Cashfree checkout
-      const checkoutOptions = {
-        paymentSessionId: sessionId,
-        redirectTarget: "_modal",
-      };
-
-      cashfree.checkout(checkoutOptions).then(async (result) => {
-        if (result.error) {
-          console.error("Payment error:", result.error);
-          toast.error("Payment failed. Please try again.");
-          setIsProcessingPayment(false);
-          return;
-        }
-
-        if (result.paymentDetails) {
-          // Verify payment
-          const verifyRes = await verifyPayment(orderId);
-          
-          if (verifyRes?.data?.data?.isPaid) {
-            toast.success("Payment successful! Submitting your application...");
+      // Razorpay checkout options
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || orderRes.data.keyId,
+        amount: amount * 100, // Razorpay expects amount in paise
+        currency: currency || 'INR',
+        name: 'MovieMart',
+        description: 'Vendor Package Payment',
+        order_id: razorpayOrderId,
+        prefill: {
+          name: formData.vendorName,
+          email: formData.email,
+          contact: formData.phone,
+        },
+        theme: {
+          color: '#EF4444',
+        },
+        handler: async function (response) {
+          try {
+            // Verify payment with Razorpay signature
+            const verifyRes = await verifyPayment({
+              orderId: orderId,
+              paymentDetails: {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }
+            }).unwrap();
             
-            // Submit form with payment info
-            await submitApplication({
-              status: 'completed',
-              amount: orderAmount,
-              transactionId: orderId,
-              paymentMethod: 'cashfree',
-            });
-          } else {
+            if (verifyRes?.data?.verified) {
+              toast.success("Payment successful! Submitting your application...");
+              
+              // Submit form with payment info
+              await submitApplication({
+                status: 'completed',
+                amount: amount,
+                transactionId: response.razorpay_payment_id,
+                orderId: response.razorpay_order_id,
+                signature: response.razorpay_signature,
+                paymentMethod: 'razorpay',
+              });
+            } else {
+              toast.error("Payment verification failed. Please contact support.");
+            }
+          } catch (error) {
+            console.error('Payment verification error:', error);
             toast.error("Payment verification failed. Please contact support.");
+          } finally {
+            setIsProcessingPayment(false);
+          }
+        },
+        modal: {
+          ondismiss: function() {
+            toast.error("Payment cancelled");
+            setIsProcessingPayment(false);
           }
         }
-        setIsProcessingPayment(false);
-      });
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
 
     } catch (err) {
       console.error("Payment error:", err);
@@ -392,49 +419,91 @@ const BecomeAVendor = () => {
     }
   };
 
-  if (packagesLoading || settingsLoading) return <div className="min-h-screen bg-[#0B1730] flex items-center justify-center text-white">Loading...</div>;
+  if (packagesLoading || settingsLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0B1730] via-[#1a1f3a] to-[#0B1730] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white text-lg">Loading packages...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <section className="min-h-screen bg-[#0B1730] py-4 px-4">
-      <div className="max-w-3xl mx-auto p-6 shadow-xl bg-white/10 rounded-lg">
-        {/* ✅ Stepper */}
-        <div className="flex items-center justify-between mb-4">
-          {steps.map((label, i) => (
-            <div key={i} className="flex-1 text-center">
-              <div
-                className={`w-10 h-10 mx-auto flex items-center justify-center rounded-full font-semibold ${
-                  step === i + 1
-                    ? "bg-red-500 text-white"
-                    : step > i + 1
-                    ? "bg-green-500 text-white"
-                    : "bg-gray-200 text-gray-600"
-                }`}
-              >
-                {i + 1}
-              </div>
-              <p
-                className={`mt-2 text-sm ${
-                  step === i + 1 ? "font-bold text-red-600" : "text-gray-600"
-                }`}
-              >
-                {label}
-              </p>
+    <section className="min-h-screen bg-gradient-to-br from-[#0B1730] via-[#1a1f3a] to-[#0B1730] py-8 px-4 sm:px-6 lg:px-8">
+      {/* Hero Header */}
+      <div className="max-w-5xl mx-auto mb-8 text-center">
+        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500/20 to-red-500/20 border border-pink-500/30 rounded-full px-4 py-2 mb-4">
+          <FaRocket className="text-pink-400" />
+          <span className="text-pink-400 text-sm font-semibold">Start Your Journey</span>
+        </div>
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
+          Become a <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-red-500">MovieMart Vendor</span>
+        </h1>
+        <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
+          Join thousands of creators and businesses selling movies, hosting events, and streaming content worldwide
+        </p>
+      </div>
+
+      <div className="max-w-4xl mx-auto">
+        {/* Progress Stepper */}
+        <div className="mb-8 bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 border border-gray-700/50">
+          <div className="flex items-center justify-between relative">
+            {/* Progress Line */}
+            <div className="absolute top-5 left-0 right-0 h-1 bg-gray-700 -z-10">
+              <div 
+                className="h-full bg-gradient-to-r from-pink-500 to-red-500 transition-all duration-500"
+                style={{ width: `${((step - 1) / (steps.length - 1)) * 100}%` }}
+              />
             </div>
-          ))}
+            
+            {steps.map((label, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center relative z-10">
+                <div
+                  className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full font-bold text-sm sm:text-base transition-all duration-300 ${
+                    step === i + 1
+                      ? "bg-gradient-to-r from-pink-500 to-red-500 text-white shadow-lg shadow-pink-500/50 scale-110"
+                      : step > i + 1
+                      ? "bg-green-500 text-white"
+                      : "bg-gray-700 text-gray-400"
+                  }`}
+                >
+                  {step > i + 1 ? <FaCheckCircle /> : i + 1}
+                </div>
+                <p
+                  className={`mt-2 text-xs sm:text-sm font-medium hidden sm:block ${
+                    step === i + 1 ? "text-pink-400" : step > i + 1 ? "text-green-400" : "text-gray-500"
+                  }`}
+                >
+                  {label}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* ✅ Form */}
-        <form onSubmit={handleSubmit}>
+        {/* Form Container */}
+        <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 sm:p-8 border border-gray-700/50 shadow-2xl">
+          <form onSubmit={handleSubmit}>
           {/* Step 1 - Vendor Info */}
           {step === 1 && (
-            <div className="space-y-4 animate-fadeIn">
-              {[{ label: "Name", name: "vendorName", type: "text", required: true },
-                { label: "Business Name", name: "businessType", type: "text", required: true },
-                { label: "GST Number (Optional)", name: "gstNumber", type: "text", required: false },
-                { label: "Email", name: "email", type: "email", required: true },
-                { label: "Phone", name: "phone", type: "text", required: true }].map((field) => (
+            <div className="space-y-5 animate-fadeIn">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                  <FaShieldAlt className="text-pink-400" />
+                  Vendor Information
+                </h3>
+                <p className="text-gray-400 text-sm">Tell us about yourself and your business</p>
+              </div>
+              
+              {[{ label: "Full Name", name: "vendorName", type: "text", required: true, placeholder: "John Doe" },
+                { label: "Business Name", name: "businessType", type: "text", required: true, placeholder: "Your Company Name" },
+                { label: "GST Number", name: "gstNumber", type: "text", required: false, placeholder: "Optional" },
+                { label: "Email Address", name: "email", type: "email", required: true, placeholder: "you@example.com" },
+                { label: "Phone Number", name: "phone", type: "tel", required: true, placeholder: "+1 234 567 8900" }].map((field) => (
                 <div key={field.name}>
-                  <label className="text-gray-300">
+                  <label className="text-gray-300 font-medium mb-2 block">
                     {field.label}
                     {field.required && <span className="text-red-500 ml-1">*</span>}
                   </label>
@@ -444,54 +513,64 @@ const BecomeAVendor = () => {
                     value={formData[field.name]}
                     onChange={handleChange}
                     required={field.required}
-                    className="w-full bg-gray-800 border border-gray-400 text-xs py-3 px-2 rounded"
+                    placeholder={field.placeholder}
+                    className="w-full bg-gray-900 border border-gray-600 text-white text-sm py-3 px-4 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all placeholder-gray-500"
                   />
                 </div>
               ))}
 
               {/* Country Selection */}
               <div>
-                <label>Country</label>
+                <label className="text-gray-300 flex items-center gap-2">
+                  <FaGlobe className="text-pink-400" />
+                  Country <span className="text-red-500">*</span>
+                </label>
                 <select
                   name="country"
                   value={formData.country}
                   onChange={handleChange}
-                  className="w-full bg-gray-800 border border-gray-400 text-xs py-3 px-2 rounded"
+                  required
+                  className="w-full bg-gray-800 border border-gray-600 text-white text-sm py-3 px-4 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all"
                 >
-                  <option value="IN">India</option>
-                  <option value="US">United States</option>
-                  <option value="GB">United Kingdom</option>
-                  <option value="AE">United Arab Emirates</option>
-                  <option value="CA">Canada</option>
-                  <option value="AU">Australia</option>
-                  <option value="SG">Singapore</option>
-                  <option value="DE">Germany</option>
-                  <option value="FR">France</option>
-                  <option value="OTHER">Other</option>
+                  {COUNTRIES.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {country.flag} {country.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
-              <label className="text-gray-300">
-                Address <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                required
-                className="w-full bg-gray-800 border border-gray-400 text-xs py-3 px-2 rounded"
-              />
+              <div>
+                <label className="text-gray-300 font-medium mb-2 block">
+                  Full Address <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  required
+                  rows={3}
+                  placeholder="Enter your complete business address"
+                  className="w-full bg-gray-900 border border-gray-600 text-white text-sm py-3 px-4 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all placeholder-gray-500 resize-none"
+                />
+              </div>
             </div>
           )}
 
           {/* Step 2 - KYC Upload */}
           {step === 2 && (
-            <div className="space-y-4 animate-fadeIn">
-              <p className="text-gray-400 text-sm mb-4">
-                {isIndia 
-                  ? "Upload your Aadhar and PAN documents for verification (optional but recommended)."
-                  : "Upload your National ID or Passport for verification (optional but recommended)."}
-              </p>
+            <div className="space-y-5 animate-fadeIn">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                  <MdVerified className="text-pink-400" />
+                  KYC Documents
+                </h3>
+                <p className="text-gray-400 text-sm">
+                  {isIndia 
+                    ? "Upload your Aadhar and PAN documents for verification (optional but recommended)."
+                    : "Upload your National ID or Passport for verification (optional but recommended)."}
+                </p>
+              </div>
 
               {isIndia ? (
                 <>
@@ -815,46 +894,67 @@ const BecomeAVendor = () => {
           )}
 
           {/* Navigation Buttons */}
-          <div className="mt-8 flex justify-between">
+          <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
             {step > 1 && (
               <button
                 type="button"
                 onClick={prevStep}
-                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 cursor-pointer"
+                className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-all font-medium flex items-center justify-center gap-2 border border-gray-600"
               >
-                Previous
+                <span>←</span> Previous
               </button>
             )}
             {step < steps.length ? (
               <button
                 type="button"
                 onClick={nextStep}
-                className="ml-auto px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 cursor-pointer"
+                className="ml-auto px-6 py-3 bg-gradient-to-r from-pink-500 to-red-500 text-white rounded-lg hover:from-pink-600 hover:to-red-600 transition-all font-semibold flex items-center justify-center gap-2 shadow-lg shadow-pink-500/30"
               >
-                Next
+                Next <span>→</span>
               </button>
             ) : (
               <button
                 type="submit"
                 disabled={vendorLoading || isProcessingPayment}
-                className={`ml-auto px-6 py-3 text-white rounded-lg font-semibold transition-all cursor-pointer ${
+                className={`ml-auto px-8 py-4 text-white rounded-lg font-bold transition-all flex items-center justify-center gap-2 shadow-xl ${
                   selectedServices.film_trade && totalAmount > 0
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
-                    : 'bg-green-500 hover:bg-green-600'
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-blue-500/30'
+                    : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-green-500/30'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 {isProcessingPayment 
-                  ? "Processing Payment..." 
+                  ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Processing...
+                    </>
+                  )
                   : vendorLoading 
-                    ? "Submitting..." 
+                    ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Submitting...
+                      </>
+                    )
                     : selectedServices.film_trade && totalAmount > 0
-                      ? `Pay ₹${totalAmount.toLocaleString()} & Submit`
-                      : "Submit Application"
+                      ? (
+                        <>
+                          <FaRocket />
+                          Pay {userCountry?.currencySymbol || '₹'}{totalAmount.toLocaleString()} & Submit
+                        </>
+                      )
+                      : (
+                        <>
+                          <FaCheckCircle />
+                          Submit Application
+                        </>
+                      )
                 }
               </button>
             )}
           </div>
         </form>
+        </div>
       </div>
     </section>
   );
