@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 /**
@@ -11,7 +11,7 @@ import { useSearchParams } from 'next/navigation';
  * - If app not installed: Redirects to Play Store (Android) or App Store (iOS)
  * - Fallback: Shows video on web
  */
-export default function DeepLinkRedirect() {
+function DeepLinkRedirectContent() {
   const searchParams = useSearchParams();
   const videoId = searchParams.get('id');
   const [platform, setPlatform] = useState<'android' | 'ios' | 'web'>('web');
@@ -172,5 +172,54 @@ export default function DeepLinkRedirect() {
         </p>
       </div>
     </div>
+  );
+}
+
+// Loading fallback component
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#0F1729] via-[#0a0f1e] to-[#1a1f35] flex items-center justify-center p-6">
+      <div className="max-w-md w-full">
+        <div className="text-center mb-8">
+          <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-pink-500 to-red-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-pink-500/50">
+            <svg
+              className="w-12 h-12 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-2">MovieMart</h1>
+          <p className="text-white/60 text-sm">Loading...</p>
+        </div>
+        <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-8 border border-white/10 shadow-2xl">
+          <div className="flex flex-col items-center">
+            <div className="w-16 h-16 border-4 border-white/20 border-t-pink-500 rounded-full animate-spin"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main export with Suspense boundary
+export default function DeepLinkRedirect() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <DeepLinkRedirectContent />
+    </Suspense>
   );
 }
