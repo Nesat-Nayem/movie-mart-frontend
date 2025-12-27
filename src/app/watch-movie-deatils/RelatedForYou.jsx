@@ -18,7 +18,7 @@ const formatDuration = (seconds) => {
 // Loading skeleton
 const VideoSkeleton = () => (
   <div className="rounded-xl overflow-hidden bg-gray-800/50 animate-shimmer bg-[length:200%_100%]">
-    <div className="h-40 sm:h-48 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800" />
+    <div className="aspect-[2/3] bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800" />
     <div className="p-3 space-y-2">
       <div className="h-4 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 rounded w-3/4" />
       <div className="flex gap-2">
@@ -36,11 +36,15 @@ const VideoCard = ({ video }) => (
     href={`/watch-movie-deatils?id=${video._id}`}
     className="group rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:shadow-xl hover:border-pink-500/30 transition-all"
   >
-    <div className="relative">
+    <div className="relative overflow-hidden aspect-[2/3] bg-gray-900">
       <img
         src={video.thumbnailUrl || video.posterUrl || "/assets/img/placeholder-video.jpg"}
         alt={video.title}
-        className="w-full h-40 sm:h-48 object-cover transition-transform group-hover:scale-105"
+        className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105"
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.src = "/assets/img/placeholder-video.jpg";
+        }}
       />
       
       {/* Video Type Badge */}

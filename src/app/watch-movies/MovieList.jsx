@@ -33,11 +33,15 @@ const VideoCard = ({ video, userCountry }) => {
   return (
   <div className="rounded-xl shadow-lg border border-gray-700/50 overflow-hidden relative group transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] bg-gradient-to-b from-gray-800/50 to-gray-900/50 backdrop-blur-sm">
     <Link href={`/watch-movie-deatils?id=${video._id}`}>
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden aspect-[2/3] bg-gray-900">
         <img
           src={video.thumbnailUrl || video.posterUrl || "/assets/img/placeholder-video.jpg"}
           alt={video.title}
-          className="w-full h-52 sm:h-64 object-cover rounded-t-xl transform transition-transform duration-500 group-hover:scale-110"
+          className="absolute inset-0 w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "/assets/img/placeholder-video.jpg";
+          }}
         />
         
         {/* Video Type Badge */}
@@ -147,7 +151,7 @@ const VideoCard = ({ video, userCountry }) => {
 // Modern Shimmer Skeleton
 const VideoCardSkeleton = () => (
   <div className="rounded-xl overflow-hidden bg-gray-800/50 backdrop-blur-sm border border-gray-700/30">
-    <div className="h-52 sm:h-64 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%]" />
+    <div className="aspect-[2/3] bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%]" />
     <div className="p-4 space-y-3">
       <div className="h-4 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-3/4" />
       <div className="flex items-center gap-2">
