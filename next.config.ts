@@ -17,6 +17,37 @@ const nextConfig: NextConfig = {
       "i.ibb.co.com"
     ],
   },
+  // Ensure .well-known files are served with correct headers
+  async headers() {
+    return [
+      {
+        source: '/.well-known/assetlinks.json',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/json',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600',
+          },
+        ],
+      },
+      {
+        source: '/.well-known/apple-app-site-association',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/json',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
