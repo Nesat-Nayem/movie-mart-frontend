@@ -234,6 +234,8 @@ const BecomeAVendor = () => {
   // Check if any service is selected
   const hasSelectedService = selectedServices.film_trade || selectedServices.events || selectedServices.movie_watch;
 
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
   // ✅ Submit form after payment (or directly if no payment needed)
   const submitApplication = async (paymentInfo = null) => {
     try {
@@ -265,7 +267,9 @@ const BecomeAVendor = () => {
 
       const res = await createVendor(form).unwrap();
       console.log("Vendor Application Submitted ✅:", res);
-      toast.success("🎉 Application submitted successfully! Check your email for confirmation.");
+      
+      // Show Success Modal
+      setShowSuccessModal(true);
 
       // Reset form
       setFormData({
@@ -291,7 +295,7 @@ const BecomeAVendor = () => {
         nationalIdUrl: null,
         passportUrl: null,
       });
-      setStep(1);
+      // We keep step 4 visible until they close modal or go home
     } catch (err) {
       console.log("❌ Full error object:", err);
       let message = "Failed to submit form";
@@ -431,6 +435,7 @@ const BecomeAVendor = () => {
   }
 
   return (
+    <>
     <section className="min-h-screen bg-gradient-to-br from-[#0B1730] via-[#1a1f3a] to-[#0B1730] py-8 px-4 sm:px-6 lg:px-8">
       {/* Hero Header */}
       <div className="max-w-5xl mx-auto mb-8 text-center">
@@ -957,6 +962,65 @@ const BecomeAVendor = () => {
         </div>
       </div>
     </section>
+
+    {/* Success Modal */}
+    {showSuccessModal && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+        <div className="bg-gray-900 border border-gray-700 rounded-3xl max-w-lg w-full p-8 text-center shadow-2xl relative overflow-hidden">
+          {/* Decorative Background Circles */}
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-pink-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl"></div>
+          
+          <div className="relative z-10">
+            <div className="w-20 h-20 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-lg shadow-green-500/20">
+              <FaCheckCircle />
+            </div>
+            
+            <h2 className="text-3xl font-bold text-white mb-4">Application Received!</h2>
+            
+            <div className="space-y-4 text-gray-300 mb-8">
+              <p className="text-lg">
+                Thank you for applying to be a <span className="text-pink-400 font-semibold">Film Mart</span> partner.
+              </p>
+              
+              <div className="bg-white/5 rounded-2xl p-4 text-sm text-left space-y-3 border border-white/10">
+                <div className="flex gap-3">
+                  <span className="text-blue-400 mt-1">📧</span>
+                  <p>A submission confirmation email has been sent to <span className="text-white font-medium">{formData.email}</span>.</p>
+                </div>
+                <div className="flex gap-3">
+                  <span className="text-yellow-400 mt-1">🕒</span>
+                  <p>Our team will review your application within <span className="text-white font-medium">73 hours</span>.</p>
+                </div>
+                <div className="flex gap-3">
+                  <span className="text-green-400 mt-1">✅</span>
+                  <p>Once approved, you will receive a confirmation email with your login credentials.</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => window.location.href = '/'}
+                className="w-full py-4 bg-gradient-to-r from-pink-500 to-red-500 text-white rounded-xl font-bold text-lg hover:from-pink-600 hover:to-red-600 transition-all shadow-lg shadow-pink-500/30"
+              >
+                Go to Home Page
+              </button>
+              <button
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  setStep(1);
+                }}
+                className="w-full py-3 bg-white/5 text-gray-400 rounded-xl font-medium hover:bg-white/10 transition-all"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+  </>
   );
 };
 
