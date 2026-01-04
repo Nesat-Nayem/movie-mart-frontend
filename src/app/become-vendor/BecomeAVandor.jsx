@@ -441,13 +441,19 @@ const BecomeAVendor = () => {
       <div className="max-w-5xl mx-auto mb-8 text-center">
         <div className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500/20 to-red-500/20 border border-pink-500/30 rounded-full px-4 py-2 mb-4">
           <FaRocket className="text-pink-400" />
-          <span className="text-pink-400 text-sm font-semibold">Start Your Journey</span>
+          <span className="text-pink-400 text-sm font-semibold">Start Earning on Movie Mart</span>
         </div>
         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
-          Become a <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-red-500">MovieMart Vendor</span>
+          Become a <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-red-500">Movie Mart Vendor</span> & Start Earning
         </h1>
-        <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
-          Join thousands of creators and businesses selling movies, hosting events, and streaming content worldwide
+        <p className="text-gray-400 text-base sm:text-lg max-w-3xl mx-auto mb-4">
+          Join creators, producers & event organisers who are earning by trading films, selling tickets, and streaming content on Movie Mart.
+        </p>
+        <p className="text-pink-400 text-sm sm:text-base font-semibold max-w-2xl mx-auto">
+          Choose how you want to earn on Movie Mart.
+        </p>
+        <p className="text-gray-500 text-xs sm:text-sm max-w-2xl mx-auto mt-2">
+          Select one or more services below and start monetising your content, events, or films on a trusted platform.
         </p>
       </div>
 
@@ -654,13 +660,18 @@ const BecomeAVendor = () => {
                     className="w-5 h-5 mt-1 accent-blue-500"
                   />
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <h3 className="text-lg font-bold text-white flex items-center gap-2 flex-wrap">
                       🎬 Film Trade
-                      <span className="text-xs bg-blue-500 px-2 py-1 rounded-full">Requires Package</span>
+                      <span className="text-xs bg-blue-500 px-2 py-1 rounded-full">Premium Trading Access</span>
                     </h3>
-                    <p className="text-gray-400 text-sm mt-1">
-                      List and sell your movies on our platform. Choose a package below.
+                    <p className="text-gray-400 text-sm mt-2">
+                      List your movies, web series or short films. Sell, license, trade and connect with verified buyers across India & abroad.
                     </p>
+                    <div className="flex flex-wrap gap-3 mt-3 text-xs">
+                      <span className="flex items-center gap-1 text-green-400"><FaCheckCircle className="text-xs" /> Secure deals</span>
+                      <span className="flex items-center gap-1 text-green-400"><FaCheckCircle className="text-xs" /> Verified buyers</span>
+                      <span className="flex items-center gap-1 text-green-400"><FaCheckCircle className="text-xs" /> Global reach</span>
+                    </div>
                     
                     {selectedServices.film_trade && (
                       <div className="mt-4">
@@ -688,24 +699,32 @@ const BecomeAVendor = () => {
                             />
                             {pkg.isPopular && (
                               <span className="absolute -top-2 left-3 text-xs bg-yellow-500 text-black px-2 py-0.5 rounded-full font-semibold">
-                                Popular
+                                Most Popular
                               </span>
                             )}
-                            <h4 className="font-bold text-white">{pkg.name}</h4>
+                            <h4 className="font-bold text-white">
+                              {pkg.name === 'Gold' ? '🟡 Gold Package' : pkg.name === 'Platinum' ? '🔵 Platinum Package' : pkg.name}
+                            </h4>
                             <p className="text-2xl font-bold text-blue-400 my-2">
                               {(() => {
                                 const priceInfo = getPackagePrice(pkg);
                                 return `${priceInfo.currencySymbol}${priceInfo.price?.toLocaleString()}`;
                               })()}
                             </p>
-                            <p className="text-xs text-gray-400">{pkg.duration} {pkg.durationType}</p>
-                            <ul className="mt-2 space-y-1">
-                              {pkg.features?.slice(0, 3).map((f, i) => (
-                                <li key={i} className="text-xs text-gray-300 flex items-center gap-1">
-                                  <span className="text-green-400">✓</span> {f}
+                            <p className="text-xs text-gray-400">per {pkg.durationType}</p>
+                            <ul className="mt-3 space-y-1.5">
+                              {pkg.features?.slice(0, 4).map((f, i) => (
+                                <li key={i} className="text-xs text-gray-300 flex items-start gap-1.5">
+                                  <FaCheckCircle className="text-green-400 text-[10px] mt-0.5 flex-shrink-0" /> <span>{f}</span>
                                 </li>
                               ))}
                             </ul>
+                            {pkg.name === 'Gold' && (
+                              <p className="text-[10px] text-gray-500 mt-2 italic">Recommended for independent creators & first-time traders</p>
+                            )}
+                            {pkg.name === 'Platinum' && (
+                              <p className="text-[10px] text-gray-500 mt-2 italic">Ideal for producers, distributors & studios</p>
+                            )}
                           </label>
                         ))}
                         </div>
@@ -725,16 +744,21 @@ const BecomeAVendor = () => {
                     className="w-5 h-5 mt-1 accent-yellow-500"
                   />
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <h3 className="text-lg font-bold text-white flex items-center gap-2 flex-wrap">
                       🎭 Events
                       <span className="text-xs bg-yellow-500 text-black px-2 py-1 rounded-full">No Upfront Cost</span>
                     </h3>
-                    <p className="text-gray-400 text-sm mt-1">
-                      Host and sell tickets for your events, concerts, and shows.
+                    <p className="text-gray-400 text-sm mt-2">
+                      Host events, concerts, shows, plays, workshops and reach the right audience instantly.
                     </p>
-                    <div className="mt-3 p-3 bg-yellow-500/10 rounded-lg">
-                      <p className="text-yellow-400 font-semibold">Platform Fee: {eventFee}%</p>
-                      <p className="text-xs text-gray-400">Deducted from each ticket sale</p>
+                    <div className="mt-3 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
+                      <p className="text-yellow-400 font-semibold text-sm mb-1">Platform Fee: {eventFee}%</p>
+                      <p className="text-xs text-gray-400 mb-2">Deducted only after a successful ticket sale</p>
+                      <div className="flex flex-wrap gap-3 text-xs mt-2">
+                        <span className="flex items-center gap-1 text-green-400"><FaCheckCircle className="text-xs" /> Easy ticketing</span>
+                        <span className="flex items-center gap-1 text-green-400"><FaCheckCircle className="text-xs" /> Post-event payouts</span>
+                        <span className="flex items-center gap-1 text-green-400"><FaCheckCircle className="text-xs" /> Refund protection</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -750,16 +774,21 @@ const BecomeAVendor = () => {
                     className="w-5 h-5 mt-1 accent-cyan-500"
                   />
                   <div className="flex-1">
-                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <h3 className="text-lg font-bold text-white flex items-center gap-2 flex-wrap">
                       🎥 Movie Watch
                       <span className="text-xs bg-cyan-500 text-black px-2 py-1 rounded-full">No Upfront Cost</span>
                     </h3>
-                    <p className="text-gray-400 text-sm mt-1">
-                      Stream your movies for viewers to rent or purchase.
+                    <p className="text-gray-400 text-sm mt-2">
+                      Upload & stream your movies or web series and let viewers rent or purchase directly on Movie Mart.
                     </p>
-                    <div className="mt-3 p-3 bg-cyan-500/10 rounded-lg">
-                      <p className="text-cyan-400 font-semibold">Platform Fee: {movieWatchFee}%</p>
-                      <p className="text-xs text-gray-400">Deducted from each movie sale/rental</p>
+                    <div className="mt-3 p-3 bg-cyan-500/10 rounded-lg border border-cyan-500/20">
+                      <p className="text-cyan-400 font-semibold text-sm mb-1">Revenue Share: {movieWatchFee}% to You</p>
+                      <p className="text-xs text-gray-400 mb-2">Paid on every movie sale or rental</p>
+                      <div className="flex flex-wrap gap-3 text-xs mt-2">
+                        <span className="flex items-center gap-1 text-green-400"><FaCheckCircle className="text-xs" /> You keep ownership</span>
+                        <span className="flex items-center gap-1 text-green-400"><FaCheckCircle className="text-xs" /> Transparent earnings</span>
+                        <span className="flex items-center gap-1 text-green-400"><FaCheckCircle className="text-xs" /> Secure streaming</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -767,36 +796,52 @@ const BecomeAVendor = () => {
 
               {/* Total Summary */}
               {hasSelectedService && (
-                <div className="mt-6 p-4 bg-white/10 rounded-xl border border-gray-500">
-                  <h4 className="font-bold text-white mb-2">Summary</h4>
-                  <div className="space-y-2 text-sm">
+                <div className="mt-6 p-5 bg-gradient-to-br from-gray-800/80 to-gray-900/80 rounded-xl border border-gray-600 shadow-lg">
+                  <h4 className="font-bold text-white mb-4 text-base flex items-center gap-2">
+                    <span className="text-xl">📋</span> Summary of Your Selected Services
+                  </h4>
+                  <div className="space-y-3 text-sm">
                     {selectedServices.film_trade && selectedPackageId && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-300">Film Trade Package</span>
-                        <span className="text-white font-semibold">
-                          {userCountry?.currencySymbol || '₹'}{totalAmount.toLocaleString()}
+                      <div className="flex items-center justify-between p-3 bg-blue-500/10 rounded-lg border border-blue-500/30">
+                        <span className="flex items-center gap-2 text-gray-200">
+                          <FaCheckCircle className="text-blue-400" />
+                          <span>🎬 Film Trade {packages.find(p => p._id === selectedPackageId)?.name} Package</span>
+                        </span>
+                        <span className="text-white font-bold">
+                          {userCountry?.currencySymbol || '₹'}{totalAmount.toLocaleString()} / month
                         </span>
                       </div>
                     )}
                     {selectedServices.events && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-300">Events Service</span>
-                        <span className="text-green-400">Free ({eventFee}% per sale)</span>
+                      <div className="flex items-center justify-between p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
+                        <span className="flex items-center gap-2 text-gray-200">
+                          <FaCheckCircle className="text-yellow-400" />
+                          <span>🎭 Events Ticketing Service</span>
+                        </span>
+                        <span className="text-green-400 font-semibold text-xs">₹0 Upfront ({eventFee}% per ticket sale)</span>
                       </div>
                     )}
                     {selectedServices.movie_watch && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-300">Movie Watch Service</span>
-                        <span className="text-green-400">Free ({movieWatchFee}% per sale)</span>
+                      <div className="flex items-center justify-between p-3 bg-cyan-500/10 rounded-lg border border-cyan-500/30">
+                        <span className="flex items-center gap-2 text-gray-200">
+                          <FaCheckCircle className="text-cyan-400" />
+                          <span>🎥 Movie Watch Streaming Service</span>
+                        </span>
+                        <span className="text-green-400 font-semibold text-xs">₹0 Upfront (Revenue share: {movieWatchFee}%)</span>
                       </div>
                     )}
-                    <hr className="border-gray-600 my-2" />
-                    <div className="flex justify-between text-lg font-bold">
-                      <span className="text-white">Total Due Now</span>
+                    <hr className="border-gray-600 my-3" />
+                    <div className="flex justify-between items-center text-base sm:text-lg font-bold p-3 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-lg">
+                      <span className="text-white flex items-center gap-2">
+                        <FaShieldAlt className="text-blue-400" /> Total Due Now
+                      </span>
                       <span className="text-blue-400">
                         {userCountry?.currencySymbol || '₹'}{totalAmount.toLocaleString()}
                       </span>
                     </div>
+                    <p className="text-xs text-gray-400 text-center mt-2 flex items-center justify-center gap-2">
+                      <FaShieldAlt className="text-green-400" /> Secure payment | No hidden charges | Cancel anytime
+                    </p>
                   </div>
                 </div>
               )}

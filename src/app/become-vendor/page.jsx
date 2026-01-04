@@ -2,9 +2,9 @@ import BecomeAVandor from "./BecomeAVandor";
 
 // ✅ Correct way to add Meta Title
 export const metadata = {
-  title: "Become a Vendor - Book & Explore Movies | MyApp",
+  title: "Become a Movie Mart Vendor & Start Earning | Join Movie Mart",
   description:
-    "Discover, explore and book the latest movies and film events at Film Mart.",
+    "Join creators, producers & event organisers who are earning by trading films, selling tickets, and streaming content on Movie Mart. Start monetising your content today.",
 };
 
 const BecomeVendorPage = () => {

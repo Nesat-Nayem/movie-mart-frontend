@@ -34,9 +34,9 @@ const FilmCard = ({ movie }) => {
   const releaseDate = formatReleaseDate(movie.releaseDate);
 
   return (
-    <div className="rounded-lg shadow-md border border-dashed border-gray-400 overflow-hidden relative group transition-all duration-300 hover:shadow-2xl hover:scale-105">
-      <Link href={`/film-mart-details/${movie._id}`}>
-        <div className="relative overflow-hidden">
+    <div className="rounded-lg shadow-md border border-dashed border-gray-400 overflow-hidden relative group transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:border-solid hover:border-red-500 flex flex-col h-full">
+      <Link href={`/film-mart-details/${movie._id}`} className="flex flex-col h-full">
+        <div className="relative overflow-hidden flex-shrink-0">
           <img
             src={movie.posterUrl}
             alt={movie.title}
@@ -55,8 +55,8 @@ const FilmCard = ({ movie }) => {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
-        <div className="p-2 sm:p-3">
-          <h3 className="text-xs sm:text-sm font-semibold line-clamp-2 mb-1 sm:mb-2">
+        <div className="p-2 sm:p-3 flex-grow flex flex-col">
+          <h3 className="text-xs sm:text-sm font-semibold line-clamp-1 mb-1 sm:mb-2 min-h-[1.2em]">
             {movie.title}
           </h3>
           <div className="flex items-center justify-between mt-1">
