@@ -10,10 +10,11 @@ import { SectionSkeleton } from "./SectionSkeleton";
 import "swiper/css";
 import "swiper/css/navigation";
 
+
 // Watch Video Card Component
 const WatchVideoCard = ({ video }) => (
   <div className="rounded-lg shadow-md border border-dashed border-gray-400 overflow-hidden relative group transition-all duration-300 hover:shadow-2xl hover:scale-105">
-    <Link href={`/watch-movie-deatils/${video._id}`}>
+    <Link href={`/watch-movie-deatils?id=${video._id}`}>
       <div className="relative overflow-hidden">
         <img
           src={video.posterUrl || video.thumbnailUrl}
