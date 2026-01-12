@@ -21,6 +21,15 @@ export const becomeVendorApi = createApi({
       providesTags: ["PlatformSettings"],
     }),
 
+    // Validate vendor application before payment
+    validateVendorApplication: builder.mutation({
+      query: (data) => ({
+        url: "/vendors/applications/validate",
+        method: "POST",
+        body: data,
+      }),
+    }),
+
     // Create payment order for vendor package
     createPaymentOrder: builder.mutation({
       query: (data) => ({
@@ -54,6 +63,7 @@ export const becomeVendorApi = createApi({
 export const { 
   useGetVendorPackagesQuery,
   useGetPlatformSettingsQuery,
+  useValidateVendorApplicationMutation,
   useCreatePaymentOrderMutation,
   useVerifyPaymentMutation,
   useCreateVendorApplicationMutation,

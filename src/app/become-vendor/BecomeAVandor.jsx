@@ -10,6 +10,7 @@ import {
   useCreateVendorApplicationMutation,
   useCreatePaymentOrderMutation,
   useVerifyPaymentMutation,
+  useValidateVendorApplicationMutation,
 } from "../../../store/becomeVendorApi";
 import { detectUserCountry, getPriceForCountry } from "@/services/geolocationService";
 import { getCountryByCode, COUNTRIES } from "@/data/countries";
@@ -88,6 +89,7 @@ const BecomeAVendor = () => {
   const [createVendor, { isLoading: vendorLoading }] = useCreateVendorApplicationMutation();
   const [createPaymentOrder] = useCreatePaymentOrderMutation();
   const [verifyPayment] = useVerifyPaymentMutation();
+  const [validateApplication] = useValidateVendorApplicationMutation();
   const [createVendorApplication, { isLoading: vendorApplicationLoading }] = useCreateVendorApplicationMutation();
 
   // Get platform fees
@@ -320,7 +322,20 @@ const BecomeAVendor = () => {
     setIsProcessingPayment(true);
 
     try {
-      // Create payment order
+      // ✅ STEP 1: Validate unique fields BEFORE payment
+      const validationRes = await validateApplication({
+        email: formData.email,
+        phone: formData.phone,
+        gstNumber: formData.gstNumber || undefined,
+      }).unwrap();
+
+      if (!validationRes.isValid) {
+        toast.error(validationRes.message || "Validation failed");
+        setIsProcessingPayment(false);
+        return;
+      }
+
+      // ✅ STEP 2: Create payment order only after validation passes
       const orderRes = await createPaymentOrder({
         packageId: selectedPackageId,
         customerDetails: {
@@ -395,7 +410,9 @@ const BecomeAVendor = () => {
 
     } catch (err) {
       console.error("Payment error:", err);
-      toast.error(err?.data?.message || "Failed to initiate payment");
+      // Show specific validation error if available
+      const errorMessage = err?.data?.message || err?.data?.errors?.[0] || "Failed to initiate payment";
+      toast.error(errorMessage);
       setIsProcessingPayment(false);
     }
   };
@@ -414,12 +431,33 @@ const BecomeAVendor = () => {
       return;
     }
 
-    // If Film Trade is selected, process payment first
+    // If Film Trade is selected, process payment first (validation happens inside handlePayment)
     if (selectedServices.film_trade && totalAmount > 0) {
       await handlePayment();
     } else {
-      // No payment needed, submit directly
-      await submitApplication();
+      // No payment needed - but still validate unique fields first
+      setIsProcessingPayment(true);
+      try {
+        const validationRes = await validateApplication({
+          email: formData.email,
+          phone: formData.phone,
+          gstNumber: formData.gstNumber || undefined,
+        }).unwrap();
+
+        if (!validationRes.isValid) {
+          toast.error(validationRes.message || "Validation failed");
+          setIsProcessingPayment(false);
+          return;
+        }
+
+        // Validation passed, submit directly
+        await submitApplication();
+      } catch (err) {
+        const errorMessage = err?.data?.message || err?.data?.errors?.[0] || "Validation failed";
+        toast.error(errorMessage);
+      } finally {
+        setIsProcessingPayment(false);
+      }
     }
   };
 
