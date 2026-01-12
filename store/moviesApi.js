@@ -10,9 +10,24 @@ export const moviesApi = createApi({
   }),
   tagTypes: ["Movies"],
   endpoints: (builder) => ({
-    /** Get all movies */
+    /** Get all movies with optional search and filters */
     getMovies: builder.query({
-      query: () => "/movies",
+      query: (params) => {
+        // Filter out empty values
+        const cleanParams = {};
+        if (params) {
+          Object.keys(params).forEach(key => {
+            const value = params[key];
+            if (value !== '' && value !== null && value !== undefined) {
+              cleanParams[key] = value;
+            }
+          });
+        }
+        return {
+          url: "/movies",
+          params: Object.keys(cleanParams).length > 0 ? cleanParams : undefined,
+        };
+      },
       transformResponse: (response) =>
         Array.isArray(response.data) ? response.data : [response.data],
       providesTags: ["Movies"],
