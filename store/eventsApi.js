@@ -11,9 +11,9 @@ export const eventsApi = createApi({
       // Get token from localStorage if available
       if (typeof window !== "undefined") {
         const token = localStorage.getItem("token");
-        if (token) {
-          headers.set("Authorization", `Bearer ${token}`);
-        }
+        // if (token) {
+        //   headers.set("Authorization", `Bearer ${token}`);
+        // }
       }
       return headers;
     },

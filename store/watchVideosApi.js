@@ -10,9 +10,9 @@ export const watchVideosApi = createApi({
     prepareHeaders: (headers, { getState }) => {
       if (typeof window !== "undefined") {
         const token = localStorage.getItem("token");
-        if (token) {
-          headers.set("Authorization", `Bearer ${token}`);
-        }
+        // if (token) {
+        //   headers.set("Authorization", `Bearer ${token}`);
+        // }
       }
       return headers;
     },
