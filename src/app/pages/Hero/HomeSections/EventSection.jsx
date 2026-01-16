@@ -12,7 +12,7 @@ import "swiper/css/navigation";
 
 // Event Card Component
 const EventCard = ({ event }) => (
-  <div className="rounded-lg shadow-md border border-dashed border-gray-400 overflow-hidden relative group transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:border-solid hover:border-red-500 flex flex-col h-full">
+  <div className="rounded-lg overflow-hidden relative group transition-all duration-300 hover:shadow-2xl hover:scale-105 flex flex-col h-full bg-[#1a1d3a]">
     <Link href={`/events/${event._id}`} className="flex flex-col h-full">
       <div className="relative overflow-hidden flex-shrink-0">
         <img
