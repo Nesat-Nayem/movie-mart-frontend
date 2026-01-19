@@ -560,7 +560,15 @@ const FilmMartDetails = () => {
                     <div className="flex items-center gap-3">
                       <MapPin className="w-5 h-5 text-blue-400" />
                       <p className="text-gray-300 text-sm">
-                        <span className="font-medium text-white">Address:</span> {movie.company.address}
+                        <span className="font-medium text-white">Address:</span>{' '}
+                        <a 
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(movie.company.address)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 hover:text-blue-300 underline cursor-pointer"
+                        >
+                          {movie.company.address}
+                        </a>
                       </p>
                     </div>
                   )}
@@ -584,7 +592,13 @@ const FilmMartDetails = () => {
                     <div className="flex items-center gap-3">
                       <Phone className="w-5 h-5 text-purple-400" />
                       <p className="text-gray-300 text-sm">
-                        <span className="font-medium text-white">Phone:</span> +91 {movie.company.phone}
+                        <span className="font-medium text-white">Phone:</span>{' '}
+                        <a 
+                          href={`tel:+91${movie.company.phone}`}
+                          className="text-purple-400 hover:text-purple-300 underline cursor-pointer"
+                        >
+                          +91 {movie.company.phone}
+                        </a>
                       </p>
                     </div>
                   )}
@@ -592,7 +606,13 @@ const FilmMartDetails = () => {
                     <div className="flex items-center gap-3">
                       <Mail className="w-5 h-5 text-red-400" />
                       <p className="text-gray-300 text-sm">
-                        <span className="font-medium text-white">Email:</span> {movie.company.email}
+                        <span className="font-medium text-white">Email:</span>{' '}
+                        <a 
+                          href={`mailto:${movie.company.email}`}
+                          className="text-red-400 hover:text-red-300 underline cursor-pointer"
+                        >
+                          {movie.company.email}
+                        </a>
                       </p>
                     </div>
                   )}
@@ -600,7 +620,15 @@ const FilmMartDetails = () => {
                     <div className="flex items-center gap-3">
                       <Building2 className="w-5 h-5 text-indigo-400" />
                       <p className="text-gray-300 text-sm">
-                        <span className="font-medium text-white">Website:</span> {movie.company.website}
+                        <span className="font-medium text-white">Website:</span>{' '}
+                        <a 
+                          href={movie.company.website.startsWith('http') ? movie.company.website : `https://${movie.company.website}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-indigo-400 hover:text-indigo-300 underline cursor-pointer"
+                        >
+                          {movie.company.website}
+                        </a>
                       </p>
                     </div>
                   )}
