@@ -12,7 +12,7 @@ import { MdVerified } from "react-icons/md";
 import { BelowPlayerAd, ArticleAd } from "@/components/ads/DetailPageAds";
 import Image from "next/image";
 import Link from "next/link";
-import VideoPlayer from "./VideoPlayer";
+import SecureVideoPlayer from "./SecureVideoPlayer";
 import RecommandedMovies from "./RecommandedMovies";
 import RelatedForYou from "./RelatedForYou";
 import PaymentSuccessAnimation from "./PaymentSuccessAnimation";
@@ -465,15 +465,18 @@ const WatchMovieDetails = () => {
             </Link>
           </div>
 
-          {/* Video Player Section */}
+          {/* Video Player Section - Using SecureVideoPlayer for DRM protection */}
           <div className="px-4">
             {canWatch ? (
-              <VideoPlayer
-                videoUrl={video.videoUrl || video.trailerUrl}
+              <SecureVideoPlayer
+                videoId={videoId}
+                userId={userId}
                 posterUrl={video.posterUrl || video.thumbnailUrl}
                 title={video.title}
                 onProgress={handleProgressUpdate}
                 canWatch={canWatch}
+                isFree={video.isFree}
+                onPurchaseRequired={handlePurchase}
               />
             ) : (
               <div className="relative aspect-video rounded-xl overflow-hidden">

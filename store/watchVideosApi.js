@@ -483,6 +483,26 @@ export const watchVideosApi = createApi({
       }),
       providesTags: ["VideoPurchases"],
     }),
+
+    // ==================== SECURE VIDEO STREAMING ====================
+
+    /** Get secure video stream URL (requires purchase for paid videos) */
+    getSecureVideoStream: builder.query({
+      query: ({ videoId, userId }) => ({
+        url: `/watch-videos/${videoId}/stream`,
+        params: userId ? { userId } : {},
+      }),
+      transformResponse: (response) => response.data,
+    }),
+
+    /** Verify stream access token */
+    verifyStreamAccess: builder.query({
+      query: (token) => ({
+        url: `/watch-videos/stream/verify`,
+        params: { token },
+      }),
+      transformResponse: (response) => response.data,
+    }),
   }),
 });
 
@@ -549,4 +569,10 @@ export const {
   useInitiateVideoRefundMutation,
   useGetAllPurchasesQuery,
   useGetVendorPurchasesQuery,
+  
+  // Secure streaming hooks
+  useGetSecureVideoStreamQuery,
+  useLazyGetSecureVideoStreamQuery,
+  useVerifyStreamAccessQuery,
+  useLazyVerifyStreamAccessQuery,
 } = watchVideosApi;
