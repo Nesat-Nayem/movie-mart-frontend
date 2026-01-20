@@ -128,6 +128,7 @@ const BecomeAVendor = () => {
     movie_watch: false,
   });
   const [selectedPackageId, setSelectedPackageId] = useState(null);
+  const [isGovernmentEvent, setIsGovernmentEvent] = useState(false); // Government events have fixed 10% platform fee
 
   // ✅ Previews
   const [previews, setPreviews] = useState({
@@ -254,7 +255,7 @@ const BecomeAVendor = () => {
         services.push({ serviceType: 'film_trade', packageId: selectedPackageId });
       }
       if (selectedServices.events) {
-        services.push({ serviceType: 'events' });
+        services.push({ serviceType: 'events', isGovernmentEvent: isGovernmentEvent });
       }
       if (selectedServices.movie_watch) {
         services.push({ serviceType: 'movie_watch' });
@@ -290,6 +291,7 @@ const BecomeAVendor = () => {
       });
       setSelectedServices({ film_trade: false, events: false, movie_watch: false });
       setSelectedPackageId(null);
+      setIsGovernmentEvent(false);
       setPreviews({
         aadharFrontUrl: null,
         aadharBackUrl: null,
@@ -778,7 +780,10 @@ const BecomeAVendor = () => {
                   <input
                     type="checkbox"
                     checked={selectedServices.events}
-                    onChange={(e) => setSelectedServices(prev => ({ ...prev, events: e.target.checked }))}
+                    onChange={(e) => {
+                      setSelectedServices(prev => ({ ...prev, events: e.target.checked }));
+                      if (!e.target.checked) setIsGovernmentEvent(false);
+                    }}
                     className="w-5 h-5 mt-1 accent-yellow-500"
                   />
                   <div className="flex-1">
@@ -789,8 +794,35 @@ const BecomeAVendor = () => {
                     <p className="text-gray-400 text-sm mt-2">
                       Host events, concerts, shows, plays, workshops and reach the right audience instantly.
                     </p>
+                    
+                    {/* Government Event Option */}
+                    {selectedServices.events && (
+                      <div className="mt-4 p-4 bg-green-500/10 rounded-lg border border-green-500/30">
+                        <label className="flex items-start gap-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={isGovernmentEvent}
+                            onChange={(e) => setIsGovernmentEvent(e.target.checked)}
+                            className="w-5 h-5 mt-0.5 accent-green-500"
+                          />
+                          <div>
+                            <span className="text-green-400 font-semibold text-sm flex items-center gap-2">
+                              🏛️ This is a Government Event
+                              <span className="text-xs bg-green-500 text-black px-2 py-0.5 rounded-full">Fixed 10% Fee</span>
+                            </span>
+                            <p className="text-xs text-gray-400 mt-1">
+                              Government-sponsored events, cultural festivals, public programs, and official ceremonies qualify for a fixed 10% platform fee.
+                            </p>
+                          </div>
+                        </label>
+                      </div>
+                    )}
+
                     <div className="mt-3 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
-                      <p className="text-yellow-400 font-semibold text-sm mb-1">Platform Fee: {eventFee}%</p>
+                      <p className="text-yellow-400 font-semibold text-sm mb-1">
+                        Platform Fee: {isGovernmentEvent ? '10' : eventFee}%
+                        {isGovernmentEvent && <span className="ml-2 text-xs text-green-400">(Government Event Rate)</span>}
+                      </p>
                       <p className="text-xs text-gray-400 mb-2">Deducted only after a successful ticket sale</p>
                       <div className="flex flex-wrap gap-3 text-xs mt-2">
                         <span className="flex items-center gap-1 text-green-400"><FaCheckCircle className="text-xs" /> Easy ticketing</span>
@@ -855,8 +887,9 @@ const BecomeAVendor = () => {
                         <span className="flex items-center gap-2 text-gray-200">
                           <FaCheckCircle className="text-yellow-400" />
                           <span>🎭 Events Ticketing Service</span>
+                          {isGovernmentEvent && <span className="text-xs bg-green-500 text-black px-2 py-0.5 rounded-full">🏛️ Govt</span>}
                         </span>
-                        <span className="text-green-400 font-semibold text-xs">₹0 Upfront ({eventFee}% per ticket sale)</span>
+                        <span className="text-green-400 font-semibold text-xs">₹0 Upfront ({isGovernmentEvent ? '10' : eventFee}% per ticket sale)</span>
                       </div>
                     )}
                     {selectedServices.movie_watch && (
@@ -953,8 +986,11 @@ const BecomeAVendor = () => {
                   )}
                   {selectedServices.events && (
                     <div className="flex items-center justify-between p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
-                      <span className="text-yellow-400 font-semibold">🎭 Events</span>
-                      <span className="text-green-400">Free ({eventFee}% fee)</span>
+                      <span className="text-yellow-400 font-semibold flex items-center gap-2">
+                        🎭 Events
+                        {isGovernmentEvent && <span className="text-xs bg-green-500 text-black px-2 py-0.5 rounded-full">🏛️ Government</span>}
+                      </span>
+                      <span className="text-green-400">Free ({isGovernmentEvent ? '10' : eventFee}% fee)</span>
                     </div>
                   )}
                   {selectedServices.movie_watch && (
