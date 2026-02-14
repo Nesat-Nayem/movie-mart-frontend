@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const cancellationRefundApi = createApi({
   reducerPath: "cancellationRefundApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://api.moviemart.org/v1/api",
+    baseUrl: "https://api.moviemart.orgv1/api",
   }),
   tagTypes: ["cancellationRefundApi"],
   endpoints: (builder) => ({

@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const enquiryApi = createApi({
   reducerPath: "enquiryApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://api.moviemart.org/v1/api",
+    baseUrl: "https://api.moviemart.orgv1/api",
   }),
   tagTypes: ["enquiryApi"],
   endpoints: (builder) => ({

@@ -18,7 +18,7 @@ export const btnData = [
 export const homeBannerApi = createApi({
   reducerPath: "homeBannerApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://api.moviemart.org/v1/api",
+    baseUrl: "https://api.moviemart.orgv1/api",
   }),
   tagTypes: ["homeBanner"],
   endpoints: (builder) => ({
