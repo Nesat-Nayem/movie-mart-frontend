@@ -6,9 +6,11 @@ import Image from "next/image";
 import { signInWithGoogle } from "@/lib/firebase";
 import { FcGoogle } from "react-icons/fc";
 import { FaPhone, FaEnvelope } from "react-icons/fa";
+import { IoSearch, IoChevronDown } from "react-icons/io5";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
 import { useGetGeneralSettingsQuery } from "../../../store/generalSettingsApi";
+import { COUNTRIES } from "@/data/countries";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1/api";
 
@@ -32,6 +34,14 @@ const Login = () => {
   const [phone, setPhone] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   
+  // Country picker state
+  const [selectedCountry, setSelectedCountry] = useState(
+    COUNTRIES.find((c) => c.code === "IN") || COUNTRIES[0]
+  );
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
+  const countryPickerRef = useRef(null);
+  
   // Loading states
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -39,6 +49,32 @@ const Login = () => {
   // Dynamic logo from settings
   const logoUrl = generalSettings?.logo || "/assets/img/logo.png";
   
+  // Build full international phone: country code digits + local digits (same as Flutter)
+  const buildFullPhone = () => {
+    const code = selectedCountry.phoneCode.replace(/\D/g, "");
+    const local = mobile.replace(/\D/g, "");
+    return `${code}${local}`;
+  };
+
+  const isValidPhone = () => {
+    const local = mobile.replace(/\D/g, "");
+    if (local.length < 4 || local.length > 15) return false;
+    const full = buildFullPhone();
+    return full.length >= 7 && full.length <= 15;
+  };
+
+  // Close country picker on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (countryPickerRef.current && !countryPickerRef.current.contains(e.target)) {
+        setShowCountryPicker(false);
+        setCountrySearch("");
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
@@ -80,17 +116,19 @@ const Login = () => {
 
   // Request OTP
   const requestOtp = async () => {
-    if (mobile.length !== 10) {
-      toast.error("Please enter valid 10 digit mobile number");
+    if (!isValidPhone()) {
+      toast.error("Please enter a valid phone number");
       return;
     }
+    
+    const fullPhone = buildFullPhone();
     
     setLoading(true);
     try {
       const response = await fetch(`${API_URL}/auth/request-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: mobile }),
+        body: JSON.stringify({ phone: fullPhone }),
       });
       
       const data = await response.json();
@@ -99,7 +137,6 @@ const Login = () => {
         toast.success("OTP sent successfully!");
         setAuthMethod("phone-otp");
         setTimer(30);
-        // In development, show OTP (remove in production)
         if (data.data?.otp) {
           console.log("DEV OTP:", data.data.otp);
         }
@@ -121,12 +158,14 @@ const Login = () => {
       return;
     }
     
+    const fullPhone = buildFullPhone();
+    
     setLoading(true);
     try {
       const response = await fetch(`${API_URL}/auth/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: mobile, otp: enteredOtp }),
+        body: JSON.stringify({ phone: fullPhone, otp: enteredOtp }),
       });
       
       const data = await response.json();
@@ -220,7 +259,7 @@ const Login = () => {
       const response = await fetch(`${API_URL}/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, phone }),
+        body: JSON.stringify({ name, email, password, phone: `${selectedCountry.phoneCode.replace(/\D/g, "")}${phone.replace(/\D/g, "")}` }),
       });
       
       const data = await response.json();
@@ -337,6 +376,15 @@ const Login = () => {
     </>
   );
 
+  const filteredCountries = COUNTRIES.filter((c) => {
+    const q = countrySearch.toLowerCase();
+    return (
+      c.name.toLowerCase().includes(q) ||
+      c.phoneCode.includes(q) ||
+      c.code.toLowerCase().includes(q)
+    );
+  });
+
   const renderPhoneAuth = () => (
     <>
       <button
@@ -347,19 +395,73 @@ const Login = () => {
       </button>
       
       <h1 className="text-xl font-bold mb-4">Login with Phone</h1>
-      <p className="text-gray-400 text-sm mb-4">We'll send you an OTP via WhatsApp/SMS</p>
+      <p className="text-gray-400 text-sm mb-4">Select your country and enter your phone number</p>
       
       <label className="block text-sm text-gray-300 mb-2">Mobile Number</label>
       <div className="flex items-center gap-2 mb-4">
-        <span className="px-3 py-2 bg-gray-700 rounded-lg text-gray-300">+91</span>
+        {/* Country picker dropdown */}
+        <div className="relative" ref={countryPickerRef}>
+          <button
+            type="button"
+            onClick={() => { setShowCountryPicker(!showCountryPicker); setCountrySearch(""); }}
+            className="flex items-center gap-1.5 px-3 py-2 bg-gray-700 rounded-lg text-gray-300 hover:bg-gray-600 transition-colors min-w-[100px]"
+          >
+            <span className="text-lg">{selectedCountry.flag}</span>
+            <span className="text-sm font-medium">{selectedCountry.phoneCode}</span>
+            <IoChevronDown className="text-xs text-gray-400" />
+          </button>
+          
+          {showCountryPicker && (
+            <div className="absolute top-full left-0 mt-1 w-72 max-h-72 bg-gray-800 border border-gray-600 rounded-lg shadow-xl z-50 overflow-hidden">
+              <div className="p-2 border-b border-gray-700">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-700 rounded-lg">
+                  <IoSearch className="text-gray-400 text-sm" />
+                  <input
+                    type="text"
+                    value={countrySearch}
+                    onChange={(e) => setCountrySearch(e.target.value)}
+                    placeholder="Search country..."
+                    className="bg-transparent text-sm text-white outline-none flex-1 placeholder-gray-500"
+                    autoFocus
+                  />
+                </div>
+              </div>
+              <div className="overflow-y-auto max-h-56">
+                {filteredCountries.map((c) => (
+                  <button
+                    key={c.code}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCountry(c);
+                      setShowCountryPicker(false);
+                      setCountrySearch("");
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-700 transition-colors ${
+                      c.code === selectedCountry.code ? "bg-gray-700" : ""
+                    }`}
+                  >
+                    <span className="text-lg">{c.flag}</span>
+                    <span className={`text-sm flex-1 ${c.code === selectedCountry.code ? "text-pink-400 font-semibold" : "text-white"}`}>
+                      {c.name}
+                    </span>
+                    <span className={`text-sm ${c.code === selectedCountry.code ? "text-pink-400 font-semibold" : "text-gray-400"}`}>
+                      {c.phoneCode}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        
         <input
           type="tel"
           value={mobile}
           onChange={(e) => {
             const val = e.target.value.replace(/\D/g, "");
-            if (val.length <= 10) setMobile(val);
+            if (val.length <= 15) setMobile(val);
           }}
-          placeholder="Enter 10 digit number"
+          placeholder="Phone number"
           className="flex-1 px-4 py-2 rounded-lg bg-gray-800 border border-gray-600 focus:ring-2 focus:ring-pink-500 outline-none"
         />
       </div>
@@ -367,7 +469,7 @@ const Login = () => {
       <Button
         className="w-full bg-green-600 hover:bg-green-700"
         onClick={requestOtp}
-        disabled={mobile.length !== 10 || loading}
+        disabled={!isValidPhone() || loading}
       >
         {loading ? "Sending..." : "Get OTP"}
       </Button>
@@ -385,7 +487,7 @@ const Login = () => {
       
       <h1 className="text-xl font-bold mb-2">Verify OTP</h1>
       <p className="mb-4 text-sm text-gray-400">
-        Enter the 6-digit OTP sent to <span className="text-white font-semibold">+91 {mobile}</span>
+        Enter the 6-digit OTP sent to <span className="text-white font-semibold">{selectedCountry.phoneCode} {mobile}</span>
       </p>
 
       <div className="flex justify-between gap-2 mb-6" onPaste={handlePaste}>
@@ -507,15 +609,25 @@ const Login = () => {
         
         <label className="block text-sm text-gray-300 mb-2">Phone Number *</label>
         <div className="flex items-center gap-2 mb-3">
-          <span className="px-3 py-2 bg-gray-700 rounded-lg text-gray-300">+91</span>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => { setShowCountryPicker(!showCountryPicker); setCountrySearch(""); }}
+              className="flex items-center gap-1.5 px-3 py-2 bg-gray-700 rounded-lg text-gray-300 hover:bg-gray-600 transition-colors min-w-[100px]"
+            >
+              <span className="text-lg">{selectedCountry.flag}</span>
+              <span className="text-sm font-medium">{selectedCountry.phoneCode}</span>
+              <IoChevronDown className="text-xs text-gray-400" />
+            </button>
+          </div>
           <input
             type="tel"
             value={phone}
             onChange={(e) => {
               const val = e.target.value.replace(/\D/g, "");
-              if (val.length <= 10) setPhone(val);
+              if (val.length <= 15) setPhone(val);
             }}
-            placeholder="10 digit number"
+            placeholder="Phone number"
             className="flex-1 px-4 py-2 rounded-lg bg-gray-800 border border-gray-600 focus:ring-2 focus:ring-pink-500 outline-none"
           />
         </div>
