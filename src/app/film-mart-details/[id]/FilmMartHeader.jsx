@@ -19,30 +19,32 @@ const FilmMartHeader = ({ movie }) => {
 
   return (
     <div className="relative w-full">
-      {/* Background Video Banner */}
+      {/* Background Banner — poster image with play button overlay */}
       <div className="relative w-full">
-        <video
-          src={movie?.trailerUrl || "/assets/img/movies/movie-video.mp4"}
-          poster={movie?.posterUrl || "/assets/img/movies/1.avif"}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-[200px] sm:h-[320px] md:h-[200px] lg:h-[400px] object-cover rounded-b-2xl"
-        />
+        <div className="relative w-full h-[200px] sm:h-[320px] md:h-[200px] lg:h-[400px] overflow-hidden rounded-b-2xl">
+          <Image
+            src={movie?.backdropUrl || movie?.posterUrl || "/assets/img/movies/1.avif"}
+            alt={movie?.title || "Movie Banner"}
+            fill
+            className="object-cover"
+            unoptimized
+          />
+        </div>
 
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent rounded-b-2xl" />
 
         {/* Play Button Overlay */}
-        <button
-          onClick={() => setIsVideoOpen(true)}
-          className="absolute inset-0 flex items-center justify-center cursor-pointer z-20"
-        >
-          <div className="bg-white/20 backdrop-blur-md p-5 sm:p-6 md:p-7 rounded-full hover:scale-110 transition-transform">
-            <Play size={40} className="text-white fill-white" />
-          </div>
-        </button>
+        {movie?.trailerUrl && (
+          <button
+            onClick={() => setIsVideoOpen(true)}
+            className="absolute inset-0 flex items-center justify-center cursor-pointer z-20"
+          >
+            <div className="bg-white/20 backdrop-blur-md p-5 sm:p-6 md:p-7 rounded-full hover:scale-110 transition-transform">
+              <Play size={40} className="text-white fill-white" />
+            </div>
+          </button>
+        )}
       </div>
 
       {/* Back Button */}
@@ -76,24 +78,24 @@ const FilmMartHeader = ({ movie }) => {
         </div>
       </div>
 
-      {/* Video Modal */}
-      {isVideoOpen && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-999">
-          <div className="bg-black rounded-2xl shadow-lg max-w-3xl w-full relative">
+      {/* Trailer Modal — Cloudflare Stream iframe */}
+      {isVideoOpen && movie?.trailerUrl && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[999]">
+          <div className="bg-black rounded-2xl shadow-lg max-w-3xl w-full mx-4 relative">
             <button
               onClick={() => setIsVideoOpen(false)}
-              className="absolute top-3 right-3 bg-white rounded-full p-2 shadow hover:bg-gray-200"
+              className="absolute -top-3 -right-3 bg-white rounded-full p-2 shadow hover:bg-gray-200 z-10"
             >
               <X size={20} className="text-black cursor-pointer" />
             </button>
 
-            {/* Modal Video */}
-            <div className="aspect-video">
-              <video
-                src={movie?.trailerUrl || "/assets/img/movies/movie-video.mp4"}
-                controls
-                autoPlay
-                className="w-full h-full rounded-2xl"
+            {/* Cloudflare Stream iframe */}
+            <div className="aspect-video rounded-2xl overflow-hidden">
+              <iframe
+                src={`${movie.trailerUrl}?autoplay=true`}
+                allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                allowFullScreen
+                className="w-full h-full"
               />
             </div>
           </div>

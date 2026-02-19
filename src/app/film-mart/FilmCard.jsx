@@ -4,8 +4,6 @@ import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { FaClock, FaLanguage, FaThumbsUp, FaFilm, FaStar, FaFilter } from "react-icons/fa";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
 import { useGetMoviesQuery } from "../../../store/moviesApi";
 
 /* ------------------ Film Card ------------------ */
@@ -116,38 +114,44 @@ const FilmCard = ({ movie }) => {
 const MoviesSection = ({ filters = { languages: [], genres: [], formats: [] } }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: moviesData = [], isLoading, isError } = useGetMoviesQuery();
-
-  /* --- Ensure movies array is always safe --- */
-  const movies = moviesData || [];
-
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [filters]);
 
-  /* --- Apply all filters using useMemo --- */
+  // Build query params — server handles search/filter where possible
+  const queryParams = useMemo(() => {
+    const params = { page: currentPage, limit: 9 };
+    // Pass single genre/language to API if only one selected (API supports single value)
+    if (filters.genres?.length === 1) params.genre = filters.genres[0];
+    if (filters.languages?.length === 1) params.language = filters.languages[0];
+    if (filters.formats?.length === 1) params.format = filters.formats[0];
+    return params;
+  }, [currentPage, filters]);
+
+  const { data, isLoading, isError } = useGetMoviesQuery(queryParams);
+
+  const movies = data?.data ?? [];
+  const totalPages = data?.meta?.totalPages ?? 1;
+  const totalCount = data?.meta?.total ?? 0;
+
+  // Client-side filter for multi-select (API only supports single value per filter)
   const filteredMovies = useMemo(() => {
     let result = [...movies];
 
-    // Filter by languages
-    if (filters.languages && filters.languages.length > 0) {
+    if (filters.languages?.length > 1) {
       result = result.filter((movie) => {
         const movieLangs = Array.isArray(movie.languages) ? movie.languages : [movie.languages];
         return filters.languages.some((lang) => movieLangs.includes(lang));
       });
     }
-
-    // Filter by genres
-    if (filters.genres && filters.genres.length > 0) {
+    if (filters.genres?.length > 1) {
       result = result.filter((movie) => {
         const movieGenres = Array.isArray(movie.genres) ? movie.genres : [movie.genres];
         return filters.genres.some((genre) => movieGenres.includes(genre));
       });
     }
-
-    // Filter by formats
-    if (filters.formats && filters.formats.length > 0) {
+    if (filters.formats?.length > 1) {
       result = result.filter((movie) => {
         const movieFormats = Array.isArray(movie.formats) ? movie.formats : [movie.formats];
         return filters.formats.some((format) => movieFormats.includes(format));
@@ -157,14 +161,10 @@ const MoviesSection = ({ filters = { languages: [], genres: [], formats: [] } })
     return result;
   }, [movies, filters]);
 
+  const currentMovies = filteredMovies;
+
   // Count active filters
   const totalFilters = Object.values(filters).flat().length;
-
-  /* --- Pagination Logic --- */
-  const itemsPerPage = 9;
-  const totalPages = Math.ceil(filteredMovies.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentMovies = filteredMovies.slice(startIndex, startIndex + itemsPerPage);
 
   // Loading state with modern shimmer skeleton
   if (isLoading) {
@@ -214,7 +214,7 @@ const MoviesSection = ({ filters = { languages: [], genres: [], formats: [] } })
       <div className="flex justify-between items-center mb-4 bg-[#13162f] py-3 px-4 rounded-xl border border-gray-700/50">
         <div className="flex items-center gap-3">
           <span className="font-medium text-sm sm:text-base text-white">
-            {filteredMovies.length} {filteredMovies.length === 1 ? 'Movie' : 'Movies'} Found
+            {totalCount} {totalCount === 1 ? 'Movie' : 'Movies'} Found
           </span>
           {totalFilters > 0 && (
             <span className="flex items-center gap-1 text-xs text-red-400 bg-red-500/20 px-2 py-1 rounded-full">

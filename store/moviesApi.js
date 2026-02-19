@@ -28,8 +28,10 @@ export const moviesApi = createApi({
           params: Object.keys(cleanParams).length > 0 ? cleanParams : undefined,
         };
       },
-      transformResponse: (response) =>
-        Array.isArray(response.data) ? response.data : [response.data],
+      transformResponse: (response) => ({
+        data: Array.isArray(response.data) ? response.data : [response.data],
+        meta: response.meta ?? { page: 1, limit: 10, total: 0, totalPages: 1 },
+      }),
       providesTags: ["Movies"],
     }),
 

@@ -12,7 +12,10 @@ const LocationModal = () => {
   }, []);
 
   useEffect(() => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      setLocationText("Location not supported.");
+      return;
+    }
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -20,20 +23,28 @@ const LocationModal = () => {
           const { latitude, longitude } = position.coords;
 
           const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+            { headers: { "Accept-Language": "en" } }
           );
 
+          if (!res.ok) throw new Error("Nominatim error");
+
           const data = await res.json();
-          const text = data?.display_name || "Unable to detect exact location.";
-          setLocationText(text);
-        } catch (err) {
-          console.error(err);
-          setLocationText("Error fetching location.");
+          const city =
+            data?.address?.city ||
+            data?.address?.town ||
+            data?.address?.village ||
+            data?.address?.state ||
+            data?.display_name;
+          setLocationText(city || "Unknown location");
+        } catch {
+          setLocationText("Location unavailable");
         }
       },
       () => {
-        setLocationText("Permission denied or unable to detect location.");
-      }
+        setLocationText("Location access denied");
+      },
+      { timeout: 8000 }
     );
   }, []);
 

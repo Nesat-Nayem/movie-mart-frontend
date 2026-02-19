@@ -12,8 +12,8 @@ const Filter = ({ onFilterChange, initialFilters, onApply }) => {
     formats: [],
   });
 
-  const { data: moviesData = [], isLoading } = useGetMoviesQuery();
-  const movies = moviesData || [];
+  const { data: moviesData, isLoading } = useGetMoviesQuery({ limit: 100 });
+  const movies = moviesData?.data ?? [];
 
   // Sync with initial filters from parent
   useEffect(() => {
@@ -28,7 +28,7 @@ const Filter = ({ onFilterChange, initialFilters, onApply }) => {
   const languages = useMemo(() => {
     return [
       ...new Set(
-        movies.flatMap((m) =>
+        movies?.flatMap((m) =>
           Array.isArray(m.languages) ? m.languages : [m.languages]
         )
       ),

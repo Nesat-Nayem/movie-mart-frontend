@@ -83,10 +83,10 @@ const FilmCard = ({ movie }) => (
 // Main Component (Slider)
 // ----------------------
 const UpcomingMovies = () => {
-  const { data: moviesData = [], isLoading, isError } = useGetMoviesQuery();
+  const { data, isLoading, isError } = useGetMoviesQuery({ status: 'upcoming', limit: 20 });
 
-  console.log(moviesData);
-  // ⭐ Skeleton while loading
+  const upcomingMovies = data?.data ?? [];
+
   if (isLoading)
     return (
       <section className="py-5">
@@ -104,16 +104,10 @@ const UpcomingMovies = () => {
       </section>
     );
 
-  // ⭐ Error state
   if (isError)
     return (
       <div className="text-center py-5 text-red-400">Error loading movies</div>
     );
-
-  // ⭐ Filter only upcoming movies
-  const upcomingMovies = moviesData.filter(
-    (movie) => movie.status === "upcoming"
-  );
 
   return (
     <section className="py-5">
