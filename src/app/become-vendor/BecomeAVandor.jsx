@@ -1109,7 +1109,7 @@ const BecomeAVendor = () => {
                 </div>
                 <div className="flex gap-3">
                   <span className="text-yellow-400 mt-1">🕒</span>
-                  <p>Our team will review your application within <span className="text-white font-medium">73 hours</span>.</p>
+                  <p>Our team will review your application within <span className="text-white font-medium">24 to 48 hours</span>.</p>
                 </div>
                 <div className="flex gap-3">
                   <span className="text-green-400 mt-1">✅</span>
