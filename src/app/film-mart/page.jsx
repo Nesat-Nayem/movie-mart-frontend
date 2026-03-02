@@ -1,5 +1,6 @@
 import HeroBanner from "@/app/pages/Hero/HeroBanner";
 import FilmMartList from "./FilmMartList";
+import { BANNER_TYPES } from "../../../store/homebannerApi";
 
 // ✅ Correct way to add Meta Title
 export const metadata = {
@@ -11,7 +12,7 @@ export const metadata = {
 const FilMartPage = () => {
   return (
     <>
-      <HeroBanner />
+      <HeroBanner bannerType={BANNER_TYPES.FILM_MART} />
       <FilmMartList />
     </>
   );

@@ -7,7 +7,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import Link from "next/link";
-import { useGetHomeBannerQuery } from "../../../../store/homebannerApi";
+import { useGetBannersByTypeQuery, BANNER_TYPES } from "../../../../store/homebannerApi";
 
 // Modern Skeleton slide
 const HeroBannerSkeleton = () => (
@@ -16,8 +16,11 @@ const HeroBannerSkeleton = () => (
   </div>
 );
 
-const HeroBanner = () => {
-  const { data: bannerData = [], isLoading, isError } = useGetHomeBannerQuery();
+const HeroBanner = ({ bannerType = BANNER_TYPES.HOME }) => {
+  const { data: bannerData = [], isLoading, isError } = useGetBannersByTypeQuery({
+    bannerType,
+    platform: "web",
+  });
   const prevRef = useRef(null);
   const nextRef = useRef(null);
 

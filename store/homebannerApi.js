@@ -14,17 +14,26 @@ export const btnData = [
   },
 ];
 
+/** Banner Type constants **/
+export const BANNER_TYPES = {
+  HOME: "home",
+  FILM_MART: "film_mart",
+  EVENTS: "events",
+  WATCH_MOVIES: "watch_movies",
+};
+
 /** Home Banner API **/
 export const homeBannerApi = createApi({
   reducerPath: "homeBannerApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://api.moviemart.org/v1/api",
+    baseUrl: "http://localhost:8080/v1/api",
   }),
   tagTypes: ["homeBanner"],
   endpoints: (builder) => ({
-    /** Get all banners */
-    getHomeBanner: builder.query({
-      query: () => "/banners",
+    /** Get banners filtered by bannerType and platform */
+    getBannersByType: builder.query({
+      query: ({ bannerType, platform = "web" }) =>
+        `/banners?bannerType=${bannerType}&platform=${platform}&active=true`,
       transformResponse: (response) =>
         Array.isArray(response.data) ? response.data : [response.data],
       providesTags: ["homeBanner"],
@@ -32,4 +41,4 @@ export const homeBannerApi = createApi({
   }),
 });
 
-export const { useGetHomeBannerQuery } = homeBannerApi;
+export const { useGetBannersByTypeQuery } = homeBannerApi;
