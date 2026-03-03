@@ -39,9 +39,9 @@ const HeroBanner = ({ bannerType = BANNER_TYPES.HOME }) => {
               className="w-full h-[180px] md:h-[400px] lg:h-[600px] bg-cover bg-center cursor-pointer rounded-lg"
               style={{ backgroundImage: `url(${slide.image})` }}
             >
-              <div className="absolute bottom-0 left-0 w-full bg-black/40 text-white p-3 text-sm md:text-base rounded-b-lg">
+              {/* <div className="absolute bottom-0 left-0 w-full bg-black/40 text-white p-3 text-sm md:text-base rounded-b-lg">
                 {slide.title}
-              </div>
+              </div> */}
             </div>
           </Link>
         </SwiperSlide>
