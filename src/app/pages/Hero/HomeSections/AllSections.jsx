@@ -5,7 +5,7 @@ import MovieSection from "./MovieSection";
 import EventSection from "./EventSection";
 import WatchVideoSection from "./WatchVideoSection";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.moviemart.org/v1/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/v1/api';
 
 // Dynamic Section Divider Component
 const SectionDivider = ({ divider }) => {
