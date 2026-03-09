@@ -106,6 +106,7 @@ const Checkout = () => {
         userId: user._id,
         quantity: bookingDetails.quantity,
         seatType: bookingDetails.seatType,
+        eventCategory: bookingDetails.eventCategory || 'Ticket Booking',
         countryCode,
         customerDetails: {
           name: form.name,

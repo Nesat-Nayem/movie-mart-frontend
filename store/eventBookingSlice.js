@@ -7,6 +7,7 @@ const initialState = {
     event: null,
     quantity: 1,
     seatType: "Normal",
+    eventCategory: null,
     unitPrice: 0,
     totalAmount: 0,
     bookingFee: 0,
@@ -53,6 +54,7 @@ export const eventBookingSlice = createSlice({
       // Reset quantities
       state.currentBooking.quantity = 1;
       state.currentBooking.seatType = "Normal";
+      state.currentBooking.eventCategory = null;
       
       // Calculate initial amounts (no booking fee or GST)
       const totalAmount = event.ticketPrice * 1;
@@ -90,6 +92,11 @@ export const eventBookingSlice = createSlice({
       state.currentBooking.bookingFee = 0;
       state.currentBooking.taxAmount = 0;
       state.currentBooking.finalAmount = totalAmount;
+    },
+    
+    // Set event category (participation type)
+    setEventCategory: (state, action) => {
+      state.currentBooking.eventCategory = action.payload;
     },
     
     // Update customer details
@@ -159,6 +166,7 @@ export const {
   setBookingEvent,
   setQuantity,
   setSeatType,
+  setEventCategory,
   setCustomerDetails,
   setPaymentOrder,
   setPaymentStatus,

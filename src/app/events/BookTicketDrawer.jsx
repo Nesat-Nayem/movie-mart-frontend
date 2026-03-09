@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Ticket, Users, AlertCircle } from "lucide-react";
+import { X, Ticket, Users, AlertCircle, Tag } from "lucide-react";
 import Button from "@/app/components/Button";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
@@ -9,6 +9,7 @@ import {
   setBookingEvent,
   setQuantity,
   setSeatType,
+  setEventCategory,
   selectCurrentBooking,
   closeDrawer,
 } from "../../../store/eventBookingSlice";
@@ -20,6 +21,7 @@ const BookTicketDrawer = ({ event, onClose }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [selectedSeats, setSelectedSeats] = useState(1);
   const [selectedSeatType, setSelectedSeatType] = useState(null);
+  const [selectedEventCategory, setSelectedEventCategory] = useState(null);
 
   useEffect(() => {
     if (event) {
@@ -65,6 +67,11 @@ const BookTicketDrawer = ({ event, onClose }) => {
     }
   };
 
+  const handleEventCategoryChange = (category) => {
+    setSelectedEventCategory(category);
+    dispatch(setEventCategory(category));
+  };
+
   const handleProceedToCheckout = () => {
     // Store booking details in localStorage for checkout page
     const bookingDetails = {
@@ -75,6 +82,7 @@ const BookTicketDrawer = ({ event, onClose }) => {
       venue: event.location?.venueName,
       quantity: selectedSeats,
       seatType: selectedSeatType?.name || "Standard",
+      eventCategory: selectedEventCategory,
       unitPrice: selectedSeatType?.price || event.ticketPrice,
       totalAmount: currentBooking.totalAmount,
       bookingFee: currentBooking.bookingFee,
@@ -91,6 +99,11 @@ const BookTicketDrawer = ({ event, onClose }) => {
   const seatTypes = event.seatTypes && event.seatTypes.length > 0 
     ? event.seatTypes 
     : [{ name: "Standard", price: event.ticketPrice, availableSeats: event.availableSeats, totalSeats: event.totalSeats }];
+
+  // Get event categories (participation types) or use defaults
+  const eventCategories = event.eventCategories && event.eventCategories.length > 0
+    ? event.eventCategories
+    : ['Awardee & Represent our show', 'Sponsored', 'Ticket Booking', 'Participate'];
 
   const maxTickets = Math.min(
     event.maxTicketsPerPerson || 10, 
@@ -216,6 +229,52 @@ const BookTicketDrawer = ({ event, onClose }) => {
                 </div>
               </div>
 
+              {/* Event Category Selection - Required */}
+              <div className="bg-white/5 rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Tag className="w-5 h-5 text-pink-400" />
+                  <label className="text-white font-medium">
+                    Select Category <span className="text-pink-400">*</span>
+                  </label>
+                </div>
+                <p className="text-gray-400 text-xs mb-3">
+                  Please select how you want to participate in this event
+                </p>
+                
+                <div className="grid grid-cols-1 gap-2">
+                  {eventCategories.map((category) => (
+                    <div
+                      key={category}
+                      onClick={() => handleEventCategoryChange(category)}
+                      className={`p-3 rounded-xl cursor-pointer transition-all border-2 ${
+                        selectedEventCategory === category
+                          ? "bg-gradient-to-r from-pink-500/20 to-purple-600/20 border-pink-500"
+                          : "bg-white/5 border-transparent hover:border-pink-500/50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                          selectedEventCategory === category
+                            ? "border-pink-500 bg-pink-500"
+                            : "border-gray-500"
+                        }`}>
+                          {selectedEventCategory === category && (
+                            <div className="w-2 h-2 bg-white rounded-full" />
+                          )}
+                        </div>
+                        <p className="font-medium text-white text-sm">{category}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {!selectedEventCategory && (
+                  <p className="text-yellow-400 text-xs mt-2 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    Please select a category to proceed
+                  </p>
+                )}
+              </div>
+
               {/* Price Summary */}
               <div className="bg-gradient-to-r from-pink-500/10 to-purple-600/10 rounded-2xl p-4 border border-pink-500/30">
                 <h3 className="text-white font-semibold mb-3">Price Summary</h3>
@@ -237,14 +296,14 @@ const BookTicketDrawer = ({ event, onClose }) => {
             {/* Footer */}
             <div className="p-5 border-t border-gray-700/50 bg-[#0a0a29]/80 backdrop-blur-lg">
               <Button
-                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 py-4 rounded-xl font-semibold text-lg shadow-lg"
+                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 py-4 rounded-xl font-semibold text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleProceedToCheckout}
-                disabled={!selectedSeatType || selectedSeats < 1}
+                disabled={!selectedSeatType || selectedSeats < 1 || !selectedEventCategory}
               >
                 Proceed to Checkout • ₹{currentBooking.finalAmount}
               </Button>
               <p className="text-gray-500 text-xs text-center mt-3">
-                Secure payment via Cashfree
+                Secure payment via Razorpay
               </p>
             </div>
           </>

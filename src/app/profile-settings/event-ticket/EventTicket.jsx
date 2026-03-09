@@ -486,11 +486,11 @@ const ETicketModal = ({ booking, onClose, onDownload, ticketRef, formatDate, for
                 <p style={{ color: "#9ca3af", fontSize: "10px", textTransform: "uppercase", margin: "0 0 4px 0", fontWeight: "600" }}>TICKETS</p>
                 <p style={{ color: "#ffffff", fontWeight: "bold", fontSize: "20px", margin: 0 }}>{booking.quantity}</p>
               </div>
-              <div style={{ flex: 1, padding: "12px", textAlign: "center", borderLeft: "1px solid #374151", borderRight: "1px solid #374151" }}>
-                <p style={{ color: "#9ca3af", fontSize: "10px", textTransform: "uppercase", margin: "0 0 4px 0", fontWeight: "600" }}>TYPE</p>
-                <p style={{ color: "#ffffff", fontWeight: "bold", fontSize: "14px", margin: 0 }}>{booking.seatType}</p>
+              <div style={{ flex: 1, padding: "12px", textAlign: "center", borderLeft: "1px solid #374151" }}>
+                <p style={{ color: "#9ca3af", fontSize: "10px", textTransform: "uppercase", margin: "0 0 4px 0", fontWeight: "600" }}>CATEGORY</p>
+                <p style={{ color: "#f472b6", fontWeight: "bold", fontSize: "12px", margin: 0, lineHeight: "1.3" }}>{booking.eventCategory || booking.seatType}</p>
               </div>
-              <div style={{ flex: 1, padding: "12px", textAlign: "center" }}>
+              <div style={{ flex: 1, padding: "12px", textAlign: "center", borderLeft: "1px solid #374151" }}>
                 <p style={{ color: "#9ca3af", fontSize: "10px", textTransform: "uppercase", margin: "0 0 4px 0", fontWeight: "600" }}>AMOUNT</p>
                 <p style={{ color: "#4ade80", fontWeight: "bold", fontSize: "18px", margin: 0 }}>₹{booking.finalAmount}</p>
               </div>
