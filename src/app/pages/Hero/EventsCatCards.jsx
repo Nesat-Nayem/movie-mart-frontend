@@ -2,7 +2,7 @@
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/v1/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.moviemart.org/v1/api';
 
 // Fallback categories (used when API is unavailable)
 const fallbackCategories = [
