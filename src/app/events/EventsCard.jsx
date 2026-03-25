@@ -3,7 +3,13 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FaLanguage, FaRupeeSign, FaCalendarAlt, FaMapMarkerAlt, FaTicketAlt } from "react-icons/fa";
+import {
+  FaLanguage,
+  FaRupeeSign,
+  FaCalendarAlt,
+  FaMapMarkerAlt,
+  FaTicketAlt,
+} from "react-icons/fa";
 import Button from "@/app/components/Button";
 import BookTicketDrawer from "./BookTicketDrawer";
 import { useGetEventsQuery } from "../../../store/eventsApi";
@@ -39,18 +45,22 @@ const EventCard = ({ event, onBook }) => {
               <FaTicketAlt className="text-white/30 w-12 h-12" />
             </div>
           )}
-          
+
           {/* Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-          
+
           {/* Status Badge */}
           {event.status && (
             <div className="absolute top-2 left-2">
-              <span className={`text-[10px] font-semibold px-2 py-1 rounded-full ${
-                event.status === 'upcoming' ? 'bg-green-500/90 text-white' :
-                event.status === 'ongoing' ? 'bg-blue-500/90 text-white' :
-                'bg-gray-500/90 text-white'
-              }`}>
+              <span
+                className={`text-[10px] font-semibold px-2 py-1 rounded-full ${
+                  event.status === "upcoming"
+                    ? "bg-green-500/90 text-white"
+                    : event.status === "ongoing"
+                      ? "bg-blue-500/90 text-white"
+                      : "bg-gray-500/90 text-white"
+                }`}
+              >
                 {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
               </span>
             </div>
@@ -84,9 +94,11 @@ const EventCard = ({ event, onBook }) => {
         <div className="space-y-1">
           <p className="flex items-center gap-1.5 text-[11px] text-gray-400">
             <FaMapMarkerAlt className="text-pink-400 w-3 h-3" />
-            <span className="line-clamp-1">{event.location?.city || event.eventType}</span>
+            <span className="line-clamp-1">
+              {event.location?.city || event.eventType}
+            </span>
           </p>
-          
+
           <div className="flex items-center justify-between">
             <p className="flex items-center gap-1 text-[11px] text-gray-400">
               <FaLanguage className="text-pink-400 w-3 h-3" />
@@ -100,11 +112,11 @@ const EventCard = ({ event, onBook }) => {
         </div>
 
         <div className="mt-3">
-          <Button 
+          <Button
             onClick={(e) => {
               e.preventDefault();
               onBook();
-            }} 
+            }}
             className="w-full text-xs py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
           >
             Book Ticket
@@ -119,7 +131,7 @@ const EventCard = ({ event, onBook }) => {
 const EventsCards = ({ filters = {} }) => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 9;
+  const itemsPerPage = 12;
 
   const { data: eventsData = [], isLoading, isError } = useGetEventsQuery();
 
@@ -136,15 +148,15 @@ const EventsCards = ({ filters = {} }) => {
     if (filters.date?.length > 0) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
-      
+
       const weekendStart = new Date(today);
       const dayOfWeek = today.getDay();
       const daysUntilSaturday = dayOfWeek === 0 ? 6 : 6 - dayOfWeek;
       weekendStart.setDate(today.getDate() + daysUntilSaturday);
-      
+
       const weekendEnd = new Date(weekendStart);
       weekendEnd.setDate(weekendStart.getDate() + 1);
 
@@ -171,8 +183,8 @@ const EventsCards = ({ filters = {} }) => {
     if (filters.languages?.length > 0) {
       events = events.filter((event) =>
         filters.languages.some(
-          (lang) => event.eventLanguage?.toLowerCase() === lang.toLowerCase()
-        )
+          (lang) => event.eventLanguage?.toLowerCase() === lang.toLowerCase(),
+        ),
       );
     }
 
@@ -182,8 +194,8 @@ const EventsCards = ({ filters = {} }) => {
         filters.categories.some(
           (cat) =>
             event.category?.toLowerCase().includes(cat.toLowerCase()) ||
-            event.eventType?.toLowerCase().includes(cat.toLowerCase())
-        )
+            event.eventType?.toLowerCase().includes(cat.toLowerCase()),
+        ),
       );
     }
 
@@ -216,7 +228,10 @@ const EventsCards = ({ filters = {} }) => {
         {/* Cards skeleton */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {[...Array(8)].map((_, idx) => (
-            <div key={idx} className="rounded-xl overflow-hidden bg-gray-800/50 backdrop-blur-sm">
+            <div
+              key={idx}
+              className="rounded-xl overflow-hidden bg-gray-800/50 backdrop-blur-sm"
+            >
               <div className="aspect-[3/4] bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%]" />
               <div className="p-3 space-y-3">
                 <div className="h-4 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-3/4" />
@@ -240,7 +255,10 @@ const EventsCards = ({ filters = {} }) => {
     return (
       <div className="text-center py-20">
         <p className="text-red-400 mb-4">Failed to load events</p>
-        <Button onClick={() => window.location.reload()} className="bg-pink-500">
+        <Button
+          onClick={() => window.location.reload()}
+          className="bg-pink-500"
+        >
           Try Again
         </Button>
       </div>
@@ -262,9 +280,10 @@ const EventsCards = ({ filters = {} }) => {
       {/* Results count */}
       <div className="mb-4 flex items-center justify-between">
         <p className="text-gray-400 text-sm">
-          {filteredEvents.length} event{filteredEvents.length !== 1 ? "s" : ""} found
+          {filteredEvents.length} event{filteredEvents.length !== 1 ? "s" : ""}{" "}
+          found
         </p>
-        {Object.values(filters).some(arr => arr?.length > 0) && (
+        {Object.values(filters).some((arr) => arr?.length > 0) && (
           <span className="text-pink-400 text-xs">Filters applied</span>
         )}
       </div>
@@ -294,7 +313,7 @@ const EventsCards = ({ filters = {} }) => {
           <button
             onClick={prevPage}
             disabled={currentPage === 1}
-            className="px-4 py-2 text-sm rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-4 cursor-pointer py-2 text-sm rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             Prev
           </button>
@@ -311,12 +330,12 @@ const EventsCards = ({ filters = {} }) => {
               } else {
                 pageNum = currentPage - 2 + i;
               }
-              
+
               return (
                 <button
                   key={pageNum}
                   onClick={() => goToPage(pageNum)}
-                  className={`w-10 h-10 text-sm rounded-lg transition-colors ${
+                  className={`w-10 cursor-pointer h-10 text-sm rounded-lg transition-colors ${
                     currentPage === pageNum
                       ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white"
                       : "bg-white/10 hover:bg-white/20"
@@ -331,7 +350,7 @@ const EventsCards = ({ filters = {} }) => {
           <button
             onClick={nextPage}
             disabled={currentPage === totalPages}
-            className="px-4 py-2 text-sm rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 cursor-pointer text-sm rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             Next
           </button>

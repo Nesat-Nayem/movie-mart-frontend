@@ -40,7 +40,10 @@ const FilmMartList = () => {
         <div className="flex gap-6 py-4">
           {/* Left filter - visible only on lg+ */}
           <div className="hidden lg:block w-72 flex-shrink-0">
-            <Filter onFilterChange={handleFilterChange} initialFilters={filters} />
+            <Filter
+              onFilterChange={handleFilterChange}
+              initialFilters={filters}
+            />
           </div>
 
           {/* Right film cards */}
@@ -52,7 +55,7 @@ const FilmMartList = () => {
 
       {/* Mobile filter button */}
       <button
-        className="fixed bottom-6 right-6 bg-gradient-to-r from-red-500 to-pink-600 text-white p-4 rounded-full shadow-xl lg:hidden z-40 flex items-center gap-2 hover:from-red-600 hover:to-pink-700 transition-all"
+        className="fixed cursor-pointer bottom-26 right-6 bg-gradient-to-r from-red-500 to-pink-600 text-white p-4 rounded-full shadow-xl lg:hidden z-30 flex items-center gap-2 hover:from-red-600 hover:to-pink-700 transition-all"
         onClick={() => setShowDrawer(true)}
       >
         <FiFilter size={20} />
@@ -73,7 +76,7 @@ const FilmMartList = () => {
           />
 
           {/* Drawer */}
-          <div 
+          <div
             className="absolute bottom-0 left-0 right-0 bg-[#13162f] rounded-t-3xl shadow-2xl max-h-[85vh] overflow-hidden"
             style={{ animation: "slideUp 0.3s ease-out" }}
           >
@@ -86,7 +89,7 @@ const FilmMartList = () => {
             <div className="flex justify-between items-center px-4 pb-3 border-b border-gray-700/50">
               <h2 className="text-white text-lg font-semibold">Filters</h2>
               <button
-                className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                className="p-2 rounded-full cursor-pointer bg-white/10 hover:bg-white/20 transition-colors"
                 onClick={() => setShowDrawer(false)}
               >
                 <FaTimes className="text-white w-4 h-4" />
@@ -95,8 +98,8 @@ const FilmMartList = () => {
 
             {/* Filter content */}
             <div className="p-4 overflow-y-auto max-h-[calc(85vh-80px)]">
-              <Filter 
-                onFilterChange={handleFilterChange} 
+              <Filter
+                onFilterChange={handleFilterChange}
                 initialFilters={filters}
                 onApply={() => setShowDrawer(false)}
               />
@@ -108,8 +111,12 @@ const FilmMartList = () => {
       {/* CSS for animation */}
       <style jsx>{`
         @keyframes slideUp {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
+          from {
+            transform: translateY(100%);
+          }
+          to {
+            transform: translateY(0);
+          }
         }
       `}</style>
     </section>

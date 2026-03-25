@@ -27,7 +27,8 @@ const EventsList = () => {
   useEffect(() => {
     const handleCloseDrawer = () => setShowDrawer(false);
     window.addEventListener("closeFilterDrawer", handleCloseDrawer);
-    return () => window.removeEventListener("closeFilterDrawer", handleCloseDrawer);
+    return () =>
+      window.removeEventListener("closeFilterDrawer", handleCloseDrawer);
   }, []);
 
   // Prevent body scroll when drawer is open
@@ -48,7 +49,10 @@ const EventsList = () => {
         <div className="flex gap-6 py-4">
           {/* Left filter - visible only on lg+ */}
           <div className="hidden lg:block w-72 flex-shrink-0">
-            <Filter onFilterChange={handleFilterChange} initialFilters={filters} />
+            <Filter
+              onFilterChange={handleFilterChange}
+              initialFilters={filters}
+            />
           </div>
 
           {/* Right events cards */}
@@ -60,7 +64,7 @@ const EventsList = () => {
 
       {/* Mobile filter button */}
       <button
-        className="fixed bottom-6 right-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white p-4 rounded-full shadow-xl lg:hidden z-40 flex items-center gap-2 hover:from-pink-600 hover:to-purple-700 transition-all"
+        className="fixed cursor-pointer bottom-26 right-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white p-4 rounded-full shadow-xl lg:hidden z-30 flex items-center gap-2 hover:from-pink-600 hover:to-purple-700 transition-all"
         onClick={() => setShowDrawer(true)}
       >
         <FiFilter size={20} />
@@ -81,7 +85,7 @@ const EventsList = () => {
           />
 
           {/* Drawer */}
-          <div 
+          <div
             className="absolute bottom-0 left-0 right-0 bg-[#0B1730] rounded-t-3xl shadow-2xl max-h-[85vh] overflow-hidden animate-slide-up"
             style={{
               animation: "slideUp 0.3s ease-out",
@@ -96,7 +100,7 @@ const EventsList = () => {
             <div className="flex justify-between items-center px-4 pb-3 border-b border-gray-700/50">
               <h2 className="text-white text-lg font-semibold">Filters</h2>
               <button
-                className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                className="p-2 cursor-pointer rounded-full bg-white/10 hover:bg-white/20 transition-colors"
                 onClick={() => setShowDrawer(false)}
               >
                 <FaTimes className="text-white w-4 h-4" />
@@ -105,7 +109,10 @@ const EventsList = () => {
 
             {/* Filter content */}
             <div className="p-4 overflow-y-auto max-h-[calc(85vh-80px)]">
-              <Filter onFilterChange={handleFilterChange} initialFilters={filters} />
+              <Filter
+                onFilterChange={handleFilterChange}
+                initialFilters={filters}
+              />
             </div>
           </div>
         </div>

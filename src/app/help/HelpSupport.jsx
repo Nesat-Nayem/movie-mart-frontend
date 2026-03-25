@@ -6,8 +6,6 @@ import { useGetHelpCenterQuery } from "../../../store/helpCenterApi";
 const HelpSupport = () => {
   const { data: helpData = [], isLoading, isError } = useGetHelpCenterQuery();
 
-  console.log(helpData);
-
   if (isLoading) {
     return (
       <section className="py-10 text-center">
@@ -34,7 +32,7 @@ const HelpSupport = () => {
 
   return (
     <section>
-      <div className="max-w-6xl mx-auto py-2 lg:py-5">
+      <div className="max-w-6xl mx-auto py-2 mt-4 lg:py-5 bg-white/5  rounded-xl p-4 ">
         {/* title */}
         <div className="flex md:flex-row items-start md:items-center justify-between mb-4 gap-2 px-2">
           <h2 className="text-xl md:text-3xl font-bold gradient-text">

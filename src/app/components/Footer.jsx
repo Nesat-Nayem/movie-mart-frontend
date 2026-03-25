@@ -29,15 +29,15 @@ const Footer = () => {
 
   // Social links configuration - only show if URL is set
   const socialLinks = [
-    { key: 'facebook', url: generalSettings.facebook, icon: FaFacebookF },
-    { key: 'instagram', url: generalSettings.instagram, icon: FaInstagram },
-    { key: 'linkedin', url: generalSettings.linkedin, icon: FaLinkedinIn },
-    { key: 'twitter', url: generalSettings.twitter, icon: FaXTwitter },
-    { key: 'youtube', url: generalSettings.youtube, icon: FaYoutube },
-  ].filter(link => link.url && link.url.trim() !== '');
+    { key: "facebook", url: generalSettings.facebook, icon: FaFacebookF },
+    { key: "instagram", url: generalSettings.instagram, icon: FaInstagram },
+    { key: "linkedin", url: generalSettings.linkedin, icon: FaLinkedinIn },
+    { key: "twitter", url: generalSettings.twitter, icon: FaXTwitter },
+    { key: "youtube", url: generalSettings.youtube, icon: FaYoutube },
+  ].filter((link) => link.url && link.url.trim() !== "");
 
   return (
-    <footer className="text-gray-400 text-center py-8">
+    <footer className="text-gray-400 text-center py-4 pb-40 md:pb-30 lg:pb-5">
       {/* Top Logo */}
       <div className="flex items-center justify-center gap-4 mb-6">
         <hr className="flex-grow border-gray-600" />

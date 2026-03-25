@@ -4,11 +4,7 @@ import React from "react";
 import { useGetAboutUsQuery } from "../../../store/aboutUsApi";
 
 const AboutUs = () => {
-  const {
-    data: aboutUsData = [],
-    isLoading,
-    isError,
-  } = useGetAboutUsQuery();
+  const { data: aboutUsData = [], isLoading, isError } = useGetAboutUsQuery();
 
   if (isLoading) {
     return (
@@ -36,7 +32,7 @@ const AboutUs = () => {
   return (
     <>
       <section>
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto  py-2 mt-4 lg:py-5 bg-white/5  rounded-xl">
           <div className="flex py-2  md:flex-row items-start md:items-center justify-between mb-0 gap-2 px-2">
             <h2 className="text-xl md:py-4 md:text-3xl font-bold gradient-text">
               About Us

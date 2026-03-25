@@ -1,6 +1,9 @@
 "use client";
 import React, { useState } from "react";
-import { useGetUserWatchlistQuery, useGetWatchlistCountsQuery } from "../../../store/watchlistApi";
+import {
+  useGetUserWatchlistQuery,
+  useGetWatchlistCountsQuery,
+} from "../../../store/watchlistApi";
 import { Play, Calendar, Clock, MapPin, Loader2, Trash2 } from "lucide-react";
 import Link from "next/link";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -13,8 +16,8 @@ const WatchlistPage = () => {
   const limit = 20;
 
   const getUserId = () => {
-    if (typeof window !== 'undefined') {
-      const user = localStorage.getItem('user');
+    if (typeof window !== "undefined") {
+      const user = localStorage.getItem("user");
       if (user) {
         try {
           return JSON.parse(user)?._id || null;
@@ -30,12 +33,15 @@ const WatchlistPage = () => {
 
   const itemType = activeTab === "all" ? undefined : activeTab;
 
-  const { data: watchlistData, isLoading, refetch } = useGetUserWatchlistQuery(
-    { itemType, page, limit },
-    { skip: !userId }
-  );
+  const {
+    data: watchlistData,
+    isLoading,
+    refetch,
+  } = useGetUserWatchlistQuery({ itemType, page, limit }, { skip: !userId });
 
-  const { data: countsData } = useGetWatchlistCountsQuery(undefined, { skip: !userId });
+  const { data: countsData } = useGetWatchlistCountsQuery(undefined, {
+    skip: !userId,
+  });
   const [removeFromWatchlist] = useRemoveFromWatchlistMutation();
 
   const handleRemove = async (itemType, itemId) => {
@@ -43,7 +49,7 @@ const WatchlistPage = () => {
       await removeFromWatchlist({ itemType, itemId }).unwrap();
       refetch();
     } catch (error) {
-      console.error('Remove error:', error);
+      console.error("Remove error:", error);
     }
   };
 
@@ -63,7 +69,11 @@ const WatchlistPage = () => {
         <div className="group relative bg-white/5 rounded-xl overflow-hidden hover:bg-white/10 transition-all">
           <div className="relative aspect-video">
             <img
-              src={video.thumbnailUrl || video.posterUrl || "/assets/img/default-video.jpg"}
+              src={
+                video.thumbnailUrl ||
+                video.posterUrl ||
+                "/assets/img/default-video.jpg"
+              }
               alt={video.title}
               className="w-full h-full object-cover"
             />
@@ -82,11 +92,13 @@ const WatchlistPage = () => {
             )}
           </div>
           <div className="p-4">
-            <h3 className="text-white font-semibold line-clamp-1 mb-2">{video.title}</h3>
+            <h3 className="text-white font-semibold line-clamp-1 mb-2">
+              {video.title}
+            </h3>
             <div className="flex items-center gap-3 text-gray-400 text-xs mb-3">
               {video.videoType && (
                 <span className="px-2 py-1 bg-purple-600/20 text-purple-400 rounded">
-                  {video.videoType === 'series' ? 'Series' : 'Movie'}
+                  {video.videoType === "series" ? "Series" : "Movie"}
                 </span>
               )}
               {video.genres?.slice(0, 2).map((genre, idx) => (
@@ -101,7 +113,7 @@ const WatchlistPage = () => {
               <button
                 onClick={(e) => {
                   e.preventDefault();
-                  handleRemove('watch-video', video._id);
+                  handleRemove("watch-video", video._id);
                 }}
                 className="p-2 hover:bg-red-600/20 rounded-lg transition"
               >
@@ -123,7 +135,11 @@ const WatchlistPage = () => {
         <div className="group relative bg-white/5 rounded-xl overflow-hidden hover:bg-white/10 transition-all">
           <div className="relative aspect-[2/3]">
             <img
-              src={movie.poster || movie.posterUrl || "/assets/img/default-movie.jpg"}
+              src={
+                movie.poster ||
+                movie.posterUrl ||
+                "/assets/img/default-movie.jpg"
+              }
               alt={movie.title}
               className="w-full h-full object-cover"
             />
@@ -137,7 +153,9 @@ const WatchlistPage = () => {
             </div>
           </div>
           <div className="p-4">
-            <h3 className="text-white font-semibold line-clamp-1 mb-2">{movie.title}</h3>
+            <h3 className="text-white font-semibold line-clamp-1 mb-2">
+              {movie.title}
+            </h3>
             <div className="flex items-center gap-2 text-gray-400 text-xs mb-3">
               {movie.genre && <span>{movie.genre}</span>}
               {movie.rating && (
@@ -154,7 +172,7 @@ const WatchlistPage = () => {
               <button
                 onClick={(e) => {
                   e.preventDefault();
-                  handleRemove('movie', movie._id || movie.id);
+                  handleRemove("movie", movie._id || movie.id);
                 }}
                 className="p-2 hover:bg-red-600/20 rounded-lg transition"
               >
@@ -176,7 +194,11 @@ const WatchlistPage = () => {
         <div className="group relative bg-white/5 rounded-xl overflow-hidden hover:bg-white/10 transition-all">
           <div className="relative aspect-video">
             <img
-              src={event.posterImage || event.bannerImage || "/assets/img/default-event.jpg"}
+              src={
+                event.posterImage ||
+                event.bannerImage ||
+                "/assets/img/default-event.jpg"
+              }
               alt={event.title}
               className="w-full h-full object-cover"
             />
@@ -190,7 +212,9 @@ const WatchlistPage = () => {
             </div>
           </div>
           <div className="p-4">
-            <h3 className="text-white font-semibold line-clamp-1 mb-2">{event.title}</h3>
+            <h3 className="text-white font-semibold line-clamp-1 mb-2">
+              {event.title}
+            </h3>
             <p className="text-gray-400 text-sm line-clamp-2 mb-3">
               {event.shortDescription || event.description}
             </p>
@@ -216,7 +240,7 @@ const WatchlistPage = () => {
               <button
                 onClick={(e) => {
                   e.preventDefault();
-                  handleRemove('event', event._id || event.id);
+                  handleRemove("event", event._id || event.id);
                 }}
                 className="p-2 hover:bg-red-600/20 rounded-lg transition"
               >
@@ -231,11 +255,11 @@ const WatchlistPage = () => {
 
   const renderItem = (item) => {
     switch (item.itemType) {
-      case 'watch-video':
+      case "watch-video":
         return renderWatchVideoCard(item);
-      case 'movie':
+      case "movie":
         return renderMovieCard(item);
-      case 'event':
+      case "event":
         return renderEventCard(item);
       default:
         return null;
@@ -244,12 +268,14 @@ const WatchlistPage = () => {
 
   return (
     <ProtectedRoute>
-      <section className="min-h-screen bg-gradient-to-b from-[#0B1730] to-[#1a2744] py-8">
+      <section className="min-h-screen  py-8">
         <div className="max-w-7xl mx-auto px-4">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-white mb-2">My Watchlist</h1>
-            <p className="text-gray-400">Your saved videos, movies, and events</p>
+            <p className="text-gray-400">
+              Your saved videos, movies, and events
+            </p>
           </div>
 
           {/* Tabs */}
@@ -302,7 +328,9 @@ const WatchlistPage = () => {
                     Page {page} of {watchlistData.meta.totalPages}
                   </span>
                   <button
-                    onClick={() => setPage(Math.min(watchlistData.meta.totalPages, page + 1))}
+                    onClick={() =>
+                      setPage(Math.min(watchlistData.meta.totalPages, page + 1))
+                    }
                     disabled={page === watchlistData.meta.totalPages}
                     className="px-4 py-2 bg-white/5 rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/10 transition"
                   >
@@ -314,7 +342,9 @@ const WatchlistPage = () => {
           ) : (
             <div className="text-center py-20">
               <div className="text-6xl mb-4">📋</div>
-              <h3 className="text-xl font-semibold text-white mb-2">No items in watchlist</h3>
+              <h3 className="text-xl font-semibold text-white mb-2">
+                No items in watchlist
+              </h3>
               <p className="text-gray-400 mb-6">
                 Start adding videos, movies, and events to your watchlist
               </p>

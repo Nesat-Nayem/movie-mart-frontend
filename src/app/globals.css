@@ -73,3 +73,28 @@ body {
 }
 
 /* **********************************title style end********************************************** */
+.custom-swiper {
+  position: relative;
+}
+
+.custom-swiper .swiper-pagination {
+  position: absolute;
+  bottom: -5px !important; /* 👈 controls spacing from bottom */
+  left: 50% !important;
+  transform: translateX(-50%);
+  z-index: 999;
+}
+
+/* dots style */
+.custom-swiper .swiper-pagination-bullet {
+  width: 6px;
+  height: 6px;
+  background: #fff;
+  opacity: 0.6;
+  margin: 0 4px !important;
+}
+
+.custom-swiper .swiper-pagination-bullet-active {
+  background: #fbbf24;
+  opacity: 1;
+}

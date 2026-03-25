@@ -38,7 +38,11 @@ const VideoCard = ({ video }) => (
   >
     <div className="relative overflow-hidden aspect-[2/3] bg-gray-900">
       <img
-        src={video.thumbnailUrl || video.posterUrl || "/assets/img/placeholder-video.jpg"}
+        src={
+          video.thumbnailUrl ||
+          video.posterUrl ||
+          "/assets/img/placeholder-video.jpg"
+        }
         alt={video.title}
         className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105"
         onError={(e) => {
@@ -46,24 +50,30 @@ const VideoCard = ({ video }) => (
           e.target.src = "/assets/img/placeholder-video.jpg";
         }}
       />
-      
+
       {/* Video Type Badge */}
-      <span className={`absolute top-2 left-2 text-white text-xs px-2 py-0.5 rounded-full ${
-        video.videoType === 'series' ? 'bg-purple-600' : 'bg-blue-600'
-      }`}>
-        {video.videoType === 'series' ? 'Series' : 'Movie'}
+      <span
+        className={`absolute top-2 left-2 text-white text-xs px-2 py-0.5 rounded-full ${
+          video.videoType === "series" ? "bg-purple-600" : "bg-blue-600"
+        }`}
+      >
+        {video.videoType === "series" ? "Series" : "Movie"}
       </span>
-      
+
       {/* Age Rating */}
       <span className="absolute top-2 right-2 bg-black/70 text-xs text-white px-2 py-0.5 rounded">
         {video.ageRating}
       </span>
 
       {/* Price Badge */}
-      <span className={`absolute bottom-2 right-2 text-white text-xs px-2 py-0.5 rounded ${
-        video.isFree ? 'bg-green-600' : 'bg-gradient-to-r from-yellow-600 to-orange-600'
-      }`}>
-        {video.isFree ? 'Free' : `₹${video.defaultPrice}`}
+      <span
+        className={`absolute bottom-2 right-2 text-white text-xs px-2 py-0.5 rounded ${
+          video.isFree
+            ? "bg-green-600"
+            : "bg-gradient-to-r from-yellow-600 to-orange-600"
+        }`}
+      >
+        {video.isFree ? "Free" : `₹${video.defaultPrice}`}
       </span>
 
       {/* Duration */}
@@ -131,7 +141,7 @@ const RelatedForYou = ({ currentVideoId, currentVideo }) => {
     },
     {
       skip: !currentVideoId,
-    }
+    },
   );
 
   // Don't render if no related videos
@@ -140,7 +150,7 @@ const RelatedForYou = ({ currentVideoId, currentVideo }) => {
   }
 
   return (
-    <div className="mt-10 px-4 md:px-8">
+    <div className="mt-2 px-4 md:px-8">
       {/* Section Header */}
       <div className="flex items-center gap-3 mb-6">
         {/* <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">

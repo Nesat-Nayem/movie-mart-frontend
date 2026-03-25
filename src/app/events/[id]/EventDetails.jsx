@@ -34,10 +34,16 @@ const EventDetails = () => {
   const { id } = useParams();
 
   // Use the single event query instead of fetching all events
-  const { data: event, isLoading, isError, error } = useGetEventByIdQuery(id, {
+  const {
+    data: event,
+    isLoading,
+    isError,
+    error,
+  } = useGetEventByIdQuery(id, {
     skip: !id,
   });
 
+  console.log(event);
   // Function to format date
   const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -85,8 +91,12 @@ const EventDetails = () => {
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
               <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-white mb-2">Event Not Found</h2>
-              <p className="text-gray-400 mb-6">The event you're looking for doesn't exist or has been removed.</p>
+              <h2 className="text-xl font-bold text-white mb-2">
+                Event Not Found
+              </h2>
+              <p className="text-gray-400 mb-6">
+                The event you're looking for doesn't exist or has been removed.
+              </p>
               <Link href="/events">
                 <Button className="bg-gradient-to-r from-pink-500 to-purple-600">
                   Browse Events
@@ -100,11 +110,14 @@ const EventDetails = () => {
   }
 
   // Calculate ticket availability
-  const isEventAvailable = event.availableSeats > 0 && ['upcoming', 'ongoing'].includes(event.status);
-  const ticketPercentage = Math.round(((event.totalTicketsSold || 0) / (event.totalSeats || 1)) * 100);
+  const isEventAvailable =
+    event.availableSeats > 0 && ["upcoming", "ongoing"].includes(event.status);
+  const ticketPercentage = Math.round(
+    ((event.totalTicketsSold || 0) / (event.totalSeats || 1)) * 100,
+  );
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-[#0B1730] to-[#1a2744]">
+    <section className="min-h-screen ">
       <div className="max-w-6xl mx-auto">
         <div className="text-white">
           {/* Header Section with Poster */}
@@ -121,13 +134,13 @@ const EventDetails = () => {
                       <h1 className="text-xl sm:text-2xl md:text-3xl font-bold capitalize">
                         {event.title}
                       </h1>
-                      
+
                       {/* Tags */}
                       <div className="flex flex-wrap items-center gap-2 mt-2">
                         <span className="text-yellow-400 text-xs font-semibold bg-yellow-200/10 px-2 py-1 rounded-full">
                           {event.eventLanguage || "Hindi"}
                         </span>
-                        <span className="text-pink-400 text-xs font-semibold bg-pink-200/10 px-2 py-1 rounded-full capitalize">
+                        <span className="bg-gradient-to-r from-pink-500 to-red-500 text-xs font-semibold bg-pink-200/10 px-2 py-1 rounded-full capitalize">
                           {event.eventType}
                         </span>
                         {ticketPercentage >= 80 && isEventAvailable && (
@@ -162,7 +175,7 @@ const EventDetails = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                         {/* Row */}
                         <div className="flex items-start gap-3">
-                          <Map className="w-5 h-5 text-pink-500" />
+                          <Map className="w-5 h-5 bg-gradient-to-r from-pink-500 to-red-500" />
                           <div>
                             <p className="text-white font-medium text-sm">
                               Venue Name
@@ -174,7 +187,7 @@ const EventDetails = () => {
                         </div>
 
                         <div className="flex items-start gap-3">
-                          <MapPin className="w-5 h-5 text-pink-500" />
+                          <MapPin className="w-5 h-5 bg-gradient-to-r from-pink-500 to-red-500" />
                           <div>
                             <p className="text-white font-medium text-sm">
                               Address
@@ -279,20 +292,23 @@ const EventDetails = () => {
                     </div>
                     <button
                       onClick={() => setShowDrawer(true)}
-                      className="bg-pink-600 px-4 py-2 rounded-lg text-sm hover:bg-pink-700"
+                      className="bg-gradient-to-r from-pink-500 to-red-500 px-4 py-2 rounded-lg text-sm hover:bg-pink-700 cursor-pointer"
                     >
                       Book Now
                     </button>
                   </div>
                 </div>
-                
+
                 {/* Performers */}
                 {event.performers && event.performers.length > 0 && (
                   <div className="px-4 mt-8">
                     <h2 className="text-lg font-semibold mb-3">Performers</h2>
                     <div className="flex gap-4 overflow-x-auto pb-3 scrollbar-hide">
                       {event.performers.map((person, idx) => (
-                        <div key={idx} className="w-24 flex-shrink-0 text-center">
+                        <div
+                          key={idx}
+                          className="w-24 flex-shrink-0 text-center"
+                        >
                           {person.image && person.image.trim() !== "" ? (
                             <Image
                               src={person.image}
@@ -306,8 +322,12 @@ const EventDetails = () => {
                               <User className="w-8 h-8 text-white/50" />
                             </div>
                           )}
-                          <p className="mt-2 text-sm font-medium">{person.name}</p>
-                          <p className="text-xs text-gray-400 capitalize">{person.type || "Artist"}</p>
+                          <p className="mt-2 text-sm font-medium">
+                            {person.name}
+                          </p>
+                          <p className="text-xs text-gray-400 capitalize">
+                            {person.type || "Artist"}
+                          </p>
                         </div>
                       ))}
                     </div>
@@ -339,12 +359,18 @@ const EventDetails = () => {
                               <Building2 className="w-8 h-8 text-white/50" />
                             </div>
                           )}
-                          <p className="mt-3 text-sm font-semibold">{person.name}</p>
+                          <p className="mt-3 text-sm font-semibold">
+                            {person.name}
+                          </p>
                           {person.email && (
-                            <p className="text-xs text-gray-400 truncate max-w-[120px]">{person.email}</p>
+                            <p className="text-xs text-gray-400 truncate max-w-[120px]">
+                              {person.email}
+                            </p>
                           )}
                           {person.phone && (
-                            <p className="text-xs text-gray-400">{person.phone}</p>
+                            <p className="text-xs text-gray-400">
+                              {person.phone}
+                            </p>
                           )}
                         </div>
                       ))}
@@ -358,24 +384,30 @@ const EventDetails = () => {
                       <div className="flex items-center gap-4">
                         <div className="flex-1">
                           <p className="text-gray-400 text-xs">Starting from</p>
-                          <p className="text-white font-bold text-xl">₹{event.ticketPrice}</p>
+                          <p className="text-white font-bold text-xl">
+                            ₹{event.ticketPrice}
+                          </p>
                         </div>
                         <Button
                           onClick={() => setShowDrawer(true)}
-                          className="flex-1 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 py-3 rounded-xl font-semibold"
+                          className="flex flex-1 items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-red-500 py-3 rounded-xl font-semibold"
                         >
-                          <Ticket className="w-5 h-5 mr-2" />
+                          <Ticket className="w-5 h-5" />
                           Book Tickets
                         </Button>
                       </div>
                     ) : (
                       <div className="text-center py-2">
                         <p className="text-red-400 font-semibold">
-                          {event.status === 'completed' ? '🎬 Event Ended' : 
-                           event.status === 'cancelled' ? '❌ Event Cancelled' : 
-                           '😔 Sold Out'}
+                          {event.status === "completed"
+                            ? "🎬 Event Ended"
+                            : event.status === "cancelled"
+                              ? "❌ Event Cancelled"
+                              : "😔 Sold Out"}
                         </p>
-                        <p className="text-gray-500 text-sm">Check out other events</p>
+                        <p className="text-gray-500 text-sm">
+                          Check out other events
+                        </p>
                       </div>
                     )}
                   </div>
@@ -388,10 +420,7 @@ const EventDetails = () => {
 
       {/* Drawer */}
       {showDrawer && event && (
-        <BookTicketDrawer
-          event={event}
-          onClose={() => setShowDrawer(false)}
-        />
+        <BookTicketDrawer event={event} onClose={() => setShowDrawer(false)} />
       )}
     </section>
   );

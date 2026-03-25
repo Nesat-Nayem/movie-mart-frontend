@@ -16,7 +16,7 @@ import { HiMail } from "react-icons/hi";
 /**
  * Modern Share Modal with Deep Linking
  * Supports: Native Web Share API, Social platforms, Copy link
- * 
+ *
  * @param {boolean} isOpen - Modal visibility state
  * @param {function} onClose - Close handler
  * @param {string} title - Content title to share
@@ -25,14 +25,14 @@ import { HiMail } from "react-icons/hi";
  * @param {string} url - URL to share (defaults to current page)
  * @param {string} contentType - Type of content: 'movie' | 'event' | 'video'
  */
-const ShareModal = ({ 
-  isOpen, 
-  onClose, 
-  title = "", 
-  description = "", 
+const ShareModal = ({
+  isOpen,
+  onClose,
+  title = "",
+  description = "",
   imageUrl = "",
   url = "",
-  contentType = "content"
+  contentType = "content",
 }) => {
   const [copied, setCopied] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
@@ -58,7 +58,9 @@ const ShareModal = ({
   // Properly encode for sharing
   const encodedUrl = encodeURIComponent(shareUrl);
   const encodedTitle = encodeURIComponent(title);
-  const encodedDescription = encodeURIComponent(description || `Check out this ${contentType}: ${title}`);
+  const encodedDescription = encodeURIComponent(
+    description || `Check out this ${contentType}: ${title}`,
+  );
   const shareText = `${title}${description ? ` - ${description}` : ""}`;
   const encodedShareText = encodeURIComponent(`${shareText}\n${shareUrl}`);
   const encodedImage = encodeURIComponent(imageUrl);
@@ -66,9 +68,9 @@ const ShareModal = ({
   // Content type labels
   const contentLabels = {
     movie: "Movie",
-    event: "Event", 
+    event: "Event",
     video: "Video",
-    content: "Content"
+    content: "Content",
   };
 
   // Social share links with proper deep linking
@@ -120,7 +122,7 @@ const ShareModal = ({
       icon: FaPinterestP,
       color: "bg-[#E60023]",
       hoverColor: "hover:bg-[#CC001F]",
-      url: imageUrl 
+      url: imageUrl
         ? `https://pinterest.com/pin/create/button/?url=${encodedUrl}&media=${encodedImage}&description=${encodedTitle}`
         : `https://pinterest.com/pin/create/button/?url=${encodedUrl}&description=${encodedTitle}`,
     },
@@ -178,34 +180,34 @@ const ShareModal = ({
     const height = 400;
     const left = (window.innerWidth - width) / 2;
     const top = (window.innerHeight - height) / 2;
-    
+
     window.open(
       link.url,
       `share-${link.name}`,
-      `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,resizable=yes,scrollbars=yes`
+      `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,resizable=yes,scrollbars=yes`,
     );
   };
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+    <div
+      className="fixed cursor-pointer inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div 
+      <div
         className="bg-gradient-to-br from-[#0B1730] to-[#0a0f1e] border border-white/10 p-6 rounded-2xl w-full max-w-md relative shadow-2xl animate-in fade-in zoom-in duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
+          className="absolute  cursor-pointer top-4 right-4 text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
         >
           <X size={20} />
         </button>
 
         {/* Header */}
         <div className="mb-6">
-          <h2 className="text-xl font-bold text-white mb-1">
+          <h2 className="text-xl  font-bold text-white mb-1">
             Share this {contentLabels[contentType]}
           </h2>
           <p className="text-sm text-gray-400 line-clamp-1">{title}</p>
@@ -215,7 +217,7 @@ const ShareModal = ({
         {canNativeShare && (
           <button
             onClick={handleNativeShare}
-            className="w-full mb-4 py-3 px-4 bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 rounded-xl font-semibold text-white flex items-center justify-center gap-2 transition-all"
+            className="w-full cursor-pointer mb-4 py-3 px-4 bg-gradient-to-r from-pink-600 to-red-600 hover:from-pink-700 hover:to-red-700 rounded-xl font-semibold text-white flex items-center justify-center gap-2 transition-all"
           >
             <Link2 size={18} />
             Share via Device

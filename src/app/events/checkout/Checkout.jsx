@@ -3,9 +3,19 @@
 import { useState, useEffect } from "react";
 import Button from "@/app/components/Button";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FaArrowLeft, FaTicketAlt, FaCalendarAlt, FaMapMarkerAlt, FaLock, FaShieldAlt } from "react-icons/fa";
+import {
+  FaArrowLeft,
+  FaTicketAlt,
+  FaCalendarAlt,
+  FaMapMarkerAlt,
+  FaLock,
+  FaShieldAlt,
+} from "react-icons/fa";
 import { useAuth } from "@/context/AuthContext";
-import { useCreatePaymentOrderMutation, useLazyVerifyPaymentQuery } from "../../../../store/eventsApi";
+import {
+  useCreatePaymentOrderMutation,
+  useLazyVerifyPaymentQuery,
+} from "../../../../store/eventsApi";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import PaymentSuccessModal from "./PaymentSuccessModal";
@@ -15,12 +25,12 @@ const Checkout = () => {
   const searchParams = useSearchParams();
   const eventId = searchParams.get("eventId");
   const { user, isAuthenticated } = useAuth();
-  
+
   const [bookingDetails, setBookingDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successData, setSuccessData] = useState(null);
-  
+
   const [createPaymentOrder] = useCreatePaymentOrderMutation();
   const [verifyPayment] = useLazyVerifyPaymentQuery();
 
@@ -32,8 +42,8 @@ const Checkout = () => {
 
   // Load Razorpay script
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.async = true;
     document.body.appendChild(script);
     return () => {
@@ -99,14 +109,14 @@ const Checkout = () => {
 
     try {
       // Get user's country code
-      const countryCode = localStorage.getItem('userCountry') || 'IN';
-      
+      const countryCode = localStorage.getItem("userCountry") || "IN";
+
       // Create payment order
       const orderData = {
         userId: user._id,
         quantity: bookingDetails.quantity,
         seatType: bookingDetails.seatType,
-        eventCategory: bookingDetails.eventCategory || 'Ticket Booking',
+        eventCategory: bookingDetails.eventCategory || "Ticket Booking",
         countryCode,
         customerDetails: {
           name: form.name,
@@ -121,8 +131,9 @@ const Checkout = () => {
       }).unwrap();
 
       if (response.success && response.data?.razorpayOrder) {
-        const { orderId, amount, currency, keyId } = response.data.razorpayOrder;
-        
+        const { orderId, amount, currency, keyId } =
+          response.data.razorpayOrder;
+
         // Store booking ID for verification
         localStorage.setItem("pendingBookingId", response.data.booking._id);
 
@@ -140,7 +151,7 @@ const Checkout = () => {
             contact: form.phone,
           },
           theme: {
-            color: '#ec4899',
+            color: "#ec4899",
           },
           handler: async function (response) {
             // Payment successful - verify on backend
@@ -151,11 +162,11 @@ const Checkout = () => {
             });
           },
           modal: {
-            ondismiss: function() {
+            ondismiss: function () {
               setIsLoading(false);
               toast.error("Payment cancelled");
-            }
-          }
+            },
+          },
         };
 
         const razorpay = new window.Razorpay(options);
@@ -174,16 +185,19 @@ const Checkout = () => {
   const handlePaymentVerification = async (paymentData) => {
     try {
       // Verify payment signature on backend
-      const verifyResult = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events/payment/verify`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const verifyResult = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/events/payment/verify`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(paymentData),
         },
-        body: JSON.stringify(paymentData),
-      });
+      );
 
       const result = await verifyResult.json();
-      
+
       if (result.success) {
         toast.success("Payment successful!");
         localStorage.removeItem("pendingEventBooking");
@@ -232,164 +246,190 @@ const Checkout = () => {
 
   return (
     <>
-      <PaymentSuccessModal 
+      <PaymentSuccessModal
         isOpen={showSuccessModal}
         bookingData={successData}
         onClose={() => setShowSuccessModal(false)}
       />
-      
-      <section className="min-h-screen bg-gradient-to-b from-[#0B1730] to-[#1a2744] py-6">
-      <div className="max-w-2xl mx-auto px-4">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <button
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20 cursor-pointer transition-colors"
-            onClick={() => router.back()}
-          >
-            <FaArrowLeft className="text-white" />
-          </button>
-          <h1 className="text-xl font-bold text-white">Checkout</h1>
-        </div>
 
-        <div className="grid md:grid-cols-5 gap-6">
-          {/* Left Column - Event Summary */}
-          <div className="md:col-span-2">
-            <div className="bg-white/5 backdrop-blur-md border border-gray-700/50 rounded-2xl overflow-hidden sticky top-6">
-              {/* Event Image */}
-              {bookingDetails.posterImage && (
-                <div className="relative h-40 overflow-hidden">
-                  <Image
-                    src={bookingDetails.posterImage}
-                    alt={bookingDetails.eventTitle}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B1730] to-transparent" />
-                </div>
-              )}
-              
-              <div className="p-4">
-                <h2 className="text-white font-bold text-lg line-clamp-2">
-                  {bookingDetails.eventTitle}
-                </h2>
-                
-                <div className="mt-4 space-y-3">
-                  <div className="flex items-center gap-3 text-gray-300 text-sm">
-                    <FaCalendarAlt className="text-pink-400" />
-                    <span>{formatDate(bookingDetails.eventDate)} • {formatTime(bookingDetails.eventTime)}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 text-gray-300 text-sm">
-                    <FaMapMarkerAlt className="text-pink-400" />
-                    <span>{bookingDetails.venue}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 text-gray-300 text-sm">
-                    <FaTicketAlt className="text-pink-400" />
-                    <span>{bookingDetails.quantity} x {bookingDetails.seatType} Ticket</span>
-                  </div>
-                </div>
+      <section className="min-h-screen  py-6">
+        <div className="max-w-2xl mx-auto px-4">
+          {/* Header */}
+          <div className="flex items-center gap-3 mb-6">
+            <button
+              className="p-2 rounded-full bg-white/10 hover:bg-white/20 cursor-pointer transition-colors"
+              onClick={() => router.back()}
+            >
+              <FaArrowLeft className="text-white" />
+            </button>
+            <h1 className="text-xl font-bold text-white">Checkout</h1>
+          </div>
 
-                {/* Price Breakdown */}
-                <div className="mt-6 pt-4 border-t border-gray-700/50 space-y-2">
-                  <div className="flex justify-between text-gray-400 text-sm">
-                    <span>Tickets ({bookingDetails.quantity} x ₹{bookingDetails.unitPrice})</span>
-                    <span>₹{bookingDetails.totalAmount}</span>
+          <div className="grid md:grid-cols-5 gap-6">
+            {/* Left Column - Event Summary */}
+            <div className="md:col-span-2">
+              <div className="bg-white/5 backdrop-blur-md border border-gray-700/50 rounded-2xl overflow-hidden sticky top-6">
+                {/* Event Image */}
+                {bookingDetails.posterImage && (
+                  <div className="relative h-40 overflow-hidden">
+                    <Image
+                      src={bookingDetails.posterImage}
+                      alt={bookingDetails.eventTitle}
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B1730] to-transparent" />
                   </div>
-                  <div className="flex justify-between text-white font-bold text-lg pt-2 border-t border-gray-700/50">
-                    <span>Total</span>
-                    <span className="text-pink-400">₹{bookingDetails.finalAmount}</span>
+                )}
+
+                <div className="p-4">
+                  <h2 className="text-white font-bold text-lg line-clamp-2">
+                    {bookingDetails.eventTitle}
+                  </h2>
+
+                  <div className="mt-4 space-y-3">
+                    <div className="flex items-center gap-3 text-gray-300 text-sm">
+                      <FaCalendarAlt className="text-pink-400" />
+                      <span>
+                        {formatDate(bookingDetails.eventDate)} •{" "}
+                        {formatTime(bookingDetails.eventTime)}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-gray-300 text-sm">
+                      <FaMapMarkerAlt className="text-pink-400" />
+                      <span>{bookingDetails.venue}</span>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-gray-300 text-sm">
+                      <FaTicketAlt className="text-pink-400" />
+                      <span>
+                        {bookingDetails.quantity} x {bookingDetails.seatType}{" "}
+                        Ticket
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Price Breakdown */}
+                  <div className="mt-6 pt-4 border-t border-gray-700/50 space-y-2">
+                    <div className="flex justify-between text-gray-400 text-sm">
+                      <span>
+                        Tickets ({bookingDetails.quantity} x ₹
+                        {bookingDetails.unitPrice})
+                      </span>
+                      <span>₹{bookingDetails.totalAmount}</span>
+                    </div>
+                    <div className="flex justify-between text-white font-bold text-lg pt-2 border-t border-gray-700/50">
+                      <span>Total</span>
+                      <span className="text-pink-400">
+                        ₹{bookingDetails.finalAmount}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Right Column - Form */}
-          <div className="md:col-span-3">
-            <div className="bg-white/5 backdrop-blur-md border border-gray-700/50 rounded-2xl p-6">
-              <h3 className="text-white font-bold text-lg mb-6 flex items-center gap-2">
-                <FaShieldAlt className="text-green-400" />
-                Contact Details
-              </h3>
+            {/* Right Column - Form */}
+            <div className="md:col-span-3">
+              <div className="bg-white/5 backdrop-blur-md border border-gray-700/50 rounded-2xl p-6">
+                <h3 className="text-white font-bold text-lg mb-6 flex items-center gap-2">
+                  <FaShieldAlt className="text-green-400" />
+                  Contact Details
+                </h3>
 
-              <form onSubmit={(e) => e.preventDefault()} className="space-y-5">
-                <div>
-                  <label className="block text-gray-400 text-sm mb-2">Full Name *</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={form.name}
-                    onChange={handleChange}
-                    placeholder="Enter your full name"
-                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-colors"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-gray-400 text-sm mb-2">Email Address *</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={form.email}
-                    onChange={handleChange}
-                    placeholder="Enter your email"
-                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-colors"
-                    required
-                  />
-                  <p className="text-gray-500 text-xs mt-1">Tickets will be sent to this email</p>
-                </div>
-
-                <div>
-                  <label className="block text-gray-400 text-sm mb-2">Phone Number *</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={form.phone}
-                    onChange={handleChange}
-                    placeholder="Enter your phone number"
-                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-colors"
-                    required
-                  />
-                </div>
-
-                {/* Security Note */}
-                <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 flex items-start gap-3">
-                  <FaLock className="text-green-400 mt-0.5" />
+                <form
+                  onSubmit={(e) => e.preventDefault()}
+                  className="space-y-5"
+                >
                   <div>
-                    <p className="text-green-400 font-medium text-sm">Secure Payment</p>
-                    <p className="text-gray-400 text-xs mt-1">
-                      Your payment information is encrypted and securely processed by Razorpay.
+                    <label className="block text-gray-400 text-sm mb-2">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={form.name}
+                      onChange={handleChange}
+                      placeholder="Enter your full name"
+                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-colors"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-400 text-sm mb-2">
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={form.email}
+                      onChange={handleChange}
+                      placeholder="Enter your email"
+                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-colors"
+                      required
+                    />
+                    <p className="text-gray-500 text-xs mt-1">
+                      Tickets will be sent to this email
                     </p>
                   </div>
-                </div>
 
-                {/* Pay Button */}
-                <Button
-                  className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 py-4 rounded-xl font-semibold text-lg shadow-lg mt-6"
-                  onClick={handlePayment}
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <span className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></span>
-                      Processing...
-                    </span>
-                  ) : (
-                    `Pay ₹${bookingDetails.finalAmount}`
-                  )}
-                </Button>
+                  <div>
+                    <label className="block text-gray-400 text-sm mb-2">
+                      Phone Number *
+                    </label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={form.phone}
+                      onChange={handleChange}
+                      placeholder="Enter your phone number"
+                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-colors"
+                      required
+                    />
+                  </div>
 
-                <p className="text-gray-500 text-xs text-center">
-                  By clicking Pay, you agree to our Terms of Service and Privacy Policy
-                </p>
-              </form>
+                  {/* Security Note */}
+                  <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 flex items-start gap-3">
+                    <FaLock className="text-green-400 mt-0.5" />
+                    <div>
+                      <p className="text-green-400 font-medium text-sm">
+                        Secure Payment
+                      </p>
+                      <p className="text-gray-400 text-xs mt-1">
+                        Your payment information is encrypted and securely
+                        processed by Razorpay.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Pay Button */}
+                  <Button
+                    className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 py-4 rounded-xl font-semibold text-lg shadow-lg mt-6"
+                    onClick={handlePayment}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></span>
+                        Processing...
+                      </span>
+                    ) : (
+                      `Pay ₹${bookingDetails.finalAmount}`
+                    )}
+                  </Button>
+
+                  <p className="text-gray-500 text-xs text-center">
+                    By clicking Pay, you agree to our Terms of Service and
+                    Privacy Policy
+                  </p>
+                </form>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
     </>
   );
 };

@@ -3,11 +3,11 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/app/components/Button";
-import { 
-  FaArrowLeft, 
-  FaTicketAlt, 
-  FaDownload, 
-  FaCalendarAlt, 
+import {
+  FaArrowLeft,
+  FaTicketAlt,
+  FaDownload,
+  FaCalendarAlt,
   FaMapMarkerAlt,
   FaClock,
   FaUser,
@@ -17,13 +17,16 @@ import {
   FaHourglassHalf,
   FaChevronRight,
   FaTimes,
-  FaInfoCircle
+  FaInfoCircle,
 } from "react-icons/fa";
 import { useAuth } from "@/context/AuthContext";
-import { useGetUserBookingsQuery, useGetETicketQuery } from "../../../../store/eventsApi";
+import {
+  useGetUserBookingsQuery,
+  useGetETicketQuery,
+} from "../../../../store/eventsApi";
 import Image from "next/image";
 
-const   EventTicket = () => {
+const EventTicket = () => {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
   const [selectedBooking, setSelectedBooking] = useState(null);
@@ -31,7 +34,12 @@ const   EventTicket = () => {
   const ticketRef = useRef(null);
 
   // Fetch user bookings
-  const { data: bookingsData, isLoading, isError, refetch } = useGetUserBookingsQuery(user?._id, {
+  const {
+    data: bookingsData,
+    isLoading,
+    isError,
+    refetch,
+  } = useGetUserBookingsQuery(user?._id, {
     skip: !user?._id,
   });
 
@@ -62,21 +70,37 @@ const   EventTicket = () => {
     switch (status) {
       case "confirmed":
       case "completed":
-        return { bg: "bg-green-500/20", text: "text-green-400", icon: FaCheckCircle };
+        return {
+          bg: "bg-green-500/20",
+          text: "text-green-400",
+          icon: FaCheckCircle,
+        };
       case "pending":
-        return { bg: "bg-yellow-500/20", text: "text-yellow-400", icon: FaHourglassHalf };
+        return {
+          bg: "bg-yellow-500/20",
+          text: "text-yellow-400",
+          icon: FaHourglassHalf,
+        };
       case "cancelled":
       case "failed":
-        return { bg: "bg-red-500/20", text: "text-red-400", icon: FaTimesCircle };
+        return {
+          bg: "bg-red-500/20",
+          text: "text-red-400",
+          icon: FaTimesCircle,
+        };
       default:
-        return { bg: "bg-gray-500/20", text: "text-gray-400", icon: FaInfoCircle };
+        return {
+          bg: "bg-gray-500/20",
+          text: "text-gray-400",
+          icon: FaInfoCircle,
+        };
     }
   };
 
   // Download ticket as image
   const downloadTicket = async () => {
     if (!ticketRef.current) return;
-    
+
     try {
       // Dynamic import of html2canvas
       const html2canvas = (await import("html2canvas")).default;
@@ -85,7 +109,7 @@ const   EventTicket = () => {
         scale: 2,
         useCORS: true,
       });
-      
+
       const link = document.createElement("a");
       link.download = `event-ticket-${selectedBooking?.bookingReference || "ticket"}.png`;
       link.href = canvas.toDataURL("image/png");
@@ -111,13 +135,17 @@ const   EventTicket = () => {
   // Redirect if not authenticated
   if (!isAuthenticated) {
     return (
-      <section className="min-h-screen bg-gradient-to-b from-[#0B1730] to-[#1a2744] py-8">
+      <section className="min-h-screen  py-8">
         <div className="max-w-lg mx-auto px-4">
           <div className="text-center py-20">
             <FaTicketAlt className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-white mb-2">Login Required</h2>
-            <p className="text-gray-400 mb-6">Please login to view your tickets</p>
-            <Button 
+            <h2 className="text-xl font-bold text-white mb-2">
+              Login Required
+            </h2>
+            <p className="text-gray-400 mb-6">
+              Please login to view your tickets
+            </p>
+            <Button
               onClick={() => router.push("/login")}
               className="bg-gradient-to-r from-pink-500 to-purple-600"
             >
@@ -130,7 +158,7 @@ const   EventTicket = () => {
   }
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-[#0B1730] to-[#1a2744] py-6">
+    <section className="min-h-screen  py-6">
       <div className="max-w-lg mx-auto px-4">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
@@ -142,7 +170,9 @@ const   EventTicket = () => {
           </button>
           <div>
             <h1 className="text-xl font-bold text-white">My Event Tickets</h1>
-            <p className="text-gray-400 text-sm">{bookings.length} ticket(s) found</p>
+            <p className="text-gray-400 text-sm">
+              {bookings.length} ticket(s) found
+            </p>
           </div>
         </div>
 
@@ -162,9 +192,13 @@ const   EventTicket = () => {
             <div className="w-20 h-20 rounded-full bg-gray-800/50 flex items-center justify-center mx-auto mb-4">
               <FaTicketAlt className="w-10 h-10 text-gray-600" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">No Tickets Found</h2>
-            <p className="text-gray-400 mb-6">You haven't booked any event tickets yet</p>
-            <Button 
+            <h2 className="text-xl font-bold text-white mb-2">
+              No Tickets Found
+            </h2>
+            <p className="text-gray-400 mb-6">
+              You haven't booked any event tickets yet
+            </p>
+            <Button
               onClick={() => router.push("/events")}
               className="bg-gradient-to-r from-pink-500 to-purple-600"
             >
@@ -209,7 +243,7 @@ const   EventTicket = () => {
                       <h3 className="text-white font-semibold text-base line-clamp-1">
                         {event?.title || "Event"}
                       </h3>
-                      
+
                       <div className="flex items-center gap-2 text-gray-400 text-xs mt-1">
                         <FaCalendarAlt className="text-pink-400" />
                         <span>{formatDate(event?.startDate)}</span>
@@ -217,18 +251,25 @@ const   EventTicket = () => {
 
                       <div className="flex items-center gap-2 text-gray-400 text-xs mt-1">
                         <FaMapMarkerAlt className="text-pink-400" />
-                        <span className="line-clamp-1">{event?.location?.venueName}</span>
+                        <span className="line-clamp-1">
+                          {event?.location?.venueName}
+                        </span>
                       </div>
 
                       <div className="flex items-center justify-between mt-2">
-                        <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${status.bg}`}>
+                        <div
+                          className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${status.bg}`}
+                        >
                           <StatusIcon className={`w-3 h-3 ${status.text}`} />
-                          <span className={`text-xs font-medium ${status.text} capitalize`}>
+                          <span
+                            className={`text-xs font-medium ${status.text} capitalize`}
+                          >
                             {booking.paymentStatus}
                           </span>
                         </div>
                         <span className="text-white font-semibold">
-                          {booking.quantity} ticket{booking.quantity > 1 ? "s" : ""}
+                          {booking.quantity} ticket
+                          {booking.quantity > 1 ? "s" : ""}
                         </span>
                       </div>
                     </div>
@@ -242,8 +283,12 @@ const   EventTicket = () => {
                   {/* Booking Reference */}
                   <div className="px-4 py-2 bg-black/20 border-t border-gray-700/50">
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-500 text-xs">Ref: {booking.bookingReference}</span>
-                      <span className="text-green-400 text-xs font-medium">₹{booking.finalAmount}</span>
+                      <span className="text-gray-500 text-xs">
+                        Ref: {booking.bookingReference}
+                      </span>
+                      <span className="text-green-400 text-xs font-medium">
+                        ₹{booking.finalAmount}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -279,39 +324,39 @@ const BarcodeGenerator = ({ value }) => {
     if (!canvasRef.current || !value) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     const text = value.toString();
-    
+
     // Canvas settings
     const barWidth = 2;
     const height = 60;
     const padding = 10;
-    
+
     // Generate a simple barcode pattern from the text
-    let pattern = '';
+    let pattern = "";
     for (let i = 0; i < text.length; i++) {
       const charCode = text.charCodeAt(i);
       // Create a unique pattern for each character
-      const binary = charCode.toString(2).padStart(8, '0');
-      pattern += binary + '0'; // Add separator
+      const binary = charCode.toString(2).padStart(8, "0");
+      pattern += binary + "0"; // Add separator
     }
-    
+
     // Add start and stop patterns
-    pattern = '110' + pattern + '1100011101011';
-    
+    pattern = "110" + pattern + "1100011101011";
+
     const totalWidth = pattern.length * barWidth + padding * 2;
     canvas.width = totalWidth;
     canvas.height = height;
-    
+
     // Clear canvas
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, totalWidth, height);
-    
+
     // Draw barcode
-    ctx.fillStyle = '#000000';
+    ctx.fillStyle = "#000000";
     let x = padding;
     for (let i = 0; i < pattern.length; i++) {
-      if (pattern[i] === '1') {
+      if (pattern[i] === "1") {
         ctx.fillRect(x, 5, barWidth, height - 10);
       }
       x += barWidth;
@@ -319,20 +364,27 @@ const BarcodeGenerator = ({ value }) => {
   }, [value]);
 
   return (
-    <canvas 
-      ref={canvasRef} 
-      style={{ 
-        width: '100%', 
-        height: '60px', 
-        display: 'block',
-        imageRendering: 'pixelated'
-      }} 
+    <canvas
+      ref={canvasRef}
+      style={{
+        width: "100%",
+        height: "60px",
+        display: "block",
+        imageRendering: "pixelated",
+      }}
     />
   );
 };
 
 // E-Ticket Modal Component
-const ETicketModal = ({ booking, onClose, onDownload, ticketRef, formatDate, formatTime }) => {
+const ETicketModal = ({
+  booking,
+  onClose,
+  onDownload,
+  ticketRef,
+  formatDate,
+  formatTime,
+}) => {
   const event = booking.eventId;
   const eTicket = booking.eTicket;
 
@@ -350,100 +402,150 @@ const ETicketModal = ({ booking, onClose, onDownload, ticketRef, formatDate, for
         </div>
 
         {/* E-Ticket - Using inline styles with emoji for html2canvas compatibility */}
-        <div 
-          ref={ticketRef} 
+        <div
+          ref={ticketRef}
           style={{
             background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)",
             borderRadius: "24px",
             overflow: "hidden",
             boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
-            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            fontFamily:
+              "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
           }}
         >
           {/* Header with event photo background */}
-          <div style={{
-            position: "relative",
-            minHeight: "140px",
-            overflow: "hidden",
-          }}>
+          <div
+            style={{
+              position: "relative",
+              minHeight: "140px",
+              overflow: "hidden",
+            }}
+          >
             {/* Event Photo Background */}
             {event?.posterImage && (
-              <div style={{
-                position: "absolute",
-                inset: 0,
-                backgroundImage: `url(${event.posterImage})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                filter: "blur(0px)",
-              }}></div>
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  backgroundImage: `url(${event.posterImage})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  filter: "blur(0px)",
+                }}
+              ></div>
             )}
             {/* Gradient Overlay */}
-            <div style={{ 
-              position: "absolute", 
-              inset: 0, 
-              background: event?.posterImage 
-                ? "linear-gradient(135deg, rgba(236, 72, 153, 0.85) 0%, rgba(168, 85, 247, 0.85) 50%, rgba(99, 102, 241, 0.85) 100%)"
-                : "linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #6366f1 100%)"
-            }}></div>
-            
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: event?.posterImage
+                  ? "linear-gradient(135deg, rgba(236, 72, 153, 0.85) 0%, rgba(168, 85, 247, 0.85) 50%, rgba(99, 102, 241, 0.85) 100%)"
+                  : "linear-gradient(135deg, #ec4899 0%, #a855f7 50%, #6366f1 100%)",
+              }}
+            ></div>
+
             <div style={{ position: "relative", zIndex: 10, padding: "20px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  gap: "12px",
+                }}
+              >
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ 
-                    color: "rgba(255,255,255,0.95)", 
-                    fontSize: "11px", 
-                    textTransform: "uppercase", 
-                    letterSpacing: "2px",
-                    fontWeight: "600",
-                    display: "block",
-                    marginBottom: "8px"
-                  }}>
+                  <span
+                    style={{
+                      color: "rgba(255,255,255,0.95)",
+                      fontSize: "11px",
+                      textTransform: "uppercase",
+                      letterSpacing: "2px",
+                      fontWeight: "600",
+                      display: "block",
+                      marginBottom: "8px",
+                    }}
+                  >
                     E-TICKET
                   </span>
-                  <h2 style={{ 
-                    color: "#ffffff", 
-                    fontWeight: "bold", 
-                    fontSize: "18px", 
-                    lineHeight: "1.3",
-                    margin: 0,
-                    wordWrap: "break-word",
-                    overflowWrap: "break-word",
-                    textShadow: "0 2px 4px rgba(0,0,0,0.3)"
-                  }}>
+                  <h2
+                    style={{
+                      color: "#ffffff",
+                      fontWeight: "bold",
+                      fontSize: "18px",
+                      lineHeight: "1.3",
+                      margin: 0,
+                      wordWrap: "break-word",
+                      overflowWrap: "break-word",
+                      textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                    }}
+                  >
                     {event?.title}
                   </h2>
                 </div>
-                <div style={{
-                  backgroundColor: "rgba(255, 255, 255, 0.3)",
-                  borderRadius: "8px",
-                  padding: "0 14px",
-                  flexShrink: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: "32px",
-                  backdropFilter: "blur(10px)",
-                }}>
-                  <span style={{ 
-                    color: "#ffffff", 
-                    fontSize: "12px", 
-                    fontWeight: "700", 
-                    lineHeight: "32px", 
-                    display: "inline-block",
-                    verticalAlign: "middle",
-                    marginTop: "-2px"
-                  }}>{booking.seatType}</span>
+                <div
+                  style={{
+                    backgroundColor: "rgba(255, 255, 255, 0.3)",
+                    borderRadius: "8px",
+                    padding: "0 14px",
+                    flexShrink: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: "32px",
+                    backdropFilter: "blur(10px)",
+                  }}
+                >
+                  <span
+                    style={{
+                      color: "#ffffff",
+                      fontSize: "12px",
+                      fontWeight: "700",
+                      lineHeight: "32px",
+                      display: "inline-block",
+                      verticalAlign: "middle",
+                      marginTop: "-2px",
+                    }}
+                  >
+                    {booking.seatType}
+                  </span>
                 </div>
               </div>
             </div>
-            
+
             {/* Decorative circles */}
-            <div style={{ position: "absolute", bottom: "-16px", left: "24px", width: "32px", height: "32px", backgroundColor: "#1a1a2e", borderRadius: "50%" }}></div>
-            <div style={{ position: "absolute", bottom: "-16px", right: "24px", width: "32px", height: "32px", backgroundColor: "#1a1a2e", borderRadius: "50%" }}></div>
+            <div
+              style={{
+                position: "absolute",
+                bottom: "-16px",
+                left: "24px",
+                width: "32px",
+                height: "32px",
+                backgroundColor: "#1a1a2e",
+                borderRadius: "50%",
+              }}
+            ></div>
+            <div
+              style={{
+                position: "absolute",
+                bottom: "-16px",
+                right: "24px",
+                width: "32px",
+                height: "32px",
+                backgroundColor: "#1a1a2e",
+                borderRadius: "50%",
+              }}
+            ></div>
           </div>
 
           {/* Dashed line */}
-          <div style={{ padding: "0 40px", marginTop: "-8px", position: "relative" }}>
+          <div
+            style={{
+              padding: "0 40px",
+              marginTop: "-8px",
+              position: "relative",
+            }}
+          >
             <div style={{ borderTop: "2px dashed #4b5563" }}></div>
           </div>
 
@@ -451,69 +553,275 @@ const ETicketModal = ({ booking, onClose, onDownload, ticketRef, formatDate, for
           <div style={{ padding: "20px" }}>
             {/* Date & Time Row */}
             <div style={{ display: "flex", gap: "12px", marginBottom: "12px" }}>
-              <div style={{ flex: 1, backgroundColor: "rgba(255, 255, 255, 0.05)", borderRadius: "12px", padding: "12px" }}>
+              <div
+                style={{
+                  flex: 1,
+                  backgroundColor: "rgba(255, 255, 255, 0.05)",
+                  borderRadius: "12px",
+                  padding: "12px",
+                }}
+              >
                 <div style={{ marginBottom: "4px" }}>
-                  <span style={{ fontSize: "11px", textTransform: "uppercase", color: "#f472b6", fontWeight: "600", letterSpacing: "0.5px" }}>📅 DATE</span>
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      textTransform: "uppercase",
+                      color: "#f472b6",
+                      fontWeight: "600",
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    📅 DATE
+                  </span>
                 </div>
-                <p style={{ color: "#ffffff", fontWeight: "600", fontSize: "14px", margin: 0 }}>{formatDate(event?.startDate)}</p>
+                <p
+                  style={{
+                    color: "#ffffff",
+                    fontWeight: "600",
+                    fontSize: "14px",
+                    margin: 0,
+                  }}
+                >
+                  {formatDate(event?.startDate)}
+                </p>
               </div>
-              <div style={{ flex: 1, backgroundColor: "rgba(255, 255, 255, 0.05)", borderRadius: "12px", padding: "12px" }}>
+              <div
+                style={{
+                  flex: 1,
+                  backgroundColor: "rgba(255, 255, 255, 0.05)",
+                  borderRadius: "12px",
+                  padding: "12px",
+                }}
+              >
                 <div style={{ marginBottom: "4px" }}>
-                  <span style={{ fontSize: "11px", textTransform: "uppercase", color: "#f472b6", fontWeight: "600", letterSpacing: "0.5px" }}>🕐 TIME</span>
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      textTransform: "uppercase",
+                      color: "#f472b6",
+                      fontWeight: "600",
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    🕐 TIME
+                  </span>
                 </div>
-                <p style={{ color: "#ffffff", fontWeight: "600", fontSize: "14px", margin: 0 }}>{formatTime(event?.startTime)}</p>
+                <p
+                  style={{
+                    color: "#ffffff",
+                    fontWeight: "600",
+                    fontSize: "14px",
+                    margin: 0,
+                  }}
+                >
+                  {formatTime(event?.startTime)}
+                </p>
               </div>
             </div>
 
             {/* Venue */}
-            <div style={{ backgroundColor: "rgba(255, 255, 255, 0.05)", borderRadius: "12px", padding: "12px", marginBottom: "12px" }}>
+            <div
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                borderRadius: "12px",
+                padding: "12px",
+                marginBottom: "12px",
+              }}
+            >
               <div style={{ marginBottom: "4px" }}>
-                <span style={{ fontSize: "11px", textTransform: "uppercase", color: "#f472b6", fontWeight: "600", letterSpacing: "0.5px" }}>📍 VENUE</span>
+                <span
+                  style={{
+                    fontSize: "11px",
+                    textTransform: "uppercase",
+                    color: "#f472b6",
+                    fontWeight: "600",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  📍 VENUE
+                </span>
               </div>
-              <p style={{ color: "#ffffff", fontWeight: "600", fontSize: "14px", margin: "0 0 4px 0" }}>{event?.location?.venueName}</p>
-              <p style={{ color: "#9ca3af", fontSize: "12px", margin: 0 }}>{event?.location?.address}, {event?.location?.city}</p>
+              <p
+                style={{
+                  color: "#ffffff",
+                  fontWeight: "600",
+                  fontSize: "14px",
+                  margin: "0 0 4px 0",
+                }}
+              >
+                {event?.location?.venueName}
+              </p>
+              <p style={{ color: "#9ca3af", fontSize: "12px", margin: 0 }}>
+                {event?.location?.address}, {event?.location?.city}
+              </p>
             </div>
 
             {/* Ticket Details Row */}
-            <div style={{ 
-              display: "flex", 
-              backgroundColor: "rgba(255, 255, 255, 0.05)", 
-              borderRadius: "12px", 
-              marginBottom: "12px",
-              overflow: "hidden"
-            }}>
+            <div
+              style={{
+                display: "flex",
+                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                borderRadius: "12px",
+                marginBottom: "12px",
+                overflow: "hidden",
+              }}
+            >
               <div style={{ flex: 1, padding: "12px", textAlign: "center" }}>
-                <p style={{ color: "#9ca3af", fontSize: "10px", textTransform: "uppercase", margin: "0 0 4px 0", fontWeight: "600" }}>TICKETS</p>
-                <p style={{ color: "#ffffff", fontWeight: "bold", fontSize: "20px", margin: 0 }}>{booking.quantity}</p>
+                <p
+                  style={{
+                    color: "#9ca3af",
+                    fontSize: "10px",
+                    textTransform: "uppercase",
+                    margin: "0 0 4px 0",
+                    fontWeight: "600",
+                  }}
+                >
+                  TICKETS
+                </p>
+                <p
+                  style={{
+                    color: "#ffffff",
+                    fontWeight: "bold",
+                    fontSize: "20px",
+                    margin: 0,
+                  }}
+                >
+                  {booking.quantity}
+                </p>
               </div>
-              <div style={{ flex: 1, padding: "12px", textAlign: "center", borderLeft: "1px solid #374151" }}>
-                <p style={{ color: "#9ca3af", fontSize: "10px", textTransform: "uppercase", margin: "0 0 4px 0", fontWeight: "600" }}>CATEGORY</p>
-                <p style={{ color: "#f472b6", fontWeight: "bold", fontSize: "12px", margin: 0, lineHeight: "1.3" }}>{booking.eventCategory || booking.seatType}</p>
+              <div
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  textAlign: "center",
+                  borderLeft: "1px solid #374151",
+                }}
+              >
+                <p
+                  style={{
+                    color: "#9ca3af",
+                    fontSize: "10px",
+                    textTransform: "uppercase",
+                    margin: "0 0 4px 0",
+                    fontWeight: "600",
+                  }}
+                >
+                  CATEGORY
+                </p>
+                <p
+                  style={{
+                    color: "#f472b6",
+                    fontWeight: "bold",
+                    fontSize: "12px",
+                    margin: 0,
+                    lineHeight: "1.3",
+                  }}
+                >
+                  {booking.eventCategory || booking.seatType}
+                </p>
               </div>
-              <div style={{ flex: 1, padding: "12px", textAlign: "center", borderLeft: "1px solid #374151" }}>
-                <p style={{ color: "#9ca3af", fontSize: "10px", textTransform: "uppercase", margin: "0 0 4px 0", fontWeight: "600" }}>AMOUNT</p>
-                <p style={{ color: "#4ade80", fontWeight: "bold", fontSize: "18px", margin: 0 }}>₹{booking.finalAmount}</p>
+              <div
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  textAlign: "center",
+                  borderLeft: "1px solid #374151",
+                }}
+              >
+                <p
+                  style={{
+                    color: "#9ca3af",
+                    fontSize: "10px",
+                    textTransform: "uppercase",
+                    margin: "0 0 4px 0",
+                    fontWeight: "600",
+                  }}
+                >
+                  AMOUNT
+                </p>
+                <p
+                  style={{
+                    color: "#4ade80",
+                    fontWeight: "bold",
+                    fontSize: "18px",
+                    margin: 0,
+                  }}
+                >
+                  ₹{booking.finalAmount}
+                </p>
               </div>
             </div>
 
             {/* Attendee */}
-            <div style={{ backgroundColor: "rgba(255, 255, 255, 0.05)", borderRadius: "12px", padding: "12px", marginBottom: "12px" }}>
+            <div
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                borderRadius: "12px",
+                padding: "12px",
+                marginBottom: "12px",
+              }}
+            >
               <div style={{ marginBottom: "4px" }}>
-                <span style={{ fontSize: "11px", textTransform: "uppercase", color: "#f472b6", fontWeight: "600", letterSpacing: "0.5px" }}> ATTENDEE</span>
+                <span
+                  style={{
+                    fontSize: "11px",
+                    textTransform: "uppercase",
+                    color: "#f472b6",
+                    fontWeight: "600",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  {" "}
+                  ATTENDEE
+                </span>
               </div>
-              <p style={{ color: "#ffffff", fontWeight: "600", fontSize: "14px", margin: "0 0 2px 0" }}>{booking.customerDetails?.name}</p>
-              <p style={{ color: "#9ca3af", fontSize: "12px", margin: 0 }}>{booking.customerDetails?.email}</p>
+              <p
+                style={{
+                  color: "#ffffff",
+                  fontWeight: "600",
+                  fontSize: "14px",
+                  margin: "0 0 2px 0",
+                }}
+              >
+                {booking.customerDetails?.name}
+              </p>
+              <p style={{ color: "#9ca3af", fontSize: "12px", margin: 0 }}>
+                {booking.customerDetails?.email}
+              </p>
             </div>
 
             {/* Booking Reference */}
-            <div style={{
-              background: "linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%)",
-              borderRadius: "12px",
-              padding: "12px",
-              border: "1px solid rgba(236, 72, 153, 0.3)",
-            }}>
-              <p style={{ color: "#f472b6", fontSize: "10px", textTransform: "uppercase", margin: "0 0 4px 0", fontWeight: "600", letterSpacing: "1px" }}>BOOKING REFERENCE</p>
-              <p style={{ color: "#ffffff", fontFamily: "monospace", fontWeight: "bold", fontSize: "16px", letterSpacing: "1px", margin: 0 }}>
+            <div
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%)",
+                borderRadius: "12px",
+                padding: "12px",
+                border: "1px solid rgba(236, 72, 153, 0.3)",
+              }}
+            >
+              <p
+                style={{
+                  color: "#f472b6",
+                  fontSize: "10px",
+                  textTransform: "uppercase",
+                  margin: "0 0 4px 0",
+                  fontWeight: "600",
+                  letterSpacing: "1px",
+                }}
+              >
+                BOOKING REFERENCE
+              </p>
+              <p
+                style={{
+                  color: "#ffffff",
+                  fontFamily: "monospace",
+                  fontWeight: "bold",
+                  fontSize: "16px",
+                  letterSpacing: "1px",
+                  margin: 0,
+                }}
+              >
                 {booking.bookingReference}
               </p>
             </div>
@@ -522,46 +830,82 @@ const ETicketModal = ({ booking, onClose, onDownload, ticketRef, formatDate, for
           {/* Barcode Section */}
           <div style={{ padding: "0 20px 20px", position: "relative" }}>
             {/* Dashed separator */}
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                marginBottom: "16px",
+              }}
+            >
               <div style={{ flex: 1, borderTop: "1px dashed #4b5563" }}></div>
               <span style={{ color: "#6b7280", fontSize: "16px" }}>⊞</span>
               <div style={{ flex: 1, borderTop: "1px dashed #4b5563" }}></div>
             </div>
 
             {/* Modern Barcode */}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-              <div style={{
-                backgroundColor: "#ffffff",
-                padding: "20px 16px",
-                borderRadius: "12px",
-                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.3)",
-                width: "100%",
-                maxWidth: "320px",
-              }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "#ffffff",
+                  padding: "20px 16px",
+                  borderRadius: "12px",
+                  boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.3)",
+                  width: "100%",
+                  maxWidth: "320px",
+                }}
+              >
                 {/* Barcode Canvas */}
                 <BarcodeGenerator value={booking.bookingReference} />
                 {/* Barcode Number */}
-                <p style={{ 
-                  color: "#1f2937", 
-                  fontSize: "12px", 
-                  marginTop: "10px", 
-                  textAlign: "center",
-                  fontFamily: "monospace",
-                  letterSpacing: "2px",
-                  fontWeight: "600"
-                }}>
+                <p
+                  style={{
+                    color: "#1f2937",
+                    fontSize: "12px",
+                    marginTop: "10px",
+                    textAlign: "center",
+                    fontFamily: "monospace",
+                    letterSpacing: "2px",
+                    fontWeight: "600",
+                  }}
+                >
                   {booking.bookingReference}
                 </p>
               </div>
-              <p style={{ color: "#9ca3af", fontSize: "12px", marginTop: "12px", textAlign: "center" }}>
+              <p
+                style={{
+                  color: "#9ca3af",
+                  fontSize: "12px",
+                  marginTop: "12px",
+                  textAlign: "center",
+                }}
+              >
                 Scan this barcode at the venue entrance
               </p>
             </div>
           </div>
 
           {/* Footer */}
-          <div style={{ backgroundColor: "rgba(0, 0, 0, 0.3)", padding: "14px 20px" }}>
-            <p style={{ color: "#6b7280", fontSize: "11px", textAlign: "center", margin: 0 }}>
+          <div
+            style={{
+              backgroundColor: "rgba(0, 0, 0, 0.3)",
+              padding: "14px 20px",
+            }}
+          >
+            <p
+              style={{
+                color: "#6b7280",
+                fontSize: "11px",
+                textAlign: "center",
+                margin: 0,
+              }}
+            >
               Keep this ticket safe. Present it at the venue for entry.
             </p>
           </div>

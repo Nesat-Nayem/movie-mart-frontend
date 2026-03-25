@@ -27,16 +27,22 @@ const BookTicketDrawer = ({ event, onClose }) => {
     if (event) {
       setTimeout(() => setIsVisible(true), 10);
       dispatch(setBookingEvent(event));
-      
+
       // Set default seat type
       if (event.seatTypes && event.seatTypes.length > 0) {
         setSelectedSeatType(event.seatTypes[0]);
-        dispatch(setSeatType({ 
-          seatType: event.seatTypes[0].name, 
-          price: event.seatTypes[0].price 
-        }));
+        dispatch(
+          setSeatType({
+            seatType: event.seatTypes[0].name,
+            price: event.seatTypes[0].price,
+          }),
+        );
       } else {
-        setSelectedSeatType({ name: "Standard", price: event.ticketPrice, availableSeats: event.availableSeats });
+        setSelectedSeatType({
+          name: "Standard",
+          price: event.ticketPrice,
+          availableSeats: event.availableSeats,
+        });
       }
     }
   }, [event, dispatch]);
@@ -50,7 +56,11 @@ const BookTicketDrawer = ({ event, onClose }) => {
   };
 
   const handleSeatCountChange = (count) => {
-    if (selectedSeatType && count <= selectedSeatType.availableSeats && count <= event.maxTicketsPerPerson) {
+    if (
+      selectedSeatType &&
+      count <= selectedSeatType.availableSeats &&
+      count <= event.maxTicketsPerPerson
+    ) {
       setSelectedSeats(count);
       dispatch(setQuantity(count));
     }
@@ -59,7 +69,7 @@ const BookTicketDrawer = ({ event, onClose }) => {
   const handleSeatTypeChange = (seatType) => {
     setSelectedSeatType(seatType);
     dispatch(setSeatType({ seatType: seatType.name, price: seatType.price }));
-    
+
     // Reset quantity if exceeds available
     if (selectedSeats > seatType.availableSeats) {
       setSelectedSeats(Math.min(selectedSeats, seatType.availableSeats));
@@ -90,27 +100,42 @@ const BookTicketDrawer = ({ event, onClose }) => {
       finalAmount: currentBooking.finalAmount,
       posterImage: event.posterImage,
     };
-    
+
     localStorage.setItem("pendingEventBooking", JSON.stringify(bookingDetails));
     router.push(`/events/checkout?eventId=${event._id}`);
   };
 
   // Get seat types or create default
-  const seatTypes = event.seatTypes && event.seatTypes.length > 0 
-    ? event.seatTypes 
-    : [{ name: "Standard", price: event.ticketPrice, availableSeats: event.availableSeats, totalSeats: event.totalSeats }];
+  const seatTypes =
+    event.seatTypes && event.seatTypes.length > 0
+      ? event.seatTypes
+      : [
+          {
+            name: "Standard",
+            price: event.ticketPrice,
+            availableSeats: event.availableSeats,
+            totalSeats: event.totalSeats,
+          },
+        ];
 
   // Get event categories (participation types) or use defaults
-  const eventCategories = event.eventCategories && event.eventCategories.length > 0
-    ? event.eventCategories
-    : ['Awardee & Represent our show', 'Sponsored', 'Ticket Booking', 'Participate'];
+  const eventCategories =
+    event.eventCategories && event.eventCategories.length > 0
+      ? event.eventCategories
+      : [
+          "Awardee & Represent our show",
+          "Sponsored",
+          "Ticket Booking",
+          "Participate",
+        ];
 
   const maxTickets = Math.min(
-    event.maxTicketsPerPerson || 10, 
-    selectedSeatType?.availableSeats || event.availableSeats
+    event.maxTicketsPerPerson || 10,
+    selectedSeatType?.availableSeats || event.availableSeats,
   );
 
-  const isEventAvailable = event.availableSeats > 0 && ['upcoming', 'ongoing'].includes(event.status);
+  const isEventAvailable =
+    event.availableSeats > 0 && ["upcoming", "ongoing"].includes(event.status);
 
   return (
     <>
@@ -133,7 +158,9 @@ const BookTicketDrawer = ({ event, onClose }) => {
         <div className="flex justify-between items-center p-5 border-b border-gray-700/50">
           <div>
             <h2 className="text-xl font-bold text-white">Book Tickets</h2>
-            <p className="text-gray-400 text-sm mt-1 line-clamp-1">{event.title}</p>
+            <p className="text-gray-400 text-sm mt-1 line-clamp-1">
+              {event.title}
+            </p>
           </div>
           <button
             onClick={handleClose}
@@ -147,8 +174,12 @@ const BookTicketDrawer = ({ event, onClose }) => {
           <div className="flex-1 flex items-center justify-center p-6">
             <div className="text-center">
               <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">Sold Out</h3>
-              <p className="text-gray-400">This event is no longer available for booking.</p>
+              <h3 className="text-xl font-semibold text-white mb-2">
+                Sold Out
+              </h3>
+              <p className="text-gray-400">
+                This event is no longer available for booking.
+              </p>
             </div>
           </div>
         ) : (
@@ -166,7 +197,7 @@ const BookTicketDrawer = ({ event, onClose }) => {
                     Max {maxTickets}
                   </span>
                 </div>
-                
+
                 <div className="flex flex-wrap justify-center gap-2">
                   {[...Array(Math.min(10, maxTickets))].map((_, i) => {
                     const count = i + 1;
@@ -175,12 +206,12 @@ const BookTicketDrawer = ({ event, onClose }) => {
                         key={count}
                         onClick={() => handleSeatCountChange(count)}
                         disabled={count > maxTickets}
-                        className={`w-10 h-10 flex items-center justify-center rounded-xl text-sm font-semibold transition-all ${
+                        className={`w-10 cursor-pointer h-10 flex items-center justify-center rounded-xl text-sm font-semibold transition-all ${
                           selectedSeats === count
-                            ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg scale-110"
+                            ? "bg-gradient-to-r from-pink-500 to-red-500 text-white shadow-lg scale-110"
                             : count > maxTickets
-                            ? "bg-gray-700/50 text-gray-500 cursor-not-allowed"
-                            : "bg-white/10 text-white hover:bg-white/20"
+                              ? "bg-gray-700/50 text-gray-500 cursor-not-allowed"
+                              : "bg-white/10 text-white hover:bg-white/20"
                         }`}
                       >
                         {count}
@@ -198,29 +229,35 @@ const BookTicketDrawer = ({ event, onClose }) => {
                     Select Ticket Type
                   </label>
                 </div>
-                
+
                 <div className="grid grid-cols-1 gap-3">
                   {seatTypes.map((seat) => (
                     <div
                       key={seat.name}
-                      onClick={() => seat.availableSeats > 0 && handleSeatTypeChange(seat)}
+                      onClick={() =>
+                        seat.availableSeats > 0 && handleSeatTypeChange(seat)
+                      }
                       className={`p-4 rounded-xl cursor-pointer transition-all border-2 ${
                         selectedSeatType?.name === seat.name
                           ? "bg-gradient-to-r from-pink-500/20 to-purple-600/20 border-pink-500"
                           : seat.availableSeats > 0
-                          ? "bg-white/5 border-transparent hover:border-pink-500/50"
-                          : "bg-gray-700/30 border-transparent cursor-not-allowed opacity-50"
+                            ? "bg-white/5 border-transparent hover:border-pink-500/50"
+                            : "bg-gray-700/30 border-transparent cursor-not-allowed opacity-50"
                       }`}
                     >
                       <div className="flex justify-between items-center">
                         <div>
-                          <p className="font-semibold text-white">{seat.name}</p>
+                          <p className="font-semibold text-white">
+                            {seat.name}
+                          </p>
                           <p className="text-gray-400 text-sm">
                             {seat.availableSeats} seats available
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-xl font-bold text-pink-400">₹{seat.price}</p>
+                          <p className="text-xl font-bold text-pink-400">
+                            ₹{seat.price}
+                          </p>
                           <p className="text-gray-500 text-xs">per ticket</p>
                         </div>
                       </div>
@@ -240,7 +277,7 @@ const BookTicketDrawer = ({ event, onClose }) => {
                 <p className="text-gray-400 text-xs mb-3">
                   Please select how you want to participate in this event
                 </p>
-                
+
                 <div className="grid grid-cols-1 gap-2">
                   {eventCategories.map((category) => (
                     <div
@@ -253,16 +290,20 @@ const BookTicketDrawer = ({ event, onClose }) => {
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                          selectedEventCategory === category
-                            ? "border-pink-500 bg-pink-500"
-                            : "border-gray-500"
-                        }`}>
+                        <div
+                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                            selectedEventCategory === category
+                              ? "border-pink-500 bg-pink-500"
+                              : "border-gray-500"
+                          }`}
+                        >
                           {selectedEventCategory === category && (
                             <div className="w-2 h-2 bg-white rounded-full" />
                           )}
                         </div>
-                        <p className="font-medium text-white text-sm">{category}</p>
+                        <p className="font-medium text-white text-sm">
+                          {category}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -280,13 +321,18 @@ const BookTicketDrawer = ({ event, onClose }) => {
                 <h3 className="text-white font-semibold mb-3">Price Summary</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between text-gray-300">
-                    <span>{selectedSeats} x {selectedSeatType?.name || "Standard"} Ticket</span>
+                    <span>
+                      {selectedSeats} x {selectedSeatType?.name || "Standard"}{" "}
+                      Ticket
+                    </span>
                     <span>₹{currentBooking.totalAmount}</span>
                   </div>
                   <div className="border-t border-gray-600 pt-2 mt-2">
                     <div className="flex justify-between text-white font-bold text-lg">
                       <span>Total</span>
-                      <span className="text-pink-400">₹{currentBooking.finalAmount}</span>
+                      <span className="text-pink-400">
+                        ₹{currentBooking.finalAmount}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -298,7 +344,11 @@ const BookTicketDrawer = ({ event, onClose }) => {
               <Button
                 className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 py-4 rounded-xl font-semibold text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleProceedToCheckout}
-                disabled={!selectedSeatType || selectedSeats < 1 || !selectedEventCategory}
+                disabled={
+                  !selectedSeatType ||
+                  selectedSeats < 1 ||
+                  !selectedEventCategory
+                }
               >
                 Proceed to Checkout • ₹{currentBooking.finalAmount}
               </Button>

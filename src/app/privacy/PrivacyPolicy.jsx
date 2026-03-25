@@ -39,7 +39,7 @@ const PrivacyPolicy = () => {
 
   return (
     <section>
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto  py-2 mt-4 lg:py-5 bg-white/5  rounded-xl">
         {/* title */}
         <div className="flex md:flex-row items-start md:items-center justify-between gap-2 px-2">
           <h2 className="text-xl md:text-3xl font-bold gradient-text py-2 lg:py-5">

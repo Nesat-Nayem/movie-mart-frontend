@@ -5,15 +5,25 @@ import Logo from "@/app/components/Logo";
 import SearchModal from "@/app/components/SearchModal";
 import LocationModal from "@/app/components/LocationModal";
 import ProfileDrawer from "@/app/components/ProfileDrawer";
-import { FaShoppingBasket, FaCalendarAlt, FaFilm, FaBars, FaTimes } from "react-icons/fa";
-
+import {
+  FaShoppingBasket,
+  FaCalendarAlt,
+  FaFilm,
+  FaBars,
+  FaTimes,
+  FaCentos,
+  FaChromecast,
+} from "react-icons/fa";
+import { usePathname } from "next/navigation";
+import { FaClapperboard } from "react-icons/fa6";
 const Navbar = () => {
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { icon: FaShoppingBasket, label: "Film Trade", href: "/film-mart" },
-    { icon: FaCalendarAlt, label: "Events", href: "/events" },
-    { icon: FaFilm, label: "Watch Movies", href: "/watch-movies" },
+    { icon: FaClapperboard, label: "Film Trade", href: "/film-mart" },
+    { icon: FaCentos, label: "Events", href: "/events" },
+    { icon: FaChromecast, label: "Watch Movies", href: "/watch-movies" },
   ];
 
   return (
@@ -28,12 +38,17 @@ const Navbar = () => {
           </div>
 
           {/* Center Section - Nav Items */}
-          <nav className="flex items-center space-x-2">
+          <nav className="flex items-center space-x-2 ">
             {navItems.map((item, index) => (
               <Link
                 key={index}
                 href={item.href}
-                className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium hover:text-red-400 hover:bg-gray-700/50 transition-all duration-200 whitespace-nowrap"
+                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap
+  ${
+    pathname === item.href
+      ? "text-red-400 bg-gray-700/50  shadow-md"
+      : "text-gray-300 hover:text-red-400 hover:bg-gray-700/50"
+  }`}
               >
                 <item.icon className="text-xl" />
                 <span>{item.label}</span>
@@ -56,7 +71,7 @@ const Navbar = () => {
           </div>
 
           {/* Center - Compact Nav (Icons Only on smaller tablets) */}
-          <nav className="flex items-center space-x-1 mx-4">
+          <nav className="hidden ">
             {navItems.map((item, index) => (
               <Link
                 key={index}
@@ -93,7 +108,11 @@ const Navbar = () => {
               className="p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition cursor-pointer"
               aria-label="Toggle menu"
             >
-              {mobileMenuOpen ? <FaTimes className="text-xl" /> : <FaBars className="text-xl" />}
+              {mobileMenuOpen ? (
+                <FaTimes className="text-xl" />
+              ) : (
+                <FaBars className="text-xl" />
+              )}
             </button>
           </div>
         </div>

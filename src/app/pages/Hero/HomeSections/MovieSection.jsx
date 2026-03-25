@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import React from "react";
-import { FaChevronRight, FaClock, FaLanguage, FaThumbsUp, FaCalendarAlt } from "react-icons/fa";
+import {
+  FaChevronRight,
+  FaClock,
+  FaLanguage,
+  FaThumbsUp,
+  FaCalendarAlt,
+  FaPlay,
+} from "react-icons/fa";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
 import { useGetMoviesByHomeSectionQuery } from "../../../../../store/moviesApi";
@@ -12,80 +19,124 @@ import "swiper/css/navigation";
 
 // Trade Status Badge Config
 const tradeStatusConfig = {
-  get_it_now: { label: "Get It Now", bg: "bg-green-500", textColor: "text-white" },
+  get_it_now: {
+    label: "Get It Now",
+    bg: "bg-green-500",
+    textColor: "text-white",
+  },
   sold_out: { label: "Sold Out", bg: "bg-red-600", textColor: "text-white" },
-  out_of_stock: { label: "Out of Stock", bg: "bg-gray-600", textColor: "text-white" },
-  coming_soon: { label: "Coming Soon", bg: "bg-yellow-500", textColor: "text-black" },
-  limited_offer: { label: "Limited Offer", bg: "bg-orange-500", textColor: "text-white" },
-  negotiating: { label: "Negotiating", bg: "bg-blue-500", textColor: "text-white" },
+  out_of_stock: {
+    label: "Out of Stock",
+    bg: "bg-gray-600",
+    textColor: "text-white",
+  },
+  coming_soon: {
+    label: "Coming Soon",
+    bg: "bg-yellow-500",
+    textColor: "text-black",
+  },
+  limited_offer: {
+    label: "Limited Offer",
+    bg: "bg-orange-500",
+    textColor: "text-white",
+  },
+  negotiating: {
+    label: "Negotiating",
+    bg: "bg-blue-500",
+    textColor: "text-white",
+  },
 };
 
 // Format release date
 const formatReleaseDate = (dateStr) => {
   if (!dateStr) return null;
   const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+  return date.toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 };
 
 // Film Card Component
-const FilmCard = ({ movie }) => {
-  const tradeStatus = movie.tradeStatus || 'get_it_now';
-  const statusConfig = tradeStatusConfig[tradeStatus] || tradeStatusConfig.get_it_now;
+const FilmCard = ({ movie, sectionType }) => {
+  const tradeStatus = movie.tradeStatus || "get_it_now";
+  const statusConfig =
+    tradeStatusConfig[tradeStatus] || tradeStatusConfig.get_it_now;
+
   const releaseDate = formatReleaseDate(movie.releaseDate);
 
+  const isHot = sectionType === "hot_rights_available";
+  const isProfit = sectionType === "profitable_picks";
+
   return (
-    <div className="rounded-lg overflow-hidden relative group transition-all duration-300 hover:shadow-2xl hover:scale-105 flex flex-col h-full bg-[#1a1d3a]">
-      <Link href={`/film-mart-details/${movie._id}`} className="flex flex-col h-full">
-        <div className="relative overflow-hidden flex-shrink-0">
+    <Link href={`/film-mart-details/${movie._id}`}>
+      <div className="group relative rounded-lg md:rounded-2xl overflow-hidden bg-[#14172b] border border-white/5 hover:border-red-500/30 shadow-lg hover:shadow-red-500/20 transition-all duration-300 hover:-translate-y-2">
+        {/* Poster */}
+        <div className="relative overflow-hidden">
           <img
             src={movie.posterUrl}
             alt={movie.title}
-            className="w-full h-48 sm:h-56 md:h-64 lg:h-72 object-fill rounded-t-lg transform transition-transform duration-500 group-hover:scale-110"
+            className="w-full h-[200px] md:h-[300px] object-cover rounded-sm transition-transform duration-500 group-hover:scale-110"
           />
-          {/* Trade Status Badge - Left Top */}
-          <span className={`absolute top-2 left-2 ${statusConfig.bg} ${statusConfig.textColor} text-[10px] sm:text-xs font-semibold px-2 py-1 rounded shadow-lg`}>
+
+          {/* Cinematic Gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-80" />
+
+          {/* Hover Play Button */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+            <div className="bg-white/20 backdrop-blur-md p-3 rounded-full border border-white/30">
+              <FaPlay className="text-white text-sm" />
+            </div>
+          </div>
+
+          {/* Status Badge */}
+          <span
+            className={`absolute top-3 left-3 ${statusConfig.bg} ${statusConfig.textColor}  text-[8px] md:text-xs px-2 py-1 rounded-md font-medium`}
+          >
             {statusConfig.label}
           </span>
-          {/* Release Date Badge - Right Top */}
+
+          {/* Release Date */}
           {releaseDate && (
-            <span className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-white text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 sm:py-1 rounded flex items-center gap-1">
-              <FaCalendarAlt className="text-[8px] sm:text-[10px] text-pink-400" />
+            <span className="absolute top-3 right-3 bg-black/60 backdrop-blur text-white text-[8px] md:text-xs px-2 py-1 rounded-md">
               {releaseDate}
             </span>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
-        <div className="p-2 sm:p-3 flex-grow flex flex-col">
-          <h3 className="text-xs sm:text-sm font-semibold line-clamp-1 mb-1 sm:mb-2 min-h-[1.2em]">
-            {movie.title}
-          </h3>
-          <div className="flex items-center justify-between mt-1">
-            <p className="flex items-center gap-1 text-[10px] sm:text-xs">
-              <FaLanguage className="text-red-500 text-[10px]" />
-              {Array.isArray(movie.languages) ? movie.languages[0] : movie.languages}
-            </p>
-            <p className="flex items-center gap-1 text-[10px] sm:text-xs">
-              <FaClock className="text-red-500 text-[10px]" />
-              {movie.duration} min
-            </p>
+
+        {/* Hide Content for HOT RIGHTS */}
+        {!isHot && (
+          <div className="p-3">
+            {/* Title */}
+            <h3 className="text-xs md:text-sm font-semibold text-white line-clamp-1 group-hover:text-red-400 transition">
+              {movie.title.slice(0, 50) +
+                (movie.title.length > 50 ? "..." : "")}
+            </h3>
+
+            {/* Rating */}
+            {movie.imdbRating > 0 && (
+              <div className="mt-2 inline-flex items-center gap-1 text-[8px] md:text-xs bg-white/10 text-yellow-400 px-2 py-1 rounded-md">
+                <FaThumbsUp className="text-green-400 text-[10px]" />
+                {movie.imdbRating} Rating
+              </div>
+            )}
           </div>
-          {movie.imdbRating > 0 && (
-            <div className="flex items-center gap-1 mt-1.5 sm:mt-2 text-[10px] sm:text-xs text-white bg-black px-2 py-1 rounded">
-              <FaThumbsUp className="text-green-400 text-[10px]" />
-              <span>{movie.imdbRating} Rating</span>
-            </div>
-          )}
-        </div>
-      </Link>
-    </div>
+        )}
+      </div>
+    </Link>
   );
 };
 
 // Main Movie Section Component
 const MovieSection = ({ homeSection, title, viewMoreLink = "/film-mart" }) => {
-  const { data: movies = [], isLoading, isError } = useGetMoviesByHomeSectionQuery({ 
-    homeSection, 
-    limit: 12 
+  const {
+    data: movies = [],
+    isLoading,
+    isError,
+  } = useGetMoviesByHomeSectionQuery({
+    homeSection,
+    limit: 12,
   });
 
   if (isLoading) return <SectionSkeleton title={title} />;
@@ -93,22 +144,21 @@ const MovieSection = ({ homeSection, title, viewMoreLink = "/film-mart" }) => {
   if (isError) return null;
 
   // Filter movies that have the specified homeSection
-  const filteredMovies = movies.filter(m => m.homeSection === homeSection);
+  const filteredMovies = movies.filter((m) => m.homeSection === homeSection);
 
   if (filteredMovies.length === 0) return null;
 
   return (
     // <section className="py-5">
     <section className="">
-      <div className="w-full px-4 md:px-8 ">
+      <div className="px-1 md:px-1 lg:px-4 py-4">
         {/* Title */}
-        <div className="flex items-center justify-between mb-4 mt-4">
-          <h2 className="text-xl md:text-3xl font-bold gradient-text">
-            {title}
-          </h2>
+        <div className="flex justify-between items-center mb-3 px-2">
+          <h2 className="text-sm md:text-xl font-bold text-white">{title}</h2>
+
           <Link
             href={viewMoreLink}
-            className="inline-flex items-center font-medium hover:bg-red-300 hover:text-black bg-gray-700 py-2 px-4 rounded-2xl text-xs md:text-sm transition-all duration-300"
+            className="inline-flex items-center  hover:bg-red-300 hover:text-black bg-gray-700 py-1 px-4 rounded-2xl text-[10px]  font-bold"
           >
             View More <FaChevronRight className="ml-2" />
           </Link>
@@ -116,11 +166,10 @@ const MovieSection = ({ homeSection, title, viewMoreLink = "/film-mart" }) => {
 
         {/* Slider */}
         <Swiper
-          modules={[Autoplay, Navigation]}
+          modules={[Autoplay]}
           autoplay={{ delay: 3000, disableOnInteraction: false }}
-          spaceBetween={12}
+          spaceBetween={6}
           loop={filteredMovies.length > 6}
-          navigation
           breakpoints={{
             0: { slidesPerView: 2 },
             640: { slidesPerView: 3 },

@@ -8,12 +8,23 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
 import toast from "react-hot-toast";
+import { useGetEventsQuery } from "../../../store/eventsApi";
+import { useGetMoviesQuery } from "../../../store/moviesApi";
 
 const ProfileDrawer = () => {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const { user, isAuthenticated, logout, loading } = useAuth();
+  const { data: eventsData } = useGetEventsQuery();
+  const { data: moviesData } = useGetMoviesQuery();
 
+  const movies = moviesData?.data || [];
+  const events = eventsData?.data || [];
+
+  const latestMovies = movies.slice(-5);
+  const latestEvents = events.slice(-5);
+
+  const notificationCount = latestMovies.length + latestEvents.length;
   // helper to close drawer on link click
   const handleLinkClick = (href) => {
     setOpen(false);
@@ -44,7 +55,7 @@ const ProfileDrawer = () => {
     <>
       {/* Trigger */}
       <div
-        className="flex items-center space-x-2 cursor-pointer"
+        className="flex items-center space-x-2 cursor-pointer z-50 "
         onClick={() => setOpen(true)}
       >
         {isAuthenticated && user?.img ? (
@@ -66,7 +77,7 @@ const ProfileDrawer = () => {
       {/* Overlay */}
       {open && (
         <div
-          className="fixed inset-0 bg-black/50 z-40"
+          className="fixed inset-0 bg-black/50 z-50"
           onClick={() => setOpen(false)}
         ></div>
       )}
@@ -128,21 +139,39 @@ const ProfileDrawer = () => {
         )}
 
         {/* Content */}
-        <div className="p-4 space-y-4 text-sm overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+        <div
+          className="p-4 space-y-4 text-sm overflow-y-auto"
+          style={{ maxHeight: "calc(100vh - 200px)" }}
+        >
           <ul className="space-y-2">
             {[
-              { href: "/notification", label: "🔔 Notifications", badge: "4" },
+              {
+                href: "/notification",
+                label: "🔔 Notifications",
+                badge: notificationCount,
+              },
+
               // { href: "/my-bookmark", label: "📦 My Bookmark" },
               // { href: "/my-booking-tickets", label: "🎬 My Booking Tickets" },
               { href: "/help", label: "❓ Help & Support" },
               { href: "/privacy", label: "🔒 Privacy policy" },
               { href: "/terms", label: "📜 Terms & Conditions" },
-              { href: "/cancellation-refund", label: "💳 Cancellation & Refund Policy" },
-              { href: "/partner-terms", label: "🤝 Partner Terms and Conditions" },
+              {
+                href: "/cancellation-refund",
+                label: "💳 Cancellation & Refund Policy",
+              },
+              {
+                href: "/partner-terms",
+                label: "🤝 Partner Terms and Conditions",
+              },
               { href: "/about-us", label: "ℹ️ About Us" },
               { href: "/contact-us", label: "📞 Contact Us" },
               // { href: "/vendor-policy", label: "📜 Vendor Policy" },
-              { href: "/profile-settings", label: "⚙️ Accounts & Settings", requireAuth: true },
+              {
+                href: "/profile-settings",
+                label: "⚙️ Accounts & Settings",
+                requireAuth: true,
+              },
               {
                 href: "/become-vendor",
                 label: "🚀 Partner With Us",
@@ -151,7 +180,7 @@ const ProfileDrawer = () => {
             ].map((item) => {
               // Skip auth-required items for guests
               if (item.requireAuth && !isAuthenticated) return null;
-              
+
               return (
                 <li
                   key={item.href}

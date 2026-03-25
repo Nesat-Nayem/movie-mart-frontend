@@ -3,7 +3,14 @@
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FaClock, FaLanguage, FaThumbsUp, FaFilm, FaStar, FaFilter } from "react-icons/fa";
+import {
+  FaClock,
+  FaLanguage,
+  FaThumbsUp,
+  FaFilm,
+  FaStar,
+  FaFilter,
+} from "react-icons/fa";
 import { useGetMoviesQuery } from "../../../store/moviesApi";
 
 /* ------------------ Film Card ------------------ */
@@ -11,12 +18,21 @@ const FilmCard = ({ movie }) => {
   // Get status badge color
   const getStatusBadge = (status) => {
     switch (status) {
-      case 'upcoming':
-        return { bg: 'bg-gradient-to-r from-amber-500 to-orange-500', text: 'Upcoming' };
-      case 'released':
-        return { bg: 'bg-gradient-to-r from-green-500 to-emerald-500', text: 'Released' };
-      case 'in_production':
-        return { bg: 'bg-gradient-to-r from-blue-500 to-cyan-500', text: 'In Production' };
+      case "upcoming":
+        return {
+          bg: "bg-gradient-to-r from-amber-500 to-orange-500",
+          text: "Upcoming",
+        };
+      case "released":
+        return {
+          bg: "bg-gradient-to-r from-green-500 to-emerald-500",
+          text: "Released",
+        };
+      case "in_production":
+        return {
+          bg: "bg-gradient-to-r from-blue-500 to-cyan-500",
+          text: "In Production",
+        };
       default:
         return null;
     }
@@ -47,7 +63,9 @@ const FilmCard = ({ movie }) => {
 
           {/* Status Badge */}
           {statusBadge && (
-            <span className={`absolute top-2 left-2 ${statusBadge.bg} text-white text-[10px] sm:text-xs px-2 py-1 rounded-md font-medium shadow-lg`}>
+            <span
+              className={`absolute top-2 left-2 ${statusBadge.bg} text-white text-[10px] sm:text-xs px-2 py-1 rounded-md font-medium shadow-lg`}
+            >
               {statusBadge.text}
             </span>
           )}
@@ -65,7 +83,10 @@ const FilmCard = ({ movie }) => {
             {movie.genres && movie.genres.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-2">
                 {movie.genres.slice(0, 2).map((genre, idx) => (
-                  <span key={idx} className="bg-white/20 backdrop-blur-sm text-white text-[9px] px-1.5 py-0.5 rounded">
+                  <span
+                    key={idx}
+                    className="bg-white/20 backdrop-blur-sm text-white text-[9px] px-1.5 py-0.5 rounded"
+                  >
                     {genre}
                   </span>
                 ))}
@@ -98,7 +119,10 @@ const FilmCard = ({ movie }) => {
           {movie.formats && movie.formats.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {movie.formats.slice(0, 3).map((format, idx) => (
-                <span key={idx} className="bg-red-500/20 text-red-400 text-[9px] px-1.5 py-0.5 rounded border border-red-500/30">
+                <span
+                  key={idx}
+                  className="bg-red-500/20 text-red-400 text-[9px] px-1.5 py-0.5 rounded border border-red-500/30"
+                >
                   {format}
                 </span>
               ))}
@@ -111,7 +135,9 @@ const FilmCard = ({ movie }) => {
 };
 
 /* ------------------ Movies Section ------------------ */
-const MoviesSection = ({ filters = { languages: [], genres: [], formats: [] } }) => {
+const MoviesSection = ({
+  filters = { languages: [], genres: [], formats: [] },
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   // Reset to page 1 when filters change
@@ -121,7 +147,7 @@ const MoviesSection = ({ filters = { languages: [], genres: [], formats: [] } })
 
   // Build query params — server handles search/filter where possible
   const queryParams = useMemo(() => {
-    const params = { page: currentPage, limit: 9 };
+    const params = { page: currentPage, limit: 12 };
     // Pass single genre/language to API if only one selected (API supports single value)
     if (filters.genres?.length === 1) params.genre = filters.genres[0];
     if (filters.languages?.length === 1) params.language = filters.languages[0];
@@ -141,19 +167,25 @@ const MoviesSection = ({ filters = { languages: [], genres: [], formats: [] } })
 
     if (filters.languages?.length > 1) {
       result = result.filter((movie) => {
-        const movieLangs = Array.isArray(movie.languages) ? movie.languages : [movie.languages];
+        const movieLangs = Array.isArray(movie.languages)
+          ? movie.languages
+          : [movie.languages];
         return filters.languages.some((lang) => movieLangs.includes(lang));
       });
     }
     if (filters.genres?.length > 1) {
       result = result.filter((movie) => {
-        const movieGenres = Array.isArray(movie.genres) ? movie.genres : [movie.genres];
+        const movieGenres = Array.isArray(movie.genres)
+          ? movie.genres
+          : [movie.genres];
         return filters.genres.some((genre) => movieGenres.includes(genre));
       });
     }
     if (filters.formats?.length > 1) {
       result = result.filter((movie) => {
-        const movieFormats = Array.isArray(movie.formats) ? movie.formats : [movie.formats];
+        const movieFormats = Array.isArray(movie.formats)
+          ? movie.formats
+          : [movie.formats];
         return filters.formats.some((format) => movieFormats.includes(format));
       });
     }
@@ -178,7 +210,10 @@ const MoviesSection = ({ filters = { languages: [], genres: [], formats: [] } })
         {/* Cards skeleton */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {[...Array(8)].map((_, idx) => (
-            <div key={idx} className="rounded-xl overflow-hidden bg-gray-800/50 backdrop-blur-sm">
+            <div
+              key={idx}
+              className="rounded-xl overflow-hidden bg-gray-800/50 backdrop-blur-sm"
+            >
               <div className="aspect-[2/3] bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%]" />
               <div className="p-3 space-y-3">
                 <div className="h-4 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer bg-[length:200%_100%] rounded-full w-3/4" />
@@ -203,7 +238,9 @@ const MoviesSection = ({ filters = { languages: [], genres: [], formats: [] } })
     return (
       <div className="rounded-lg p-8 text-center">
         <FaFilm className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-        <p className="text-gray-400">Failed to load movies. Please try again.</p>
+        <p className="text-gray-400">
+          Failed to load movies. Please try again.
+        </p>
       </div>
     );
   }
@@ -214,16 +251,19 @@ const MoviesSection = ({ filters = { languages: [], genres: [], formats: [] } })
       <div className="flex justify-between items-center mb-4 bg-[#13162f] py-3 px-4 rounded-xl border border-gray-700/50">
         <div className="flex items-center gap-3">
           <span className="font-medium text-sm sm:text-base text-white">
-            {totalCount} {totalCount === 1 ? 'Movie' : 'Movies'} Found
+            {totalCount} {totalCount === 1 ? "Movie" : "Movies"} Found
           </span>
           {totalFilters > 0 && (
             <span className="flex items-center gap-1 text-xs text-red-400 bg-red-500/20 px-2 py-1 rounded-full">
               <FaFilter className="w-2.5 h-2.5" />
-              {totalFilters} filter{totalFilters > 1 ? 's' : ''} applied
+              {totalFilters} filter{totalFilters > 1 ? "s" : ""} applied
             </span>
           )}
         </div>
-        <Link href="#" className="text-xs sm:text-sm text-red-400 hover:text-red-300 hover:underline transition-colors">
+        <Link
+          href="#"
+          className="text-xs sm:text-sm text-red-400 hover:text-red-300 hover:underline transition-colors"
+        >
           Explore All →
         </Link>
       </div>
@@ -240,8 +280,8 @@ const MoviesSection = ({ filters = { languages: [], genres: [], formats: [] } })
           <FaFilm className="w-16 h-16 text-gray-600 mx-auto mb-4" />
           <p className="text-gray-400 text-lg mb-2">No movies found</p>
           <p className="text-gray-500 text-sm">
-            {totalFilters > 0 
-              ? "Try adjusting your filters to find more movies" 
+            {totalFilters > 0
+              ? "Try adjusting your filters to find more movies"
               : "No movies available at the moment"}
           </p>
         </div>
@@ -253,7 +293,7 @@ const MoviesSection = ({ filters = { languages: [], genres: [], formats: [] } })
           <button
             onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
             disabled={currentPage === 1}
-            className="px-3 py-1.5 text-sm border border-gray-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/5 transition-colors text-white"
+            className="px-3 cursor-pointer py-1.5 text-sm border border-gray-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/5 transition-colors text-white"
           >
             Prev
           </button>
@@ -270,7 +310,7 @@ const MoviesSection = ({ filters = { languages: [], genres: [], formats: [] } })
                   <button
                     key={i}
                     onClick={() => setCurrentPage(i + 1)}
-                    className={`w-8 h-8 text-sm rounded-lg transition-all ${
+                    className={`w-8 cursor-pointer h-8 text-sm rounded-lg transition-all ${
                       currentPage === i + 1
                         ? "bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg"
                         : "border border-gray-600 hover:bg-white/5 text-gray-300"
@@ -280,7 +320,11 @@ const MoviesSection = ({ filters = { languages: [], genres: [], formats: [] } })
                   </button>
                 );
               } else if (i === currentPage - 3 || i === currentPage + 1) {
-                return <span key={i} className="text-gray-500 px-1">...</span>;
+                return (
+                  <span key={i} className="text-gray-500 px-1">
+                    ...
+                  </span>
+                );
               }
               return null;
             })}
@@ -289,7 +333,7 @@ const MoviesSection = ({ filters = { languages: [], genres: [], formats: [] } })
           <button
             onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
             disabled={currentPage === totalPages}
-            className="px-3 py-1.5 text-sm border border-gray-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/5 transition-colors text-white"
+            className="px-3 py-1.5 cursor-pointer text-sm border border-gray-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/5 transition-colors text-white"
           >
             Next
           </button>

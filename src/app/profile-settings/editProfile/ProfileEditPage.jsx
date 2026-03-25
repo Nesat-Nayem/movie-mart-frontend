@@ -1,6 +1,13 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { FaArrowLeft, FaCamera, FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import {
+  FaArrowLeft,
+  FaCamera,
+  FaUser,
+  FaLock,
+  FaEye,
+  FaEyeSlash,
+} from "react-icons/fa";
 import { useRouter, useSearchParams } from "next/navigation";
 import Button from "@/app/components/Button";
 import { useAuth } from "@/context/AuthContext";
@@ -8,7 +15,8 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Image from "next/image";
 import toast from "react-hot-toast";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.moviemart.org/v1/api";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "https://api.moviemart.org/v1/api";
 
 const ProfileEditPage = () => {
   const router = useRouter();
@@ -23,7 +31,10 @@ const ProfileEditPage = () => {
   // Handle tab query parameter
   useEffect(() => {
     const tab = searchParams.get("tab");
-    if (tab === "password" && (user?.authProvider === "local" || !user?.authProvider)) {
+    if (
+      tab === "password" &&
+      (user?.authProvider === "local" || !user?.authProvider)
+    ) {
       setActiveTab("password");
     }
   }, [searchParams, user?.authProvider]);
@@ -78,7 +89,8 @@ const ProfileEditPage = () => {
   // Google/Local users can't edit email (their login method), but can edit phone
   const canEditPhone = user?.authProvider !== "phone";
   const canEditEmail = user?.authProvider === "phone"; // Only phone users can add/edit email
-  const canChangePassword = user?.authProvider === "local" || !user?.authProvider;
+  const canChangePassword =
+    user?.authProvider === "local" || !user?.authProvider;
 
   // Handle profile update
   const handleSubmit = async (e) => {
@@ -88,17 +100,17 @@ const ProfileEditPage = () => {
     try {
       const formDataToSend = new FormData();
       formDataToSend.append("name", formData.name);
-      
+
       // Only send phone if user can edit it
       if (canEditPhone && formData.phone) {
         formDataToSend.append("phone", formData.phone);
       }
-      
+
       // Only send email if user can edit it
       if (canEditEmail && formData.email) {
         formDataToSend.append("email", formData.email);
       }
-      
+
       // Add image if changed
       if (photoFile) {
         formDataToSend.append("img", photoFile);
@@ -131,7 +143,7 @@ const ProfileEditPage = () => {
   // Handle password change
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast.error("New passwords do not match");
       return;
@@ -145,23 +157,30 @@ const ProfileEditPage = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/auth/change-password/${user._id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${API_URL}/auth/change-password/${user._id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            currentPassword: passwordData.currentPassword,
+            newPassword: passwordData.newPassword,
+          }),
         },
-        body: JSON.stringify({
-          currentPassword: passwordData.currentPassword,
-          newPassword: passwordData.newPassword,
-        }),
-      });
+      );
 
       const data = await response.json();
 
       if (data.success) {
         toast.success("Password changed successfully");
-        setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+        setPasswordData({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
         setActiveTab("profile");
       } else {
         toast.error(data.message || "Failed to change password");
@@ -175,7 +194,7 @@ const ProfileEditPage = () => {
 
   return (
     <ProtectedRoute>
-      <section className="min-h-screen bg-gradient-to-b from-[#0B1730] to-[#1a2744] py-6">
+      <section className="min-h-screen  py-6">
         <div className="max-w-lg mx-auto px-4">
           <div className="bg-white/5 backdrop-blur-md border border-gray-700/50 rounded-3xl overflow-hidden">
             {/* Header */}
@@ -262,14 +281,18 @@ const ProfileEditPage = () => {
                       className="hidden"
                     />
                   </div>
-                  <p className="text-gray-400 text-sm mt-3">Tap to change photo</p>
+                  <p className="text-gray-400 text-sm mt-3">
+                    Tap to change photo
+                  </p>
                 </div>
 
                 {/* Profile Form */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-5">
                   {/* Name */}
                   <div>
-                    <label className="block text-sm text-gray-400 mb-2">Full Name</label>
+                    <label className="block text-sm text-gray-400 mb-2">
+                      Full Name
+                    </label>
                     <input
                       type="text"
                       name="name"
@@ -285,22 +308,34 @@ const ProfileEditPage = () => {
                     <label className="block text-sm text-gray-400 mb-2">
                       Phone Number
                       {user?.authProvider === "phone" && (
-                        <span className="text-xs text-green-400 ml-2">(Primary - Cannot change)</span>
+                        <span className="text-xs text-green-400 ml-2">
+                          (Primary - Cannot change)
+                        </span>
                       )}
                     </label>
                     <input
                       type="text"
                       name="phone"
-                      value={canEditPhone ? formData.phone : (formData.phone ? `+91 ${formData.phone}` : "Not provided")}
+                      value={
+                        canEditPhone
+                          ? formData.phone
+                          : formData.phone
+                            ? `+91 ${formData.phone}`
+                            : "Not provided"
+                      }
                       onChange={handleChange}
                       placeholder="Enter phone number"
                       disabled={!canEditPhone}
                       className={`w-full px-4 py-3 rounded-xl bg-white/5 border border-gray-700 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-colors ${
-                        !canEditPhone ? "text-gray-400 cursor-not-allowed" : "text-white"
+                        !canEditPhone
+                          ? "text-gray-400 cursor-not-allowed"
+                          : "text-white"
                       }`}
                     />
                     {!canEditPhone && (
-                      <p className="text-xs text-gray-500 mt-1">Phone number is your login method and cannot be changed</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Phone number is your login method and cannot be changed
+                      </p>
                     )}
                   </div>
 
@@ -309,13 +344,19 @@ const ProfileEditPage = () => {
                     <label className="block text-sm text-gray-400 mb-2">
                       Email Address
                       {user?.authProvider === "google" && (
-                        <span className="text-xs text-red-400 ml-2">(Google - Cannot change)</span>
+                        <span className="text-xs text-red-400 ml-2">
+                          (Google - Cannot change)
+                        </span>
                       )}
                       {user?.authProvider === "local" && (
-                        <span className="text-xs text-blue-400 ml-2">(Primary - Cannot change)</span>
+                        <span className="text-xs text-blue-400 ml-2">
+                          (Primary - Cannot change)
+                        </span>
                       )}
                       {user?.authProvider === "phone" && (
-                        <span className="text-xs text-green-400 ml-2">(Optional)</span>
+                        <span className="text-xs text-green-400 ml-2">
+                          (Optional)
+                        </span>
                       )}
                     </label>
                     <input
@@ -323,20 +364,32 @@ const ProfileEditPage = () => {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      placeholder={canEditEmail ? "Add your email address" : "Enter your email"}
+                      placeholder={
+                        canEditEmail
+                          ? "Add your email address"
+                          : "Enter your email"
+                      }
                       disabled={!canEditEmail}
                       className={`w-full px-4 py-3 rounded-xl bg-white/5 border border-gray-700 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition-colors ${
-                        !canEditEmail ? "text-gray-400 cursor-not-allowed" : "text-white"
+                        !canEditEmail
+                          ? "text-gray-400 cursor-not-allowed"
+                          : "text-white"
                       }`}
                     />
                     {user?.authProvider === "google" && (
-                      <p className="text-xs text-gray-500 mt-1">Email is linked to your Google account</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Email is linked to your Google account
+                      </p>
                     )}
                     {user?.authProvider === "local" && (
-                      <p className="text-xs text-gray-500 mt-1">Email is your login method and cannot be changed</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Email is your login method and cannot be changed
+                      </p>
                     )}
                     {user?.authProvider === "phone" && !formData.email && (
-                      <p className="text-xs text-green-400/70 mt-1">Add an email to receive booking confirmations</p>
+                      <p className="text-xs text-green-400/70 mt-1">
+                        Add an email to receive booking confirmations
+                      </p>
                     )}
                   </div>
 
@@ -350,9 +403,13 @@ const ProfileEditPage = () => {
                       {!user?.authProvider && "📧 Email & Password"}
                     </p>
                     <p className="text-xs text-gray-500 mt-2">
-                      {user?.authProvider === "google" && "✓ Name ✓ Phone ✓ Profile Image | ✗ Email (Google linked)"}
-                      {user?.authProvider === "phone" && "✓ Name ✓ Email ✓ Profile Image | ✗ Phone (Login method)"}
-                      {(user?.authProvider === "local" || !user?.authProvider) && "✓ Name ✓ Phone ✓ Profile Image ✓ Password | ✗ Email (Login method)"}
+                      {user?.authProvider === "google" &&
+                        "✓ Name ✓ Phone ✓ Profile Image | ✗ Email (Google linked)"}
+                      {user?.authProvider === "phone" &&
+                        "✓ Name ✓ Email ✓ Profile Image | ✗ Phone (Login method)"}
+                      {(user?.authProvider === "local" ||
+                        !user?.authProvider) &&
+                        "✓ Name ✓ Phone ✓ Profile Image ✓ Password | ✗ Email (Login method)"}
                     </p>
                   </div>
 
@@ -375,13 +432,16 @@ const ProfileEditPage = () => {
               <form onSubmit={handlePasswordSubmit} className="p-6 space-y-5">
                 <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-4">
                   <p className="text-blue-400 text-sm">
-                    🔐 Password change is only available for email/password accounts
+                    🔐 Password change is only available for email/password
+                    accounts
                   </p>
                 </div>
 
                 {/* Current Password */}
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Current Password</label>
+                  <label className="block text-sm text-gray-400 mb-2">
+                    Current Password
+                  </label>
                   <div className="relative">
                     <input
                       type={showCurrentPassword ? "text" : "password"}
@@ -393,7 +453,9 @@ const ProfileEditPage = () => {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      onClick={() =>
+                        setShowCurrentPassword(!showCurrentPassword)
+                      }
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
                     >
                       {showCurrentPassword ? <FaEyeSlash /> : <FaEye />}
@@ -403,7 +465,9 @@ const ProfileEditPage = () => {
 
                 {/* New Password */}
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">New Password</label>
+                  <label className="block text-sm text-gray-400 mb-2">
+                    New Password
+                  </label>
                   <div className="relative">
                     <input
                       type={showNewPassword ? "text" : "password"}
@@ -425,7 +489,9 @@ const ProfileEditPage = () => {
 
                 {/* Confirm Password */}
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Confirm New Password</label>
+                  <label className="block text-sm text-gray-400 mb-2">
+                    Confirm New Password
+                  </label>
                   <div className="relative">
                     <input
                       type={showConfirmPassword ? "text" : "password"}
@@ -437,15 +503,21 @@ const ProfileEditPage = () => {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
                     >
                       {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                     </button>
                   </div>
-                  {passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
-                    <p className="text-xs text-red-400 mt-1">Passwords do not match</p>
-                  )}
+                  {passwordData.confirmPassword &&
+                    passwordData.newPassword !==
+                      passwordData.confirmPassword && (
+                      <p className="text-xs text-red-400 mt-1">
+                        Passwords do not match
+                      </p>
+                    )}
                 </div>
 
                 {/* Submit */}
@@ -453,7 +525,12 @@ const ProfileEditPage = () => {
                   <Button
                     type="submit"
                     className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
-                    disabled={loading || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
+                    disabled={
+                      loading ||
+                      !passwordData.currentPassword ||
+                      !passwordData.newPassword ||
+                      !passwordData.confirmPassword
+                    }
                   >
                     {loading ? "Changing Password..." : "Change Password"}
                   </Button>

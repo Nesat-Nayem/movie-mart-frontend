@@ -43,8 +43,10 @@ const ProfileSettings = () => {
 
   // Get auth provider icon
   const getAuthProviderIcon = () => {
-    if (user?.authProvider === "google") return <FaGoogle className="text-red-400" />;
-    if (user?.authProvider === "phone") return <FaPhone className="text-green-400" />;
+    if (user?.authProvider === "google")
+      return <FaGoogle className="text-red-400" />;
+    if (user?.authProvider === "phone")
+      return <FaPhone className="text-green-400" />;
     return <FaEnvelope className="text-blue-400" />;
   };
 
@@ -65,7 +67,7 @@ const ProfileSettings = () => {
 
   return (
     <ProtectedRoute>
-      <section className="min-h-screen bg-gradient-to-b from-[#0B1730] to-[#1a2744]">
+      <section className="min-h-screen ">
         <div className="max-w-xl mx-auto py-6 px-4">
           {/* Profile Card */}
           <div className="bg-gradient-to-br from-pink-600/20 to-purple-600/20 backdrop-blur-md border border-pink-500/30 rounded-3xl p-6 mb-6">
@@ -95,7 +97,9 @@ const ProfileSettings = () => {
 
               {/* User Info */}
               <div className="flex-1">
-                <h1 className="text-xl font-bold text-white">{getDisplayName()}</h1>
+                <h1 className="text-xl font-bold text-white">
+                  {getDisplayName()}
+                </h1>
                 <p className="text-gray-400 text-sm">{getUserIdentifier()}</p>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 border border-green-500/30">
@@ -128,14 +132,18 @@ const ProfileSettings = () => {
                 <Link href="/profile-settings/movie-ticket">
                   <div className="group bg-gradient-to-br from-blue-500/10 to-blue-600/5 hover:from-blue-500/20 hover:to-blue-600/10 rounded-2xl p-4 border border-blue-500/20 hover:border-blue-500/40 transition-all">
                     <div className="text-3xl mb-2">🎬</div>
-                    <p className="text-white font-medium text-sm">Movie Tickets</p>
+                    <p className="text-white font-medium text-sm">
+                      Movie Tickets
+                    </p>
                     <p className="text-gray-500 text-xs">View bookings</p>
                   </div>
                 </Link>
                 <Link href="/profile-settings/event-ticket">
                   <div className="group bg-gradient-to-br from-purple-500/10 to-purple-600/5 hover:from-purple-500/20 hover:to-purple-600/10 rounded-2xl p-4 border border-purple-500/20 hover:border-purple-500/40 transition-all">
                     <div className="text-3xl mb-2">🎸</div>
-                    <p className="text-white font-medium text-sm">Event Tickets</p>
+                    <p className="text-white font-medium text-sm">
+                      Event Tickets
+                    </p>
                     <p className="text-gray-500 text-xs">View bookings</p>
                   </div>
                 </Link>
@@ -150,16 +158,16 @@ const ProfileSettings = () => {
               </h2>
               <div className="space-y-2">
                 <Link href="/watchlist">
-                  <MenuItem 
-                    icon="📋" 
-                    title="My Watchlist" 
-                    subtitle="View your saved videos, movies & events" 
+                  <MenuItem
+                    icon="📋"
+                    title="My Watchlist"
+                    subtitle="View your saved videos, movies & events"
                   />
                 </Link>
                 <Link href="/notification">
-                  <MenuItem 
-                    icon={<FaBell className="text-yellow-400" />} 
-                    title="Notifications" 
+                  <MenuItem
+                    icon={<FaBell className="text-yellow-400" />}
+                    title="Notifications"
                     subtitle="View your notifications"
                     badge={4}
                   />
@@ -176,10 +184,10 @@ const ProfileSettings = () => {
                 </h2>
                 <div className="space-y-2">
                   <Link href="/profile-settings/editProfile?tab=password">
-                    <MenuItem 
-                      icon={<FaLock className="text-orange-400" />} 
-                      title="Change Password" 
-                      subtitle="Update your account password" 
+                    <MenuItem
+                      icon={<FaLock className="text-orange-400" />}
+                      title="Change Password"
+                      subtitle="Update your account password"
                     />
                   </Link>
                 </div>
@@ -194,17 +202,17 @@ const ProfileSettings = () => {
               </h2>
               <div className="space-y-2">
                 <Link href="/faq">
-                  <MenuItem 
-                    icon={<FaQuestionCircle className="text-blue-400" />} 
-                    title="FAQs" 
-                    subtitle="Frequently asked questions" 
+                  <MenuItem
+                    icon={<FaQuestionCircle className="text-blue-400" />}
+                    title="FAQs"
+                    subtitle="Frequently asked questions"
                   />
                 </Link>
                 <Link href="/about">
-                  <MenuItem 
-                    icon={<FaInfoCircle className="text-green-400" />} 
-                    title="About Us" 
-                    subtitle="Learn more about Moviemart" 
+                  <MenuItem
+                    icon={<FaInfoCircle className="text-green-400" />}
+                    title="About Us"
+                    subtitle="Learn more about Moviemart"
                   />
                 </Link>
               </div>
@@ -225,7 +233,9 @@ const ProfileSettings = () => {
                     <p className="text-red-400 font-semibold">
                       {loggingOut ? "Logging out..." : "Logout"}
                     </p>
-                    <p className="text-gray-500 text-xs">Sign out from your account</p>
+                    <p className="text-gray-500 text-xs">
+                      Sign out from your account
+                    </p>
                   </div>
                 </div>
                 <FaChevronRight className="text-red-400/50" />
@@ -246,7 +256,7 @@ const ProfileSettings = () => {
 
 // Reusable Menu Item Component
 const MenuItem = ({ icon, title, subtitle, badge }) => (
-  <div className="group bg-white/5 hover:bg-white/10 rounded-xl p-4 flex items-center justify-between transition-all cursor-pointer">
+  <div className="group mb-2 bg-white/5 hover:bg-white/10 rounded-xl p-4 flex items-center justify-between transition-all cursor-pointer">
     <div className="flex items-center gap-3">
       <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-lg">
         {typeof icon === "string" ? icon : icon}

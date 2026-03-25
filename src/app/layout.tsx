@@ -3,6 +3,7 @@ import { Jura } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
+import BottomNavbar from "@/app/components/BottomNavbar";
 import Script from "next/script";
 import { Providers } from "../../providers/ReduxProvider";
 import { AuthProvider } from "@/context/AuthContext";
@@ -30,7 +31,7 @@ export default function RootLayout({
         {/* Google AdSense Script - Replace ca-pub-XXXXXXXXXX with your Publisher ID */}
         <Script
           async
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_ID || 'ca-pub-XXXXXXXXXX'}`}
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_ID || "ca-pub-XXXXXXXXXX"}`}
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
@@ -42,6 +43,7 @@ export default function RootLayout({
             <Navbar />
             {children}
             <Footer />
+            <BottomNavbar />
           </AuthProvider>
         </Providers>
 
