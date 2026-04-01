@@ -28,6 +28,16 @@ const BookTicketDrawer = ({ event, onClose }) => {
       setTimeout(() => setIsVisible(true), 10);
       dispatch(setBookingEvent(event));
 
+      // Auto-select the single participation type category
+      const category =
+        event.eventCategories && event.eventCategories.length > 0
+          ? event.eventCategories[0]
+          : null;
+      if (category) {
+        setSelectedEventCategory(category);
+        dispatch(setEventCategory(category));
+      }
+
       // Set default seat type
       if (event.seatTypes && event.seatTypes.length > 0) {
         setSelectedSeatType(event.seatTypes[0]);
@@ -118,16 +128,11 @@ const BookTicketDrawer = ({ event, onClose }) => {
           },
         ];
 
-  // Get event categories (participation types) or use defaults
-  const eventCategories =
+  // Get single event category (participation type)
+  const eventCategory =
     event.eventCategories && event.eventCategories.length > 0
-      ? event.eventCategories
-      : [
-          "Awardee & Represent our show",
-          "Sponsored",
-          "Ticket Booking",
-          "Participate",
-        ];
+      ? event.eventCategories[0]
+      : null;
 
   const maxTickets = Math.min(
     event.maxTicketsPerPerson || 10,
@@ -157,7 +162,9 @@ const BookTicketDrawer = ({ event, onClose }) => {
         {/* Header */}
         <div className="flex justify-between items-center p-5 border-b border-gray-700/50">
           <div>
-            <h2 className="text-xl font-bold text-white">Book Tickets</h2>
+            <h2 className="text-xl font-bold text-white">
+              {eventCategory ? `Book ${eventCategory}` : "Book Tickets"}
+            </h2>
             <p className="text-gray-400 text-sm mt-1 line-clamp-1">
               {event.title}
             </p>
@@ -266,55 +273,21 @@ const BookTicketDrawer = ({ event, onClose }) => {
                 </div>
               </div>
 
-              {/* Event Category Selection - Required */}
-              <div className="bg-white/5 rounded-2xl p-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <Tag className="w-5 h-5 text-pink-400" />
-                  <label className="text-white font-medium">
-                    Select Category <span className="text-pink-400">*</span>
-                  </label>
-                </div>
-                <p className="text-gray-400 text-xs mb-3">
-                  Please select how you want to participate in this event
-                </p>
-
-                <div className="grid grid-cols-1 gap-2">
-                  {eventCategories.map((category) => (
-                    <div
-                      key={category}
-                      onClick={() => handleEventCategoryChange(category)}
-                      className={`p-3 rounded-xl cursor-pointer transition-all border-2 ${
-                        selectedEventCategory === category
-                          ? "bg-gradient-to-r from-pink-500/20 to-purple-600/20 border-pink-500"
-                          : "bg-white/5 border-transparent hover:border-pink-500/50"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                            selectedEventCategory === category
-                              ? "border-pink-500 bg-pink-500"
-                              : "border-gray-500"
-                          }`}
-                        >
-                          {selectedEventCategory === category && (
-                            <div className="w-2 h-2 bg-white rounded-full" />
-                          )}
-                        </div>
-                        <p className="font-medium text-white text-sm">
-                          {category}
-                        </p>
-                      </div>
+              {/* Event Category - Display only (auto-selected) */}
+              {eventCategory && (
+                <div className="bg-white/5 rounded-2xl p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Tag className="w-5 h-5 text-pink-400" />
+                    <label className="text-white font-medium">Participation Type</label>
+                  </div>
+                  <div className="flex items-center gap-3 bg-gradient-to-r from-pink-500/20 to-purple-600/20 border-2 border-pink-500 rounded-xl p-3">
+                    <div className="w-4 h-4 rounded-full border-2 border-pink-500 bg-pink-500 flex items-center justify-center flex-shrink-0">
+                      <div className="w-2 h-2 bg-white rounded-full" />
                     </div>
-                  ))}
+                    <p className="font-medium text-white text-sm">{eventCategory}</p>
+                  </div>
                 </div>
-                {!selectedEventCategory && (
-                  <p className="text-yellow-400 text-xs mt-2 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    Please select a category to proceed
-                  </p>
-                )}
-              </div>
+              )}
 
               {/* Price Summary */}
               <div className="bg-gradient-to-r from-pink-500/10 to-purple-600/10 rounded-2xl p-4 border border-pink-500/30">

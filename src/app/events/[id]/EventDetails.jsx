@@ -44,6 +44,11 @@ const EventDetails = () => {
   });
 
   console.log(event);
+  const eventCategory =
+    event?.eventCategories && event.eventCategories.length > 0
+      ? event.eventCategories[0]
+      : null;
+
   // Function to format date
   const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -284,11 +289,11 @@ const EventDetails = () => {
                 {/* Book Tickets */}
                 <div className="px-4 mt-6">
                   <h2 className="text-lg font-semibold mb-2">
-                    Available in Tickets
+                    {eventCategory ? `Available in ${eventCategory}` : "Available in Tickets"}
                   </h2>
                   <div className="bg-white/10 rounded-xl p-4 flex items-center justify-between">
                     <div>
-                      <p className="font-medium">Book Your Tickets Now!</p>
+                      <p className="font-medium">{eventCategory ? `Book Your ${eventCategory} Now!` : "Book Your Tickets Now!"}</p>
                     </div>
                     <button
                       onClick={() => setShowDrawer(true)}
@@ -393,7 +398,7 @@ const EventDetails = () => {
                           className="flex flex-1 items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-red-500 py-3 rounded-xl font-semibold"
                         >
                           <Ticket className="w-5 h-5" />
-                          Book Tickets
+                          {eventCategory ? `Book ${eventCategory}` : "Book Tickets"}
                         </Button>
                       </div>
                     ) : (

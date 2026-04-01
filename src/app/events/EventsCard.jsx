@@ -16,6 +16,11 @@ import { useGetEventsQuery } from "../../../store/eventsApi";
 
 /* ------------------ Event Card ------------------ */
 const EventCard = ({ event, onBook }) => {
+  const eventCategory =
+    event.eventCategories && event.eventCategories.length > 0
+      ? event.eventCategories[0]
+      : null;
+
   // Format date
   const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -119,7 +124,7 @@ const EventCard = ({ event, onBook }) => {
             }}
             className="w-full text-xs py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
           >
-            Book Ticket
+            {eventCategory ? `Book ${eventCategory}` : "Book Ticket"}
           </Button>
         </div>
       </div>
