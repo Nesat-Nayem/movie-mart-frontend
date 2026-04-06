@@ -163,7 +163,7 @@ const BookTicketDrawer = ({ event, onClose }) => {
         <div className="flex justify-between items-center p-5 border-b border-gray-700/50">
           <div>
             <h2 className="text-xl font-bold text-white">
-              {eventCategory ? `Book ${eventCategory}` : "Book Tickets"}
+              {eventCategory ? `Book ${eventCategory}` : "Book Ticket"}
             </h2>
             <p className="text-gray-400 text-sm mt-1 line-clamp-1">
               {event.title}
@@ -198,7 +198,7 @@ const BookTicketDrawer = ({ event, onClose }) => {
                 <div className="flex items-center gap-2 mb-4">
                   <Users className="w-5 h-5 text-pink-400" />
                   <label className="text-white font-medium">
-                    How many tickets?
+                    How many {eventCategory ? `${eventCategory}s` : "tickets"}?
                   </label>
                   <span className="text-gray-400 text-sm ml-auto">
                     Max {maxTickets}
@@ -233,7 +233,7 @@ const BookTicketDrawer = ({ event, onClose }) => {
                 <div className="flex items-center gap-2 mb-4">
                   <Ticket className="w-5 h-5 text-pink-400" />
                   <label className="text-white font-medium">
-                    Select Ticket Type
+                    Select {eventCategory ? `${eventCategory} Type` : "Ticket Type"}
                   </label>
                 </div>
 
