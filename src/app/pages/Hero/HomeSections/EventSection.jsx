@@ -104,17 +104,12 @@ const EventSection = ({ homeSection, title, viewMoreLink = "/events" }) => {
 
   if (isError) return null;
 
-  // Filter events that have the specified homeSection
-  const filteredEvents = events.filter((e) => e.homeSection === homeSection);
-
-  if (filteredEvents.length === 0) return null;
+  if (events.length === 0) return null;
 
   return (
-    // <section className="py-5">
     <section className="px-1 md:px-1 lg:px-4 py-4 relative bg-transparent">
       <div className="">
         {/* Title */}
-
         <div className="flex justify-between items-center mb-3 px-2">
           <h2 className="text-sm md:text-xl font-bold text-white">{title}</h2>
 
@@ -131,7 +126,7 @@ const EventSection = ({ homeSection, title, viewMoreLink = "/events" }) => {
           modules={[Autoplay]}
           autoplay={{ delay: 3500, disableOnInteraction: false }}
           spaceBetween={6}
-          loop={filteredEvents.length > 6}
+          loop={events.length > 6}
           breakpoints={{
             0: { slidesPerView: 3 },
             640: { slidesPerView: 3 },
@@ -140,7 +135,7 @@ const EventSection = ({ homeSection, title, viewMoreLink = "/events" }) => {
             1280: { slidesPerView: 6 },
           }}
         >
-          {filteredEvents.map((event) => (
+          {events.map((event) => (
             <SwiperSlide key={event._id}>
               <EventCard event={event} />
             </SwiperSlide>

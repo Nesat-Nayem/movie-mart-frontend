@@ -67,7 +67,7 @@ export const eventsApi = createApi({
         params: { homeSection, limit },
       }),
       transformResponse: (response) =>
-        Array.isArray(response.data) ? response.data : [response.data],
+        Array.isArray(response.data) ? response.data : [],
       providesTags: ["Events"],
     }),
 
