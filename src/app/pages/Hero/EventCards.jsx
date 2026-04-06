@@ -18,7 +18,8 @@ const EventsCardSkeleton = () => (
 );
 
 const EventCards = () => {
-  const { data: eventsData = [], isLoading, isError } = useGetEventsQuery();
+  const { data: eventsResponse, isLoading, isError } = useGetEventsQuery({ limit: 12 });
+  const eventsData = eventsResponse?.data || [];
 
   const prevRef = useRef(null);
   const nextRef = useRef(null);

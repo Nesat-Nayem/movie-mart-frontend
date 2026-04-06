@@ -57,7 +57,7 @@ const SearchModal = ({ className = "", iconOnly = false }) => {
         };
       case "Events":
         return {
-          items: Array.isArray(eventsData) ? eventsData : [],
+          items: Array.isArray(eventsData?.data) ? eventsData.data : [],
           loading: eventsLoading,
           icon: <FaCalendarAlt className="text-pink-400" />,
           getLink: (item) => `/events/${item._id}`,

@@ -138,88 +138,26 @@ const EventsCards = ({ filters = {} }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
-  const { data: eventsData = [], isLoading, isError } = useGetEventsQuery();
+  // Build query params for server-side pagination + filters
+  const queryParams = useMemo(() => {
+    const params = { page: currentPage, limit: itemsPerPage };
+    if (filters.languages?.length > 0) params.language = filters.languages.join(",");
+    if (filters.categories?.length > 0) params.category = filters.categories.join(",");
+    if (filters.price?.length > 0) params.price = filters.price.join(",");
+    if (filters.date?.length > 0) params.date = filters.date.join(",");
+    return params;
+  }, [currentPage, itemsPerPage, filters]);
+
+  const { data: eventsResponse, isLoading, isError } = useGetEventsQuery(queryParams);
+
+  const events = eventsResponse?.data || [];
+  const meta = eventsResponse?.meta || { page: 1, limit: itemsPerPage, total: 0, totalPages: 1 };
+  const totalPages = meta.totalPages || 1;
 
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [filters]);
-
-  // Filter events based on selected filters
-  const filteredEvents = useMemo(() => {
-    let events = eventsData || [];
-
-    // Filter by date
-    if (filters.date?.length > 0) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-
-      const weekendStart = new Date(today);
-      const dayOfWeek = today.getDay();
-      const daysUntilSaturday = dayOfWeek === 0 ? 6 : 6 - dayOfWeek;
-      weekendStart.setDate(today.getDate() + daysUntilSaturday);
-
-      const weekendEnd = new Date(weekendStart);
-      weekendEnd.setDate(weekendStart.getDate() + 1);
-
-      events = events.filter((event) => {
-        const eventDate = new Date(event.startDate);
-        eventDate.setHours(0, 0, 0, 0);
-
-        return filters.date.some((dateFilter) => {
-          if (dateFilter === "Today") {
-            return eventDate.getTime() === today.getTime();
-          }
-          if (dateFilter === "Tomorrow") {
-            return eventDate.getTime() === tomorrow.getTime();
-          }
-          if (dateFilter === "This Weekend") {
-            return eventDate >= weekendStart && eventDate <= weekendEnd;
-          }
-          return true;
-        });
-      });
-    }
-
-    // Filter by language
-    if (filters.languages?.length > 0) {
-      events = events.filter((event) =>
-        filters.languages.some(
-          (lang) => event.eventLanguage?.toLowerCase() === lang.toLowerCase(),
-        ),
-      );
-    }
-
-    // Filter by category/type
-    if (filters.categories?.length > 0) {
-      events = events.filter((event) =>
-        filters.categories.some(
-          (cat) =>
-            event.category?.toLowerCase().includes(cat.toLowerCase()) ||
-            event.eventType?.toLowerCase().includes(cat.toLowerCase()),
-        ),
-      );
-    }
-
-    // Filter by price
-    if (filters.price?.length > 0) {
-      events = events.filter((event) => {
-        const price = event.ticketPrice;
-        return filters.price.some((priceRange) => {
-          if (priceRange === "Free") return price === 0;
-          if (priceRange === "0–500") return price >= 0 && price <= 500;
-          if (priceRange === "501–1000") return price > 500 && price <= 1000;
-          if (priceRange === "Above 1000") return price > 1000;
-          return true;
-        });
-      });
-    }
-
-    return events;
-  }, [eventsData, filters]);
 
   // Modern shimmer skeleton loading
   if (isLoading) {
@@ -270,33 +208,44 @@ const EventsCards = ({ filters = {} }) => {
     );
   }
 
-  /* ---------- Pagination Logic ---------- */
-  const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
-  const indexOfLast = currentPage * itemsPerPage;
-  const indexOfFirst = indexOfLast - itemsPerPage;
-  const currentEvents = filteredEvents.slice(indexOfFirst, indexOfLast);
+  const goToPage = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  const nextPage = () => goToPage(Math.min(currentPage + 1, totalPages));
+  const prevPage = () => goToPage(Math.max(currentPage - 1, 1));
 
-  const goToPage = (page) => setCurrentPage(page);
-  const nextPage = () => setCurrentPage((p) => Math.min(p + 1, totalPages));
-  const prevPage = () => setCurrentPage((p) => Math.max(p - 1, 1));
+  // Build visible page numbers (max 5, sliding window)
+  const getPageNumbers = () => {
+    if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (currentPage <= 3) return [1, 2, 3, 4, 5];
+    if (currentPage >= totalPages - 2) return [totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    return [currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2];
+  };
 
   return (
     <div className="rounded-lg">
       {/* Results count */}
       <div className="mb-4 flex items-center justify-between">
         <p className="text-gray-400 text-sm">
-          {filteredEvents.length} event{filteredEvents.length !== 1 ? "s" : ""}{" "}
-          found
+          <span className="text-white font-medium">{meta.total}</span> event{meta.total !== 1 ? "s" : ""} found
         </p>
-        {Object.values(filters).some((arr) => arr?.length > 0) && (
-          <span className="text-pink-400 text-xs">Filters applied</span>
-        )}
+        <div className="flex items-center gap-3">
+          {Object.values(filters).some((arr) => arr?.length > 0) && (
+            <span className="text-pink-400 text-xs">Filters applied</span>
+          )}
+          {totalPages > 1 && (
+            <span className="text-gray-500 text-xs">
+              Page {currentPage} of {totalPages}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* -------- Events Grid -------- */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-        {currentEvents.length > 0 ? (
-          currentEvents.map((event) => (
+        {events.length > 0 ? (
+          events.map((event) => (
             <EventCard
               key={event._id || event.id}
               event={event}
@@ -312,52 +261,74 @@ const EventsCards = ({ filters = {} }) => {
         )}
       </div>
 
-      {/* -------- Pagination Buttons -------- */}
-      {filteredEvents.length > itemsPerPage && (
-        <div className="flex justify-center items-center gap-2 mt-8">
+      {/* -------- Pagination -------- */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-10">
+          {/* Prev */}
           <button
             onClick={prevPage}
             disabled={currentPage === 1}
-            className="px-4 cursor-pointer py-2 text-sm rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl
+              bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20
+              disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer"
           >
-            Prev
+            ← Prev
           </button>
 
-          <div className="flex gap-1">
-            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-              let pageNum;
-              if (totalPages <= 5) {
-                pageNum = i + 1;
-              } else if (currentPage <= 3) {
-                pageNum = i + 1;
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i;
-              } else {
-                pageNum = currentPage - 2 + i;
-              }
+          {/* First page + ellipsis */}
+          {currentPage > 3 && totalPages > 5 && (
+            <>
+              <button
+                onClick={() => goToPage(1)}
+                className="w-10 h-10 text-sm rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-200 cursor-pointer"
+              >
+                1
+              </button>
+              {currentPage > 4 && (
+                <span className="text-gray-500 text-sm px-1">…</span>
+              )}
+            </>
+          )}
 
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => goToPage(pageNum)}
-                  className={`w-10 cursor-pointer h-10 text-sm rounded-lg transition-colors ${
-                    currentPage === pageNum
-                      ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white"
-                      : "bg-white/10 hover:bg-white/20"
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
-          </div>
+          {/* Page number buttons */}
+          {getPageNumbers().map((pageNum) => (
+            <button
+              key={pageNum}
+              onClick={() => goToPage(pageNum)}
+              className={`w-10 h-10 text-sm font-medium rounded-xl transition-all duration-200 cursor-pointer ${
+                currentPage === pageNum
+                  ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg shadow-pink-500/25 border border-pink-400/50"
+                  : "bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20"
+              }`}
+            >
+              {pageNum}
+            </button>
+          ))}
 
+          {/* Last page + ellipsis */}
+          {currentPage < totalPages - 2 && totalPages > 5 && (
+            <>
+              {currentPage < totalPages - 3 && (
+                <span className="text-gray-500 text-sm px-1">…</span>
+              )}
+              <button
+                onClick={() => goToPage(totalPages)}
+                className="w-10 h-10 text-sm rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-200 cursor-pointer"
+              >
+                {totalPages}
+              </button>
+            </>
+          )}
+
+          {/* Next */}
           <button
             onClick={nextPage}
             disabled={currentPage === totalPages}
-            className="px-4 py-2 cursor-pointer text-sm rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-xl
+              bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20
+              disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer"
           >
-            Next
+            Next →
           </button>
         </div>
       )}

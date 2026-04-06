@@ -28,8 +28,10 @@ export const eventsApi = createApi({
         url: "/events",
         params: params || {},
       }),
-      transformResponse: (response) =>
-        Array.isArray(response.data) ? response.data : [response.data],
+      transformResponse: (response) => ({
+        data: Array.isArray(response.data) ? response.data : [],
+        meta: response.meta || { page: 1, limit: 12, total: 0, totalPages: 1 },
+      }),
       providesTags: ["Events"],
     }),
 
