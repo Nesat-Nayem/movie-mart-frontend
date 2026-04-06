@@ -680,7 +680,7 @@ const WatchMovieDetails = () => {
                 </button>
 
                 {/* Download button - visible only for users who can watch */}
-                {canWatch && video.downloadUrl && (
+                {/* {canWatch && video.downloadUrl && (
                   <a
                     href={video.downloadUrl}
                     target="_blank"
@@ -691,7 +691,7 @@ const WatchMovieDetails = () => {
                     <Download className="w-5 h-5" />
                     Download
                   </a>
-                )}
+                )} */}
 
                 {/* Share Modal */}
                 <ShareModal
