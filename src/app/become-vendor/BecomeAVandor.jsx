@@ -1466,19 +1466,7 @@ const BecomeAVendor = () => {
                       .
                     </p>
                   </div>
-                  {submittedCredentials && (
-                    <div className="flex gap-3 bg-yellow-500/10 rounded-xl p-3 border border-yellow-500/30">
-                      <span className="text-yellow-400 mt-1">🔑</span>
-                      <div>
-                        <p className="text-yellow-300 font-semibold mb-1">Your Temporary Login Credentials</p>
-                        <p className="text-xs text-gray-400 mb-2">Save these now — they will be sent to your email once approved.</p>
-                        <div className="space-y-1 font-mono text-sm">
-                          <p><span className="text-gray-400">Email: </span><span className="text-white select-all">{submittedCredentials.email}</span></p>
-                          <p><span className="text-gray-400">Password: </span><span className="text-white select-all">{submittedCredentials.password}</span></p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+  
                   <div className="flex gap-3">
                     <span className="text-green-400 mt-1">✅</span>
                     <p>
