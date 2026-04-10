@@ -211,11 +211,26 @@ const BecomeAVendor = () => {
           toast.error("Please enter your phone number");
           return false;
         }
-        // Phone validation (at least 10 digits)
+        // India phone validation: 10 digits, starts with 6-9
         const phoneDigits = formData.phone.replace(/\D/g, "");
-        if (phoneDigits.length < 10) {
-          toast.error("Please enter a valid phone number (at least 10 digits)");
+        if (formData.country === "IN") {
+          const indiaPhone = /^[6-9]\d{9}$/;
+          const normalised = phoneDigits.replace(/^91/, "");
+          if (!indiaPhone.test(normalised)) {
+            toast.error("Please enter a valid Indian mobile number (10 digits starting with 6–9)");
+            return false;
+          }
+        } else if (phoneDigits.length < 7 || phoneDigits.length > 15) {
+          toast.error("Please enter a valid phone number");
           return false;
+        }
+        // GST validation (India only, optional but if filled must be valid)
+        if (formData.country === "IN" && formData.gstNumber && formData.gstNumber.trim()) {
+          const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+          if (!gstRegex.test(formData.gstNumber.trim().toUpperCase())) {
+            toast.error("Please enter a valid GST number (e.g. 27ABCDE1234F1Z5)");
+            return false;
+          }
         }
         if (!formData.address.trim()) {
           toast.error("Please enter your address");
@@ -268,6 +283,7 @@ const BecomeAVendor = () => {
     selectedServices.movie_watch;
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [submittedCredentials, setSubmittedCredentials] = useState(null);
 
   // ✅ Submit form after payment (or directly if no payment needed)
   const submitApplication = async (paymentInfo = null) => {
@@ -306,6 +322,13 @@ const BecomeAVendor = () => {
 
       const res = await createVendor(form).unwrap();
       console.log("Vendor Application Submitted ✅:", res);
+
+      // Store credentials if returned
+      if (res?.data?.tempCredentials) {
+        setSubmittedCredentials(res.data.tempCredentials);
+      } else {
+        setSubmittedCredentials(null);
+      }
 
       // Show Success Modal
       setShowSuccessModal(true);
@@ -369,6 +392,7 @@ const BecomeAVendor = () => {
         email: formData.email,
         phone: formData.phone,
         gstNumber: formData.gstNumber || undefined,
+        country: formData.country,
       }).unwrap();
 
       if (!validationRes.isValid) {
@@ -489,6 +513,7 @@ const BecomeAVendor = () => {
           email: formData.email,
           phone: formData.phone,
           gstNumber: formData.gstNumber || undefined,
+          country: formData.country,
         }).unwrap();
 
         if (!validationRes.isValid) {
@@ -633,7 +658,7 @@ const BecomeAVendor = () => {
                       name: "gstNumber",
                       type: "text",
                       required: false,
-                      placeholder: "Optional",
+                      placeholder: formData.country === "IN" ? "e.g. 27ABCDE1234F1Z5" : "Optional",
                     },
                     {
                       label: "Email Address",
@@ -647,7 +672,7 @@ const BecomeAVendor = () => {
                       name: "phone",
                       type: "tel",
                       required: true,
-                      placeholder: "+1 234 567 8900",
+                      placeholder: formData.country === "IN" ? "10-digit mobile (e.g. 9876543210)" : "+1 234 567 8900",
                     },
                   ].map((field) => (
                     <div key={field.name}>
@@ -1441,6 +1466,19 @@ const BecomeAVendor = () => {
                       .
                     </p>
                   </div>
+                  {submittedCredentials && (
+                    <div className="flex gap-3 bg-yellow-500/10 rounded-xl p-3 border border-yellow-500/30">
+                      <span className="text-yellow-400 mt-1">🔑</span>
+                      <div>
+                        <p className="text-yellow-300 font-semibold mb-1">Your Temporary Login Credentials</p>
+                        <p className="text-xs text-gray-400 mb-2">Save these now — they will be sent to your email once approved.</p>
+                        <div className="space-y-1 font-mono text-sm">
+                          <p><span className="text-gray-400">Email: </span><span className="text-white select-all">{submittedCredentials.email}</span></p>
+                          <p><span className="text-gray-400">Password: </span><span className="text-white select-all">{submittedCredentials.password}</span></p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div className="flex gap-3">
                     <span className="text-green-400 mt-1">✅</span>
                     <p>
