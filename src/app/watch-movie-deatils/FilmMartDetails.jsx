@@ -113,6 +113,8 @@ const WatchMovieDetails = () => {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
   const [selectedSeason, setSelectedSeason] = useState(0);
+  const [selectedEpisode, setSelectedEpisode] = useState(null);
+  const [episodePaymentLoading, setEpisodePaymentLoading] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [optimisticLiked, setOptimisticLiked] = useState(false);
   const [optimisticLikeCount, setOptimisticLikeCount] = useState(0);
@@ -192,6 +194,13 @@ const WatchMovieDetails = () => {
 
   const canWatch = video?.isFree || video?.canWatch || accessData?.hasAccess;
 
+  const canWatchEpisode = (episode) => {
+    if (!episode) return false;
+    if (episode.isFree) return true;
+    if (canWatch) return true;
+    return false;
+  };
+
   // Use optimistic state if server data has loaded, otherwise show server data
   const isSubscribed =
     subscriptionData !== undefined ? optimisticSubscribed : false;
@@ -223,6 +232,90 @@ const WatchMovieDetails = () => {
       setOptimisticSubscribed(subscriptionData.isSubscribed);
     }
   }, [subscriptionData]);
+
+  // Handle episode selection
+  const handleEpisodeClick = (episode) => {
+    setSelectedEpisode(episode);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Handle episode payment
+  const handleEpisodePurchase = async (episode) => {
+    if (!userId) {
+      router.push(
+        "/login?redirect=" +
+          encodeURIComponent(window.location.pathname + window.location.search),
+      );
+      return;
+    }
+
+    if (!window.Razorpay) {
+      alert("Payment system is loading. Please try again in a moment.");
+      return;
+    }
+
+    setEpisodePaymentLoading(true);
+    try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const result = await createPaymentOrder({
+        videoId,
+        orderData: {
+          userId,
+          purchaseType: "buy",
+          countryCode,
+          episodeId: episode._id,
+          customerDetails: {
+            name: user.name || "User",
+            email: user.email || "",
+            phone: user.phone || "",
+          },
+        },
+      }).unwrap();
+
+      if (result.data?.razorpayOrder) {
+        initiateEpisodeRazorpayPayment(result.data.razorpayOrder, user, episode);
+      } else {
+        alert("Failed to create payment order");
+        setEpisodePaymentLoading(false);
+      }
+    } catch (error) {
+      alert("Failed to initiate payment. Please try again.");
+      setEpisodePaymentLoading(false);
+    }
+  };
+
+  const initiateEpisodeRazorpayPayment = async (razorpayOrder, user, episode) => {
+    const options = {
+      key: razorpayOrder.keyId,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      name: video.title,
+      description: `Purchase E${episode.episodeNumber}. ${episode.title}`,
+      order_id: razorpayOrder.orderId,
+      prefill: {
+        name: user.name || "User",
+        email: user.email || "",
+        contact: user.phone || "",
+      },
+      theme: { color: "#ec4899" },
+      handler: async function (response) {
+        await handlePaymentVerification({
+          orderId: response.razorpay_order_id,
+          paymentId: response.razorpay_payment_id,
+          signature: response.razorpay_signature,
+        });
+        setEpisodePaymentLoading(false);
+        refetch();
+      },
+      modal: {
+        ondismiss: function () {
+          setEpisodePaymentLoading(false);
+        },
+      },
+    };
+    const razorpay = new window.Razorpay(options);
+    razorpay.open();
+  };
 
   // Handle payment
   const handlePurchase = async () => {
@@ -532,7 +625,72 @@ const WatchMovieDetails = () => {
 
             {/* Video Player Section - Using SecureVideoPlayer for DRM protection */}
             <div className="px-4">
-              {canWatch ? (
+              {selectedEpisode ? (
+                canWatchEpisode(selectedEpisode) ? (
+                  <div>
+                    <div className="flex items-center gap-2 mb-2 text-sm text-gray-400">
+                      <button
+                        onClick={() => setSelectedEpisode(null)}
+                        className="text-pink-400 hover:text-pink-300 underline"
+                      >
+                        ← Back to {video.title}
+                      </button>
+                      <span>·</span>
+                      <span>E{selectedEpisode.episodeNumber}. {selectedEpisode.title}</span>
+                    </div>
+                    <SecureVideoPlayer
+                      videoId={videoId}
+                      userId={userId}
+                      posterUrl={selectedEpisode.thumbnailUrl || video.posterUrl || video.thumbnailUrl}
+                      title={`E${selectedEpisode.episodeNumber}. ${selectedEpisode.title}`}
+                      onProgress={handleProgressUpdate}
+                      canWatch={true}
+                      isFree={selectedEpisode.isFree}
+                      onPurchaseRequired={() => handleEpisodePurchase(selectedEpisode)}
+                    />
+                  </div>
+                ) : (
+                  <div className="relative aspect-video rounded-xl overflow-hidden">
+                    <img
+                      src={selectedEpisode.thumbnailUrl || video.posterUrl || video.thumbnailUrl}
+                      alt={selectedEpisode.title}
+                      className="w-full h-full object-cover filter blur-sm"
+                    />
+                    <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center">
+                      <Lock className="w-16 h-16 text-yellow-500 mb-4" />
+                      <h3 className="text-xl font-bold mb-2">Paid Episode</h3>
+                      <p className="text-sm text-gray-400 mb-1">
+                        E{selectedEpisode.episodeNumber}. {selectedEpisode.title}
+                      </p>
+                      <p className="text-gray-300 mb-4 text-center px-4">
+                        Purchase this episode for {video.userCurrency}{" "}
+                        {selectedEpisode.price ?? video.userPrice} to watch
+                      </p>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => setSelectedEpisode(null)}
+                          className="px-5 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition"
+                        >
+                          Go Back
+                        </button>
+                        <button
+                          onClick={() => handleEpisodePurchase(selectedEpisode)}
+                          disabled={episodePaymentLoading}
+                          className="px-8 py-3 bg-gradient-to-r from-pink-600 to-red-600 rounded-lg font-semibold flex items-center gap-2 hover:from-pink-700 hover:to-red-700 transition disabled:opacity-50"
+                        >
+                          {episodePaymentLoading ? (
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                          ) : (
+                            <CreditCard className="w-5 h-5" />
+                          )}
+                          Buy Episode - {video.userCurrency}{" "}
+                          {selectedEpisode.price ?? video.userPrice}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              ) : canWatch ? (
                 <SecureVideoPlayer
                   videoId={videoId}
                   userId={userId}
@@ -827,34 +985,58 @@ const WatchMovieDetails = () => {
                 {/* Episodes List */}
                 <div className="space-y-3">
                   {video.seasons[selectedSeason]?.episodes?.map(
-                    (episode, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center gap-4 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition cursor-pointer"
-                      >
-                        <div className="relative w-32 h-20 flex-shrink-0">
-                          <img
-                            src={episode.thumbnailUrl || video.thumbnailUrl}
-                            alt={episode.title}
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg">
-                            <Play className="w-8 h-8 text-white" />
+                    (episode, idx) => {
+                      const isActive = selectedEpisode?._id === episode._id;
+                      const isFreeEp = episode.isFree;
+                      return (
+                        <div
+                          key={idx}
+                          onClick={() => handleEpisodeClick(episode)}
+                          className={`flex items-center gap-4 p-4 rounded-xl transition cursor-pointer ${
+                            isActive
+                              ? "bg-pink-600/20 border border-pink-600/40"
+                              : "bg-white/5 hover:bg-white/10"
+                          }`}
+                        >
+                          <div className="relative w-32 h-20 flex-shrink-0">
+                            <img
+                              src={episode.thumbnailUrl || video.thumbnailUrl}
+                              alt={episode.title}
+                              className="w-full h-full object-cover rounded-lg"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg">
+                              {isFreeEp || canWatch ? (
+                                <Play className="w-8 h-8 text-white" />
+                              ) : (
+                                <Lock className="w-6 h-6 text-yellow-400" />
+                              )}
+                            </div>
+                            <span className="absolute bottom-1 right-1 bg-black/80 text-xs px-1 rounded">
+                              {formatDuration(episode.duration)}
+                            </span>
                           </div>
-                          <span className="absolute bottom-1 right-1 bg-black/80 text-xs px-1 rounded">
-                            {formatDuration(episode.duration)}
-                          </span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-medium truncate">
+                                E{episode.episodeNumber}. {episode.title}
+                              </h4>
+                              {isFreeEp ? (
+                                <span className="shrink-0 px-2 py-0.5 rounded-full bg-green-600 text-xs font-medium">
+                                  Free
+                                </span>
+                              ) : (
+                                <span className="shrink-0 px-2 py-0.5 rounded-full bg-yellow-600 text-xs font-medium">
+                                  {canWatch ? "Included" : `Paid`}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-400 line-clamp-2">
+                              {episode.description || "No description available"}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium truncate">
-                            E{episode.episodeNumber}. {episode.title}
-                          </h4>
-                          <p className="text-sm text-gray-400 line-clamp-2">
-                            {episode.description || "No description available"}
-                          </p>
-                        </div>
-                      </div>
-                    ),
+                      );
+                    },
                   )}
                 </div>
               </div>
