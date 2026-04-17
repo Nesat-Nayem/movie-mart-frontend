@@ -6,6 +6,8 @@ import EventSection from "./EventSection";
 import WatchVideoSection from "./WatchVideoSection";
 import HotRightsSection from "./HotRightsSection";
 import ProfitableSection from "./ProfitableSection";
+import HorizontalEventSection from "./HorizontalEventSection";
+import HorizontalWatchVideoSection from "./HorizontalWatchVideoSection";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "https://api.moviemart.org/v1/api";
@@ -281,8 +283,9 @@ const AllSections = () => {
   // Helper to get title by key
   const getTitle = (key) => titles.find((t) => t.sectionKey === key);
 
-  // Get section component based on parent divider
-  const getSectionComponent = (sectionKey, parentDivider) => {
+  // Get section component based on parent divider and global position index
+  // Every even section (index 1, 3, 5, 7, 9, 11 — i.e. positions 2, 4, 6, 8, 10, 12) renders as horizontal
+  const getSectionComponent = (sectionKey, parentDivider, globalIndex) => {
     const titleData = getTitle(sectionKey);
     if (!titleData || !titleData.isActive) return null;
 
@@ -292,15 +295,22 @@ const AllSections = () => {
       viewMoreLink: titleData.viewMoreLink,
     };
 
+    const isHorizontalPosition = (globalIndex + 1) % 2 === 0;
+
     if (sectionKey === "hot_rights_available") {
       return <HotRightsSection key={sectionKey} {...props} />;
     }
 
-    if (sectionKey === "profitable_picks") {
+    if (sectionKey === "profitable_picks" || isHorizontalPosition) {
+      if (parentDivider === "live_events") {
+        return <HorizontalEventSection key={sectionKey} {...props} />;
+      } else if (parentDivider === "watch_movie") {
+        return <HorizontalWatchVideoSection key={sectionKey} {...props} />;
+      }
       return <ProfitableSection key={sectionKey} {...props} />;
     }
 
-    // fallback
+    // fallback vertical
     if (parentDivider === "trade_movies") {
       return <MovieSection key={sectionKey} {...props} />;
     } else if (parentDivider === "live_events") {
@@ -312,6 +322,16 @@ const AllSections = () => {
     return null;
   };
 
+  // Build a flat ordered list of all sections across all dividers to track global index
+  const allSections = dividers
+    .filter((d) => d.isActive !== false)
+    .flatMap((divider) =>
+      getTitlesByDivider(divider.sectionKey).map((title) => ({
+        sectionKey: title.sectionKey,
+        parentDivider: divider.sectionKey,
+      }))
+    );
+
   return (
     <div className="home-sections">
       {dividers.map((divider) => {
@@ -322,9 +342,16 @@ const AllSections = () => {
         return (
           <React.Fragment key={divider.sectionKey}>
             <SectionDivider divider={divider} />
-            {dividerTitles.map((title) =>
-              getSectionComponent(title.sectionKey, divider.sectionKey),
-            )}
+            {dividerTitles.map((title) => {
+              const globalIndex = allSections.findIndex(
+                (s) => s.sectionKey === title.sectionKey
+              );
+              return getSectionComponent(
+                title.sectionKey,
+                divider.sectionKey,
+                globalIndex
+              );
+            })}
           </React.Fragment>
         );
       })}

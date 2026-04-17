@@ -58,7 +58,7 @@ const ProfitableSection = ({ homeSection, title, viewMoreLink }) => {
               <div className="group relative rounded-sm overflow-hidden cursor-pointer">
                 {/* IMAGE */}
                 <img
-                  src={movie.posterUrl}
+                  src={movie.backdropUrl || movie.posterUrl}
                   alt={movie.title}
                   className="w-full h-25 md:h-35 lg:h-40 xl:h-40 xxl:h-50 object-cover transition duration-300 group-hover:scale-105"
                 />
