@@ -29,6 +29,7 @@ const SecureVideoPlayer = ({
   isFree = false,
   onUnauthorized,
   onPurchaseRequired,
+  episodeStreamUrl = null,
 }) => {
   const videoRef = useRef(null);
   const containerRef = useRef(null);
@@ -64,9 +65,29 @@ const SecureVideoPlayer = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Reset stream state when the source changes
+  useEffect(() => {
+    setStreamData(null);
+    setStreamError(null);
+    setIsLoadingStream(false);
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setDuration(0);
+    setHasStartedPlaying(false);
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+    // If an episode URL is passed directly, inject it as stream data immediately
+    if (episodeStreamUrl) {
+      setStreamData({ streamUrl: episodeStreamUrl });
+    }
+  }, [videoId, episodeStreamUrl]);
+
   // Fetch secure stream URL
   const fetchSecureStream = useCallback(async () => {
     if (!videoId) return;
+    // Episode URL is already injected via effect — no need to fetch
+    if (episodeStreamUrl) return;
     
     setIsLoadingStream(true);
     setStreamError(null);
@@ -93,7 +114,7 @@ const SecureVideoPlayer = ({
     } finally {
       setIsLoadingStream(false);
     }
-  }, [videoId, userId, onPurchaseRequired]);
+  }, [videoId, userId, onPurchaseRequired, episodeStreamUrl]);
 
   // Fetch stream when user tries to play
   const handlePlayAttempt = useCallback(() => {

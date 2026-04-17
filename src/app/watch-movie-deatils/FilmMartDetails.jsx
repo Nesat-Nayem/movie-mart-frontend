@@ -639,6 +639,7 @@ const WatchMovieDetails = () => {
                       <span>E{selectedEpisode.episodeNumber}. {selectedEpisode.title}</span>
                     </div>
                     <SecureVideoPlayer
+                      key={selectedEpisode._id}
                       videoId={videoId}
                       userId={userId}
                       posterUrl={selectedEpisode.thumbnailUrl || video.posterUrl || video.thumbnailUrl}
@@ -646,6 +647,7 @@ const WatchMovieDetails = () => {
                       onProgress={handleProgressUpdate}
                       canWatch={true}
                       isFree={selectedEpisode.isFree}
+                      episodeStreamUrl={selectedEpisode.videoUrl || null}
                       onPurchaseRequired={() => handleEpisodePurchase(selectedEpisode)}
                     />
                   </div>
