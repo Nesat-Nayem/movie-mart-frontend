@@ -165,7 +165,8 @@ const BecomeAVendor = () => {
   // Check if country is India
   const isIndia = formData.country === "IN";
 
-  const steps = ["Vendor Info", "KYC Upload", "Select Services", "Review"];
+  // KYC Upload step intentionally removed — KYC is optional and handled later.
+  const steps = ["Vendor Info", "Select Services", "Review"];
 
   // ✅ Handle input change
   const handleChange = (e) => {
@@ -238,10 +239,7 @@ const BecomeAVendor = () => {
         }
         return true;
 
-      case 2: // KYC Upload - Optional, so always valid
-        return true;
-
-      case 3: // Select Services
+      case 2: // Select Services
         if (
           !selectedServices.film_trade &&
           !selectedServices.events &&
@@ -362,7 +360,7 @@ const BecomeAVendor = () => {
         nationalIdUrl: null,
         passportUrl: null,
       });
-      // We keep step 4 visible until they close modal or go home
+      // We keep the final step visible until they close modal or go home
     } catch (err) {
       console.log("❌ Full error object:", err);
       let message = "Failed to submit form";
@@ -732,8 +730,10 @@ const BecomeAVendor = () => {
                 </div>
               )}
 
-              {/* Step 2 - KYC Upload */}
-              {step === 2 && (
+              {/* Step 2 - KYC Upload (DISABLED: KYC is optional, removed from the flow) */}
+              {false && (
+                // eslint-disable-next-line
+                step === 2 && (
                 <div className="space-y-5 animate-fadeIn">
                   <div className="mb-6">
                     <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
@@ -815,10 +815,10 @@ const BecomeAVendor = () => {
                     </>
                   )}
                 </div>
-              )}
+              ))}
 
-              {/* Step 3 - Select Services */}
-              {step === 3 && (
+              {/* Step 2 - Select Services */}
+              {step === 2 && (
                 <div className="space-y-6 animate-fadeIn">
                   <p className="text-gray-300 text-sm mb-4">
                     Select the services you want to offer on MovieMart. You can
@@ -1167,8 +1167,8 @@ const BecomeAVendor = () => {
                 </div>
               )}
 
-              {/* Step 4 - Review */}
-              {step === 4 && (
+              {/* Step 3 - Review */}
+              {step === 3 && (
                 <div className="space-y-6 animate-fadeIn">
                   <h3 className="text-lg font-semibold mb-4 text-white">
                     Review Your Application

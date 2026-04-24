@@ -8,6 +8,14 @@ import HotRightsSection from "./HotRightsSection";
 import ProfitableSection from "./ProfitableSection";
 import HorizontalEventSection from "./HorizontalEventSection";
 import HorizontalWatchVideoSection from "./HorizontalWatchVideoSection";
+import ServiceHeroBanner from "../ServiceHeroBanner";
+
+// Map divider sectionKey -> ServiceHeroBanner service prop
+const DIVIDER_TO_SERVICE = {
+  trade_movies: "film-trade",
+  live_events: "events",
+  watch_movie: "watch-movies",
+};
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "https://api.moviemart.org/v1/api";
@@ -339,8 +347,12 @@ const AllSections = () => {
 
         const dividerTitles = getTitlesByDivider(divider.sectionKey);
 
+        const serviceKey = DIVIDER_TO_SERVICE[divider.sectionKey];
+
         return (
           <React.Fragment key={divider.sectionKey}>
+            {/* Per-service hero banner shown above each service's sections */}
+            {serviceKey && <ServiceHeroBanner service={serviceKey} />}
             <SectionDivider divider={divider} />
             {dividerTitles.map((title) => {
               const globalIndex = allSections.findIndex(

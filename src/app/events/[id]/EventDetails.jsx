@@ -367,6 +367,7 @@ const EventDetails = () => {
                           <p className="mt-3 text-sm font-semibold">
                             {person.name}
                           </p>
+                          {/* <> 
                           {person.email && (
                             <p className="text-xs text-gray-400 truncate max-w-[120px]">
                               {person.email}
@@ -377,6 +378,8 @@ const EventDetails = () => {
                               {person.phone}
                             </p>
                           )}
+
+                           </> */}
                         </div>
                       ))}
                     </div>
