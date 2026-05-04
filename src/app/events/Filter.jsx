@@ -4,13 +4,20 @@ import React, { useState, useEffect } from "react";
 import Button from "@/app/components/Button";
 import { FaTimes, FaFilter } from "react-icons/fa";
 
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/v1/api";
+
 const Filter = ({ onFilterChange, initialFilters = {} }) => {
   const [selected, setSelected] = useState({
     date: initialFilters.date || [],
     languages: initialFilters.languages || [],
     categories: initialFilters.categories || [],
     price: initialFilters.price || [],
+    categoryId: initialFilters.categoryId || "",
   });
+
+  const [eventCategories, setEventCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
 
   const [expandedSections, setExpandedSections] = useState({
     date: true,
@@ -18,6 +25,34 @@ const Filter = ({ onFilterChange, initialFilters = {} }) => {
     categories: true,
     price: true,
   });
+
+  // Fetch event categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch(
+          `${API_BASE_URL}/event-categories?isActive=true&limit=50`,
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setEventCategories(data.data || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch event categories for filter:", err);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Sync categoryId from parent (URL param changes)
+  useEffect(() => {
+    setSelected((prev) => ({
+      ...prev,
+      categoryId: initialFilters.categoryId || "",
+    }));
+  }, [initialFilters.categoryId]);
 
   // Notify parent when filters change
   useEffect(() => {
@@ -38,6 +73,13 @@ const Filter = ({ onFilterChange, initialFilters = {} }) => {
     });
   };
 
+  const selectCategoryId = (id) => {
+    setSelected((prev) => ({
+      ...prev,
+      categoryId: prev.categoryId === id ? "" : id,
+    }));
+  };
+
   const toggleSection = (section) => {
     setExpandedSections((prev) => ({
       ...prev,
@@ -51,10 +93,14 @@ const Filter = ({ onFilterChange, initialFilters = {} }) => {
       languages: [],
       categories: [],
       price: [],
+      categoryId: "",
     });
   };
 
-  const totalFilters = Object.values(selected).flat().length;
+  const totalFilters =
+    Object.entries(selected)
+      .filter(([key]) => key !== "categoryId")
+      .flatMap(([, v]) => v).length + (selected.categoryId ? 1 : 0);
 
   // Filter options
   const dates = ["Today", "Tomorrow", "This Weekend"];
@@ -69,15 +115,6 @@ const Filter = ({ onFilterChange, initialFilters = {} }) => {
     "Punjabi",
     "Marathi",
     "Gujarati",
-  ];
-  const categories = [
-    "comedy",
-    "music",
-    "concert",
-    "theater",
-    "sports",
-    "conference",
-    "workshop",
   ];
   const price = ["Free", "0–500", "501–1000", "Above 1000"];
 
@@ -162,22 +199,35 @@ const Filter = ({ onFilterChange, initialFilters = {} }) => {
         <div className="mb-4 pb-4 border-b border-gray-700/50">
           <p className="text-xs text-gray-500 mb-2">Applied filters:</p>
           <div className="flex flex-wrap gap-1.5">
-            {Object.entries(selected).map(([category, values]) =>
-              values.map((value, idx) => (
-                <span
-                  key={`${category}-${idx}`}
-                  className="inline-flex items-center gap-1 px-2 py-1 bg-pink-500/20 text-pink-300 rounded-full text-xs"
-                >
-                  {value}
-                  <button
-                    onClick={() => toggleSelect(category, value)}
-                    className="hover:text-white"
+            {Object.entries(selected)
+              .filter(([key]) => key !== "categoryId")
+              .map(([category, values]) =>
+                values.map((value, idx) => (
+                  <span
+                    key={`${category}-${idx}`}
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-pink-500/20 text-pink-300 rounded-full text-xs"
                   >
+                    {value}
+                    <button
+                      onClick={() => toggleSelect(category, value)}
+                      className="hover:text-white"
+                    >
+                      <FaTimes className="w-2.5 h-2.5" />
+                    </button>
+                  </span>
+                ))
+              )}
+            {selected.categoryId && (() => {
+              const cat = eventCategories.find((c) => c._id === selected.categoryId);
+              return cat ? (
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-pink-500/20 text-pink-300 rounded-full text-xs">
+                  {cat.name}
+                  <button onClick={() => selectCategoryId(cat._id)} className="hover:text-white">
                     <FaTimes className="w-2.5 h-2.5" />
                   </button>
                 </span>
-              ))
-            )}
+              ) : null;
+            })()}
           </div>
         </div>
       )}
@@ -185,7 +235,48 @@ const Filter = ({ onFilterChange, initialFilters = {} }) => {
       {/* Filter Sections */}
       <FilterSection title="Date" category="date" items={dates} showCount={4} />
       <FilterSection title="Languages" category="languages" items={languages} showCount={6} />
-      <FilterSection title="Event Type" category="categories" items={categories} showCount={8} />
+
+      {/* Dynamic Event Categories */}
+      <div className="mb-5 pb-5 border-b border-gray-700/50">
+        <div className="flex justify-between items-center mb-3">
+          <span className="font-medium text-white text-sm">Event Category</span>
+          {selected.categoryId && (
+            <button
+              onClick={() => selectCategoryId(selected.categoryId)}
+              className="text-xs text-pink-400 hover:text-pink-300 transition-colors flex items-center gap-1"
+            >
+              <FaTimes className="w-2.5 h-2.5" />
+              Clear
+            </button>
+          )}
+        </div>
+        {categoriesLoading ? (
+          <div className="flex flex-wrap gap-2">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-7 w-20 bg-gray-700/50 rounded-full animate-pulse" />
+            ))}
+          </div>
+        ) : eventCategories.length === 0 ? (
+          <p className="text-xs text-gray-500">No categories available</p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {eventCategories.map((cat) => (
+              <button
+                key={cat._id}
+                onClick={() => selectCategoryId(cat._id)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 cursor-pointer ${
+                  selected.categoryId === cat._id
+                    ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white border-transparent shadow-md"
+                    : "border-gray-600 text-gray-300 hover:border-pink-500 hover:text-pink-400"
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
       <FilterSection title="Price Range" category="price" items={price} showCount={4} />
 
       {/* Apply Button for Mobile */}

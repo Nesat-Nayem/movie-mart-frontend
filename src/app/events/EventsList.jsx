@@ -1,22 +1,38 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import Filter from "@/app/events/Filter";
 import { FiFilter } from "react-icons/fi";
 import { FaTimes } from "react-icons/fa";
 import EventsCards from "./EventsCard";
 
 const EventsList = () => {
+  const searchParams = useSearchParams();
+  const categoryId = searchParams.get("categoryId") || "";
+
   const [showDrawer, setShowDrawer] = useState(false);
   const [filters, setFilters] = useState({
     date: [],
     languages: [],
     categories: [],
     price: [],
+    categoryId,
   });
 
-  // Count total active filters
-  const totalFilters = Object.values(filters).flat().length;
+  // Sync categoryId from URL into filters (only when URL param actually changes,
+  // e.g. user navigates to a different category from the home page)
+  useEffect(() => {
+    setFilters((prev) => {
+      if (prev.categoryId === categoryId) return prev;
+      return { ...prev, categoryId };
+    });
+  }, [categoryId]);
+
+  // Count total active filters (exclude categoryId from badge count)
+  const totalFilters = Object.entries(filters)
+    .filter(([key]) => key !== "categoryId")
+    .flatMap(([, v]) => v).length;
 
   // Handle filter changes
   const handleFilterChange = useCallback((newFilters) => {

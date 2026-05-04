@@ -145,6 +145,7 @@ const EventsCards = ({ filters = {} }) => {
     if (filters.categories?.length > 0) params.category = filters.categories.join(",");
     if (filters.price?.length > 0) params.price = filters.price.join(",");
     if (filters.date?.length > 0) params.date = filters.date.join(",");
+    if (filters.categoryId) params.categoryId = filters.categoryId;
     return params;
   }, [currentPage, itemsPerPage, filters]);
 
@@ -256,7 +257,11 @@ const EventsCards = ({ filters = {} }) => {
           <div className="col-span-full text-center py-16">
             <FaTicketAlt className="w-16 h-16 text-gray-600 mx-auto mb-4" />
             <p className="text-gray-400 text-lg mb-2">No events found</p>
-            <p className="text-gray-500 text-sm">Try adjusting your filters</p>
+            <p className="text-gray-500 text-sm">
+              {filters.categoryId
+                ? "No events available in this category yet."
+                : "Try adjusting your filters"}
+            </p>
           </div>
         )}
       </div>

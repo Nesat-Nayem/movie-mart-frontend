@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import HeroBanner from "@/app/pages/Hero/HeroBanner";
 import EventsList from "./EventsList";
 import { TopBannerAd, FooterBannerAd } from "@/components/ads/HomePageAds";
@@ -16,7 +17,9 @@ const FilMartPage = () => {
       {/* Google AdSense - Top Banner */}
       <TopBannerAd />
       <HeroBanner bannerType={BANNER_TYPES.EVENTS} />
-      <EventsList />
+      <Suspense fallback={null}>
+        <EventsList />
+      </Suspense>
       {/* Google AdSense - Footer Banner */}
       <FooterBannerAd />
     </>
